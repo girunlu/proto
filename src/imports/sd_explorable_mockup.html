@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hidden Assumptions in Stable Diffusion — Layout Mockup</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #1a1a1a; }
+
+  /* NAV */
+  nav { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 1px solid #e0ddd6; padding: 0 48px; display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  nav .logo { font-size: 13px; font-weight: 500; color: #1a1a1a; letter-spacing: 0.01em; }
+  nav .nav-links { display: flex; gap: 32px; }
+  nav .nav-links a { font-size: 12px; color: #666; text-decoration: none; }
+  nav .nav-links a:hover { color: #1a1a1a; }
+
+  /* HERO */
+  .hero { background: #fff; border-bottom: 1px solid #e0ddd6; padding: 80px 48px 64px; max-width: 860px; }
+  .hero .layer-tag { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: #888; margin-bottom: 20px; }
+  .hero h1 { font-size: 42px; font-weight: 400; line-height: 1.15; color: #1a1a1a; margin-bottom: 20px; }
+  .hero h1 em { font-style: italic; color: #555; }
+  .hero p { font-size: 16px; line-height: 1.7; color: #555; max-width: 640px; }
+
+  /* SECTION WRAPPER */
+  .section { padding: 64px 48px; border-bottom: 1px solid #e0ddd6; }
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+  .section-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 8px; }
+  .layer-badge { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; }
+  .badge-l1 { background: #ede9fe; color: #4c1d95; }
+  .badge-l2 { background: #fef3c7; color: #78350f; }
+  .badge-l3a { background: #fce7f3; color: #831843; }
+  .badge-l3b { background: #d1fae5; color: #064e3b; }
+  .badge-l3c { background: #dbeafe; color: #1e3a5f; }
+  .badge-l4 { background: #ffedd5; color: #7c2d12; }
+  .section-title { font-size: 22px; font-weight: 500; color: #1a1a1a; }
+  .section-question { font-size: 13px; color: #888; margin-bottom: 32px; font-style: italic; }
+
+  /* TOOL CARD */
+  .tools-grid { display: grid; gap: 20px; }
+  .tools-grid.cols2 { grid-template-columns: 1fr 1fr; }
+  .tools-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+  .tools-grid.cols1 { grid-template-columns: 1fr; }
+  .tool-card { background: #fff; border: 1px solid #e0ddd6; border-radius: 10px; overflow: hidden; }
+  .tool-card-header { padding: 14px 18px 10px; border-bottom: 1px solid #f0ede6; display: flex; align-items: center; gap: 10px; }
+  .tool-num { font-size: 10px; font-weight: 600; color: #aaa; min-width: 20px; }
+  .tool-name { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+  .tool-type { margin-left: auto; font-size: 10px; color: #888; background: #f5f4f0; padding: 2px 7px; border-radius: 3px; white-space: nowrap; }
+  .tool-desc { padding: 10px 18px 14px; font-size: 12px; color: #666; line-height: 1.55; }
+  .tool-visual { margin: 0 18px 14px; background: #f9f8f5; border: 1px dashed #d0cdc6; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #bbb; font-size: 11px; }
+
+  /* PLACEHOLDER VISUALS */
+  .ph-umap { height: 180px; position: relative; overflow: hidden; }
+  .ph-umap::after { content: 'UMAP scatter — image cloud (left) · text cloud (right)'; position: absolute; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 10px; color: #bbb; }
+  .dot { position: absolute; border-radius: 50%; }
+  .ph-heatmap { height: 160px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; padding: 12px; }
+  .hm-cell { border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: rgba(255,255,255,0.7); font-weight: 500; }
+  .ph-imgrow { height: 100px; display: flex; gap: 6px; padding: 12px; }
+  .ph-img { flex: 1; border-radius: 5px; background: #e0ddd6; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #aaa; }
+  .ph-bar { height: 120px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; }
+  .bar-row { display: flex; align-items: center; gap: 8px; }
+  .bar-label { font-size: 9px; color: #aaa; width: 48px; text-align: right; }
+  .bar-track { flex: 1; height: 14px; background: #f0ede6; border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+  .ph-strip { height: 90px; display: flex; gap: 4px; padding: 12px; align-items: flex-end; }
+  .strip-img { flex: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: rgba(255,255,255,0.6); }
+  .ph-daam { height: 140px; padding: 12px; display: flex; gap: 8px; }
+  .daam-img { flex: 1; border-radius: 5px; background: #e0ddd6; }
+  .daam-heat { flex: 1; border-radius: 5px; background: linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(239,68,68,0.6) 40%, rgba(239,68,68,0.1) 100%); border: 1px dashed #f0ede6; }
+  .ph-grid3 { height: 110px; display: flex; gap: 6px; padding: 12px; }
+  .grid3-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .grid3-label { font-size: 8px; color: #bbb; text-align: center; }
+  .grid3-img { flex: 1; border-radius: 4px; background: #e0ddd6; }
+  .ph-ranking { height: 130px; padding: 12px 16px; display: flex; flex-direction: column; gap: 7px; justify-content: center; }
+  .rank-row { display: flex; align-items: center; gap: 8px; }
+  .rank-n { font-size: 9px; color: #bbb; width: 16px; }
+  .rank-thumbs { display: flex; gap: 2px; }
+  .rank-thumb { width: 22px; height: 22px; border-radius: 3px; background: #e0ddd6; }
+  .rank-bar-wrap { flex: 1; }
+  .rank-bar-track { height: 6px; background: #f0ede6; border-radius: 3px; overflow: hidden; }
+  .rank-bar-fill { height: 100%; border-radius: 3px; }
+  .rank-score { font-size: 9px; color: #aaa; width: 30px; text-align: right; }
+  .ph-lens { height: 110px; display: flex; gap: 5px; padding: 12px; align-items: center; }
+  .lens-frame { flex: 1; border-radius: 4px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; font-size: 8px; color: rgba(255,255,255,0.5); }
+  .ph-mask { height: 110px; display: flex; gap: 6px; padding: 12px; }
+  .mask-img { flex: 1; border-radius: 5px; background: #e0ddd6; position: relative; overflow: hidden; }
+  .mask-overlay { position: absolute; top: 20%; left: 25%; width: 50%; height: 50%; border-radius: 3px; }
+  .ph-fingerprint { height: 130px; padding: 12px; display: flex; flex-direction: column; gap: 3px; }
+  .fp-row { display: flex; gap: 2px; flex: 1; }
+  .fp-cell { flex: 1; border-radius: 2px; }
+
+  /* DIVIDER LABEL */
+  .subsection-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #aaa; margin: 36px 0 16px; padding-bottom: 8px; border-bottom: 1px solid #e8e5de; }
+
+  /* CALLOUT */
+  .callout { background: #fafaf7; border: 1px solid #e0ddd6; border-left: 3px solid #a78bfa; border-radius: 6px; padding: 14px 18px; margin: 24px 0; font-size: 13px; color: #555; line-height: 1.6; }
+
+  /* FOOTER */
+  footer { padding: 40px 48px; font-size: 12px; color: #aaa; }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="logo">Hidden Assumptions in Stable Diffusion</span>
+  <div class="nav-links">
+    <a href="#l1">Architecture</a>
+    <a href="#l2">Prior</a>
+    <a href="#l3">Defaults</a>
+    <a href="#l4">Depth</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="layer-tag">Interactive Explorable · SD 2.1 · XAI</div>
+  <h1>What does Stable Diffusion<br><em>assume</em> before you say anything?</h1>
+  <p>Stable Diffusion does not generate from a neutral starting point. Every prompt arrives into a model that has already made decisions — about who a person looks like, which culture is the default, and what "realistic" means. This explorable makes those decisions visible.</p>
+</div>
+
+<!-- LAYER 1 -->
+<div class="section" id="l1" style="background:#fff;">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="layer-badge badge-l1">Layer 1</span>
+      <span class="section-title">Architecture — why assumptions are possible</span>
+    </div>
+    <div class="section-question">Why can't text fully control what gets generated?</div>
+
+    <div class="tools-grid cols2">
+
+      <!-- Tool 2 -->
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-num">02</span>
+          <span class="tool-name">4-quadrant cosine similarity heatmap</span>
+          <span class="tool-type">Static image</span>
+        </div>
+        <div class="tool-desc">Image×image, text×text, and cross-modal similarity blocks — the modality gap is legible as the low cross-modal diagonals vs. high in-modal ones.</div>
+        <div class="tool-visual">
+          <div class="ph-heatmap">
+            <div class="hm-cell" style="background:rgba(79,70,229,0.75);">img × img</div>
+            <div class="hm-cell" style="background:rgba(79,70,229,0.18);">img → txt</div>
+            <div class="hm-cell" style="background:rgba(79,70,229,0.18);">txt → img</div>
+            <div class="hm-cell" style="background:rgba(79,70,229,0.75);">txt × txt</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tool 1 -->
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-num">01</span>
+          <span class="tool-name">UMAP scatter plot</span>
+          <span class="tool-type">Interactive</span>
+        </div>
+        <div class="tool-desc">Image and text embeddings projected into 2D — two separated clouds make the modality gap visible without requiring the viewer to understand vector spaces.</div>
+        <div class="tool-visual ph-umap">
+          <script>
+            document.addEventListener('DOMContentLoaded', () => {
+              const el = document.querySelector('.ph-umap');
+              const colors = ['#818cf8','#6366f1'];
+              const colors2 = ['#f97316','#ea580c'];
+              for(let i=0;i<28;i++){
+                const d = document.createElement('div');
+                d.className='dot';
+                d.style.cssText=`width:7px;height:7px;background:${colors[i%2]};opacity:0.7;left:${10+Math.random()*35}%;top:${15+Math.random()*70}%`;
+                el.appendChild(d);
+              }
+              for(let i=0;i<28;i++){
+                const d = document.createElement('div');
+                d.className='dot';
+                d.style.cssText=`width:7px;height:7px;background:${colors2[i%2]};opacity:0.7;left:${55+Math.random()*35}%;top:${15+Math.random()*70}%`;
+                el.appendChild(d);
+              }
+            });
+          </script>
+        </div>
+      </div>
+
+      <!-- Tool 15 full width -->
+      <div class="tool-card" style="grid-column:1/-1;">
+        <div class="tool-card-header">
+          <span class="tool-num">15</span>
+          <span class="tool-name">Diffusion Lens layer sequence</span>
+          <span class="tool-type">Image sequence</span>
+        </div>
+        <div class="tool-desc">Intermediate CLIP text-encoder layer representations decoded back into images — shows the prior assembling layer by layer before generation starts. (Toker et al. ACL 2024)</div>
+        <div class="tool-visual">
+          <div class="ph-lens">
+            <div class="lens-frame" style="background:linear-gradient(135deg,#c7d2fe,#818cf8);font-size:8px;color:rgba(255,255,255,0.6);">layer 1</div>
+            <div class="lens-frame" style="background:linear-gradient(135deg,#a5b4fc,#6366f1);">layer 4</div>
+            <div class="lens-frame" style="background:linear-gradient(135deg,#818cf8,#4f46e5);">layer 8</div>
+            <div class="lens-frame" style="background:linear-gradient(135deg,#6366f1,#3730a3);">layer 11</div>
+            <div class="lens-frame" style="background:linear-gradient(135deg,#4f46e5,#1e1b4b);">layer 12 →</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- LAYER 2 -->
+<div class="section" id="l2" style="background:#fdfcf8;">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="layer-badge badge-l2">Layer 2</span>
+      <span class="section-title">The prior — what fills the gap</span>
+    </div>
+    <div class="section-question">What does SD generate before your prompt does anything?</div>
+
+    <div class="tools-grid cols2">
+
+      <!-- Tool 3 -->
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-num">03</span>
+          <span class="tool-name">Empty-prompt generation image</span>
+          <span class="tool-type">Static image</span>
+        </div>
+        <div class="tool-desc">Generated with <code style="font-size:11px;background:#f0ede6;padding:1px 4px;border-radius:3px;">prompt=""</code> at standard CFG — the model's global prior with zero semantic conditioning. Used as the anchor for the CFG sweep.</div>
+        <div class="tool-visual">
+          <div class="ph-imgrow">
+            <div class="ph-img" style="background:#d4d0c8;font-size:10px;color:#888;flex:2;">SD prior<br><span style="font-size:8px;color:#bbb;">prompt = ""</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tool 4 -->
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-num">04</span>
+          <span class="tool-name">CFG sweep image strip</span>
+          <span class="tool-type">Image strip + chart</span>
+        </div>
+        <div class="tool-desc">Same prompt at CFG 1 / 3 / 7 / 12 / 15 / 20. FairFace distributions shown below each step — reveals at which guidance level gender and race lock in.</div>
+        <div class="tool-visual" style="flex-direction:column;padding:0;">
+          <div class="ph-strip">
+            <div class="strip-img" style="background:#b0b8c8;height:60px;">1</div>
+            <div class="strip-img" style="background:#8090aa;height:65px;">3</div>
+            <div class="strip-img" style="background:#5a6e88;height:70px;">7</div>
+            <div class="strip-img" style="background:#3d5470;height:72px;">12</div>
+            <div class="strip-img" style="background:#2a3d58;height:70px;">15</div>
+            <div class="strip-img" style="background:#1a2840;height:65px;">20</div>
+          </div>
+          <div style="display:flex;gap:4px;padding:0 12px 10px;">
+            <div style="flex:1;height:18px;background:#f0ede6;border-radius:3px;overflow:hidden;"><div style="width:30%;height:100%;background:#818cf8;border-radius:3px;"></div></div>
+            <div style="flex:1;height:18px;background:#f0ede6;border-radius:3px;overflow:hidden;"><div style="width:45%;height:100%;background:#818cf8;border-radius:3px;"></div></div>
+            <div style="flex:1;height:18px;background:#f0ede6;border-radius:3px;overflow:hidden;"><div style="width:72%;height:100%;background:#818cf8;border-radius:3px;"></div></div>
+            <div style="flex:1;height:18px;background:#f0ede6;border-radius:3px;overflow:hidden;"><div style="width:88%;height:100%;background:#818cf8;border-radius:3px;"></div></div>
+            <div style="flex:1;height:18px;background:#f0ede6;border-radius:3px;overflow:hidden;"><div style="width:92%;height:100%;background:#818cf8;border-radius:3px;"></div></div>
+            <div style="flex:1;height:18px;background:#f0ede6;border-radius:3px;overflow:hidden;"><div style="width:95%;height:100%;background:#818cf8;border-radius:3px;"></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- LAYER 3 -->
+<div class="section" id="l3" style="background:#fff;">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="layer-badge badge-l3a">Layer 3</span>
+      <span class="section-title">The defaults — what the assumptions look like</span>
+    </div>
+    <div class="section-question">What does SD assume when you leave attributes unspecified?</div>
+
+    <!-- 3a Demographic -->
+    <div class="subsection-label">3a — Demographic</div>
+    <div class="tools-grid cols2">
+
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-num">05</span>
+          <span class="tool-name">Image batch (50 images per prompt)</span>
+          <span class="tool-type">Image grid</span>
+        </div>
+        <div class="tool-desc">50 images per prompt at fixed seeds, DDIM, SD 2.1 — the raw distribution the analysis is computed from.</div>
+        <div class="tool-visual">
+          <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:3px;padding:12px;height:90px;">
+            <div style="background:#d4c8c0;border-radius:2px;"></div><div style="background:#c8c0b8;border-radius:2px;"></div><div style="background:#d0c8c0;border-radius:2px;"></div><div style="background:#c4bcb4;border-radius:2px;"></div><div style="background:#d4c8c0;border-radius:2px;"></div><div style="background:#c8beb6;border-radius:2px;"></div><div style="background:#d0c0b8;border-radius:2px;"></div><div style="background:#c8c0ba;border-radius:2px;"></div>
+            <div style="background:#c8c0ba;border-radius:2px;"></div><div style="background:#d0c8c2;border-radius:2px;"></div><div style="background:#c4bcb6;border-radius:2px;"></div><div style="background:#d4c8c2;border-radius:2px;"></div><div style="background:#c8c0ba;border-radius:2px;"></div><div style="background:#d0c8c0;border-radius:2px;"></div><div style="background:#c4beb8;border-radius:2px;"></div><div style="background:#d0c8c0;border-radius:2px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-num">06</span>
+          <span class="tool-name">Gender + race distribution bar charts</span>
+          <span class="tool-type">Interactive chart</span>
+        </div>
+        <div class="tool-desc">FairFace labels across 50 images, shown for bare / contextual / override — amplification delta visible as the shift between bare and contextual bars.</div>
+        <div class="tool-visual">
+          <div class="ph-bar">
+            <div class="bar-row"><span class="bar-label">bare</span><div class="bar-track"><div class="bar-fill" style="width:68%;background:#818cf8;"></div></div><span style="font-size:9px;color:#aaa;">68% ♂</span></div>
+            <div class="bar-row"><span class="bar-label">contextual</span><div class="bar-track"><div class="bar-fill" style="width:91%;background:#4f46e5;"></div></div><span style="font-size:9px;color:#aaa;">91% ♂</span></div>
+            <div class="bar-row"><span class="bar-label">override</span><div class="bar-track"><div class="bar-fill" style="width:22%;background:#a5b4fc;"></div></div><span style="font-size:9px;color:#aaa;">22% ♂</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-num">07</span>
+          <span class="tool-name">Fingerprint heatmap matrix</span>
+          <span class="tool-type">Heatmap</span>
+        </div>
+        <div class="tool-desc">Choice-frequency grid (gender × race × style) across all demographic prompts, clustered by similarity — shows which prompts share the same bubble.</div>
+        <div class="tool-visual">
+          <div class="ph-fingerprint">
+            <div class="fp-row">
+              <div class="fp-cell" style="background:rgba(79,70,229,0.9);"></div><div class="fp-cell" style="background:rgba(79,70,229,0.15);"></div><div class="fp-cell" style="background:rgba(79,70,229,0.7);"></div><div class="fp-cell" style="background:rgba(79,70,229,0.4);"></div><div class="fp-cell" style="background:rgba(79,70,229,0.85);"></div><div class="fp-cell" style="background:rgba(79,70,229,0.2);"></div>
+            </div>
+            <div class="fp-row">
+              <div class="fp-cell" style="background:rgba(79,70,229,0.1);"></div><div class="fp-cell" style="background:rgba(79,70,229,0.8);"></div><div class="fp-cell" style="background:rgba(79,70,229,0.3);"></div><div class="fp-cell" style="background:rgba(79,70,229,0.6);"></div><div class="fp-cell" style="background:rgba(79,70,229,0.1);"></div><div class="fp-cell" style="background:rgba(79,70,229,0.75);"></div>
+            </div>
+            <div class="fp-row">
+              <div class="fp-cell" style="background:rgba(79,70,229,0.6);"></div><div class="fp-cell" style="background:rgba(79,70,229,0.3);"></div><div class="fp-cell" style="background:rgba(79,70,229,0.85);"></div><div class="fp-cell" style="background:rgba(79,70,229,0.15);"></div><div class="fp-cell" style="background:rgba(79,70,229,0.5);"></div><div class="fp-cell" style="background:rgba(79,70,229,0.9);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 3b Cultural -->
+    <div class="subsection-label">3b — Cultural defaults</div>
+    <div class="tools-grid cols2">
+
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-num">12</span>
+          <span class="tool-name">Side-by-side cultural image grids</span>
+          <span class="tool-type">Image grid</span>
+        </div>
+        <div class="tool-desc">Same concept (wedding, breakfast, school) in default / distant country / nearby country — cultural deviation visible without measurement.</div>
+        <div class="tool-visual">
+          <div class="ph-grid3">
+            <div class="grid3-col"><div class="grid3-label">default</div><div class="grid3-img" style="background:#d4cec8;"></div><div class="grid3-img" style="background:#ccc8c0;"></div></div>
+            <div class="grid3-col"><div class="grid3-label">in Nigeria</div><div class="grid3-img" style="background:#c8b8a0;"></div><div class="grid3-img" style="background:#c0b098;"></div></div>
+            <div class="grid3-col"><div class="grid3-label">in USA</div><div class="grid3-img" style="background:#d0ccc8;"></div><div class="grid3-img" style="background:#ccc8c4;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-num">13</span>
+          <span class="tool-name">Embedding distance bar chart</span>
+          <span class="tool-type">Bar chart</span>
+        </div>
+        <div class="tool-desc">Cosine distance between mean CLIP image embeddings of default vs. each geographic variant — shows which countries deviate most from SD's implicit baseline.</div>
+        <div class="tool-visual">
+          <div class="ph-bar" style="justify-content:center;">
+            <div class="bar-row"><span class="bar-label" style="width:80px;">Nigeria</span><div class="bar-track"><div class="bar-fill" style="width:88%;background:#34d399;"></div></div><span style="font-size:9px;color:#aaa;">0.41</span></div>
+            <div class="bar-row"><span class="bar-label" style="width:80px;">India</span><div class="bar-track"><div class="bar-fill" style="width:60%;background:#34d399;"></div></div><span style="font-size:9px;color:#aaa;">0.28</span></div>
+            <div class="bar-row"><span class="bar-label" style="width:80px;">Germany</span><div class="bar-track"><div class="bar-fill" style="width:15%;background:#34d399;"></div></div><span style="font-size:9px;color:#aaa;">0.07</span></div>
+            <div class="bar-row"><span class="bar-label" style="width:80px;">USA</span><div class="bar-track"><div class="bar-fill" style="width:4%;background:#34d399;"></div></div><span style="font-size:9px;color:#aaa;">0.02</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 3c Compositional -->
+    <div class="subsection-label">3c — Compositional failures</div>
+    <div class="tools-grid cols2">
+
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-num">09</span>
+          <span class="tool-name">DAAM attention heatmap overlays</span>
+          <span class="tool-type">Static overlay image</span>
+        </div>
+        <div class="tool-desc">Per-token pixel attribution aggregated across all UNet layers and timesteps — shows "red" activating over the wrong object.</div>
+        <div class="tool-visual">
+          <div class="ph-daam">
+            <div class="daam-img"></div>
+            <div class="daam-heat" style="background:linear-gradient(135deg,rgba(239,68,68,0.08) 0%,rgba(239,68,68,0.65) 35%,rgba(239,68,68,0.1) 100%);"></div>
+            <div class="daam-heat" style="background:linear-gradient(135deg,rgba(59,130,246,0.5) 0%,rgba(59,130,246,0.1) 50%,rgba(59,130,246,0.55) 100%);"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-num">10</span>
+          <span class="tool-name">Causal attention swap pair</span>
+          <span class="tool-type">Image pair</span>
+        </div>
+        <div class="tool-desc">Original failure image next to corrected image after forcing the cross-attention maps to swap mid-generation via Prompt-to-Prompt — proves attention is the cause.</div>
+        <div class="tool-visual">
+          <div class="ph-daam">
+            <div class="daam-img" style="position:relative;"><div style="position:absolute;top:6px;left:6px;font-size:8px;color:#aaa;background:rgba(255,255,255,0.8);padding:1px 4px;border-radius:2px;">before swap</div></div>
+            <div style="display:flex;align-items:center;padding:0 4px;"><span style="font-size:16px;color:#ccc;">→</span></div>
+            <div class="daam-img" style="background:#c8d8c0;position:relative;"><div style="position:absolute;top:6px;left:6px;font-size:8px;color:#aaa;background:rgba(255,255,255,0.8);padding:1px 4px;border-radius:2px;">after swap</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- LAYER 4 -->
+<div class="section" id="l4" style="background:#fdfcf8;">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="layer-badge badge-l4">Layer 4</span>
+      <span class="section-title">Depth — how locked in the assumptions are</span>
+    </div>
+    <div class="section-question">How hard is it to escape?</div>
+
+    <div class="tools-grid cols2">
+
+      <!-- Tool 11 -->
+      <div class="tool-card" style="grid-column:1/-1;">
+        <div class="tool-card-header">
+          <span class="tool-num">11</span>
+          <span class="tool-name">Timestep swap image strip</span>
+          <span class="tool-type">Interactive strip / slider</span>
+        </div>
+        <div class="tool-desc">Denoises with prompt A until step k, swaps to prompt B, continues — repeated for k = 30 down to 1. User drags a slider to find the step where the swap stops changing the output: the lock-in point.</div>
+        <div class="tool-visual">
+          <div style="padding:14px 16px 10px;">
+            <div style="display:flex;gap:4px;margin-bottom:8px;">
+              <div style="flex:1;border-radius:4px;background:#b0c0b8;height:68px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;"><span style="font-size:8px;color:rgba(255,255,255,0.7);">k=30</span></div>
+              <div style="flex:1;border-radius:4px;background:#a8b8b0;height:68px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;"><span style="font-size:8px;color:rgba(255,255,255,0.7);">k=25</span></div>
+              <div style="flex:1;border-radius:4px;background:#98a8a0;height:68px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;"><span style="font-size:8px;color:rgba(255,255,255,0.7);">k=20</span></div>
+              <div style="flex:1;border-radius:4px;background:#889898;height:68px;position:relative;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;"><div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-size:8px;color:#e05;white-space:nowrap;">lock-in ↓</div><span style="font-size:8px;color:rgba(255,255,255,0.7);">k=15</span></div>
+              <div style="flex:1;border-radius:4px;background:#888888;height:68px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;"><span style="font-size:8px;color:rgba(255,255,255,0.7);">k=10</span></div>
+              <div style="flex:1;border-radius:4px;background:#888888;height:68px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;"><span style="font-size:8px;color:rgba(255,255,255,0.7);">k=5</span></div>
+              <div style="flex:1;border-radius:4px;background:#888888;height:68px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;"><span style="font-size:8px;color:rgba(255,255,255,0.7);">k=1</span></div>
+            </div>
+            <input type="range" min="1" max="7" value="4" style="width:100%;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Tool 6 amplification -->
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-num">06</span>
+          <span class="tool-name">Amplification delta</span>
+          <span class="tool-type">From bar charts</span>
+        </div>
+        <div class="tool-desc">The shift in gender/race distribution between bare and contextual variant of the same prompt — context makes assumptions stronger, not weaker. Read from tool 6 data.</div>
+        <div class="tool-visual">
+          <div class="ph-bar">
+            <div class="bar-row"><span class="bar-label">bare</span><div class="bar-track"><div class="bar-fill" style="width:65%;background:#fbbf24;"></div></div><span style="font-size:9px;color:#aaa;">Δ +26%</span></div>
+            <div class="bar-row"><span class="bar-label">contextual</span><div class="bar-track"><div class="bar-fill" style="width:91%;background:#f59e0b;"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tool 14 -->
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-num">14</span>
+          <span class="tool-name">Intra-set similarity ranking</span>
+          <span class="tool-type">Ranked list</span>
+        </div>
+        <div class="tool-desc">Pairwise DINOv2 cosine similarity averaged across 50 images per prompt (face-cropped for demographic prompts) — sorted to rank which prompts produce the tightest bubble.</div>
+        <div class="tool-visual">
+          <div class="ph-ranking">
+            <div class="rank-row"><span class="rank-n">1</span><div class="rank-thumbs"><div class="rank-thumb" style="background:#c8b8a8;"></div><div class="rank-thumb" style="background:#c4b4a4;"></div><div class="rank-thumb" style="background:#c8b8a8;"></div></div><div class="rank-bar-wrap"><div class="rank-bar-track"><div class="rank-bar-fill" style="width:91%;background:#f97316;"></div></div></div><span class="rank-score">0.91</span></div>
+            <div class="rank-row"><span class="rank-n">2</span><div class="rank-thumbs"><div class="rank-thumb" style="background:#c0b0a0;"></div><div class="rank-thumb" style="background:#bca89a;"></div><div class="rank-thumb" style="background:#c0ae9e;"></div></div><div class="rank-bar-wrap"><div class="rank-bar-track"><div class="rank-bar-fill" style="width:84%;background:#f97316;"></div></div></div><span class="rank-score">0.84</span></div>
+            <div class="rank-row"><span class="rank-n">3</span><div class="rank-thumbs"><div class="rank-thumb"></div><div class="rank-thumb"></div><div class="rank-thumb"></div></div><div class="rank-bar-wrap"><div class="rank-bar-track"><div class="rank-bar-fill" style="width:76%;background:#fb923c;"></div></div></div><span class="rank-score">0.76</span></div>
+            <div class="rank-row"><span class="rank-n">4</span><div class="rank-thumbs"><div class="rank-thumb"></div><div class="rank-thumb"></div><div class="rank-thumb"></div></div><div class="rank-bar-wrap"><div class="rank-bar-track"><div class="rank-bar-fill" style="width:68%;background:#fdba74;"></div></div></div><span class="rank-score">0.68</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tool 16 -->
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-num">16</span>
+          <span class="tool-name">Three-way masking comparison</span>
+          <span class="tool-type">Image trio + values</span>
+        </div>
+        <div class="tool-desc">Original / Gaussian-blurred face / random-region blur side by side. Face-shift minus random-shift isolates which region carries the assumption.</div>
+        <div class="tool-visual">
+          <div class="ph-mask">
+            <div class="mask-img"><span style="position:absolute;bottom:5px;left:0;right:0;text-align:center;font-size:8px;color:#aaa;">original</span></div>
+            <div class="mask-img">
+              <div class="mask-overlay" style="background:rgba(200,200,200,0.55);filter:blur(3px);"></div>
+              <span style="position:absolute;bottom:5px;left:0;right:0;text-align:center;font-size:8px;color:#aaa;">face blur</span>
+            </div>
+            <div class="mask-img" style="position:relative;">
+              <div style="position:absolute;top:10%;left:55%;width:30%;height:30%;background:rgba(200,200,200,0.55);filter:blur(3px);border-radius:2px;"></div>
+              <span style="position:absolute;bottom:5px;left:0;right:0;text-align:center;font-size:8px;color:#aaa;">random blur</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;padding:0 18px 10px;font-size:10px;color:#888;">
+            <span>face shift: <b style="color:#1a1a1a;">0.18</b></span>
+            <span>random shift: <b style="color:#1a1a1a;">0.06</b></span>
+            <span>residual: <b style="color:#e05;">+0.12</b></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tool 8 -->
+      <div class="tool-card" style="grid-column:1/-1;">
+        <div class="tool-card-header">
+          <span class="tool-num">08</span>
+          <span class="tool-name">Concept bleed image grid</span>
+          <span class="tool-type">Image grid + chart</span>
+        </div>
+        <div class="tool-desc">Compares "a doctor" / "a doctor next to a sports car" / "a doctor next to a minivan" with FairFace distributions overlaid — secondary objects steer demographics without any explicit mention.</div>
+        <div class="tool-visual">
+          <div class="ph-grid3" style="height:130px;">
+            <div class="grid3-col">
+              <div class="grid3-label">"a doctor"</div>
+              <div class="grid3-img" style="background:#d0c8c0;flex:2;"></div>
+              <div style="height:14px;background:#f0ede6;border-radius:3px;overflow:hidden;margin-top:4px;"><div style="width:68%;height:100%;background:#818cf8;border-radius:3px;"></div></div>
+            </div>
+            <div class="grid3-col">
+              <div class="grid3-label">"+ sports car"</div>
+              <div class="grid3-img" style="background:#c8c0b8;flex:2;"></div>
+              <div style="height:14px;background:#f0ede6;border-radius:3px;overflow:hidden;margin-top:4px;"><div style="width:87%;height:100%;background:#4f46e5;border-radius:3px;"></div></div>
+            </div>
+            <div class="grid3-col">
+              <div class="grid3-label">"+ minivan"</div>
+              <div class="grid3-img" style="background:#ccc8c4;flex:2;"></div>
+              <div style="height:14px;background:#f0ede6;border-radius:3px;overflow:hidden;margin-top:4px;"><div style="width:54%;height:100%;background:#a5b4fc;border-radius:3px;"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="callout">
+      <strong>Novel contributions in this layer:</strong> Timestep lock-in point (11), amplification delta (06), masking residual (16), and concept bleed probes (08) are original to this project. Tools 14 follows Ghosh et al. 2024.
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  Layout mockup — SD Assumption Explorable · Giray Ünlü · JKU Linz · 2026
+</footer>
+
+</body>
+</html>
