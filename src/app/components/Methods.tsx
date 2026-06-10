@@ -26,7 +26,7 @@ const METHODS: MethodEntry[] = [
     what: "A face classifier (gender + 7 race groups) trained on a demographically balanced photo dataset.",
     how: "Detect face → crop → ResNet-34 classification, for every generated image. Validated against a hand-labeled subset; results reported as 'perceived' attributes, not ground truth.",
     why: "Turns a batch of 50 images into a measurable distribution — the core evidence for every demographic claim. CLIP-independent, so no circularity.",
-    resource: { label: "Kärkkäinen & Joo 2021, arXiv:1908.04913", url: "https://arxiv.org/abs/1908.04913" },
+    resource: { label: "Kärkkäinen & Joo, WACV 2021, arXiv:1908.04913", url: "https://arxiv.org/abs/1908.04913" },
   },
   {
     name: "DAAM",
@@ -90,7 +90,7 @@ const METHODS: MethodEntry[] = [
     what: "The Word Embedding Association Test — measures how strongly a concept associates with anchor words like 'man'/'woman' in an embedding space.",
     how: "Cosine association of each candidate occupation against gender/race anchors in CLIP text space, used to rank and select the study's prompts before any generation.",
     why: "Lets us pick prompts with documented assumption strength — and exposed a finding: text-space associations don't match what generation produces.",
-    resource: { label: "Caliskan et al. 2017, Science", url: "https://www.science.org/doi/10.1126/science.aal4230" },
+    resource: { label: "Caliskan, Bryson & Narayanan, Science 2017 · arXiv:1608.07187", url: "https://arxiv.org/abs/1608.07187" },
   },
 ];
 
