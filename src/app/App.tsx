@@ -4,6 +4,7 @@ import { Layer2 } from "./components/Layer2";
 import { Layer3 } from "./components/Layer3";
 import { Layer4 } from "./components/Layer4";
 import { Layer5 } from "./components/Layer5";
+import { Methods } from "./components/Methods";
 
 const NAV_LINKS = [
   { href: "#l1", label: "Architecture" },
@@ -11,6 +12,7 @@ const NAV_LINKS = [
   { href: "#l3", label: "Defaults" },
   { href: "#l4", label: "Depth" },
   { href: "#l5", label: "Escapes" },
+  { href: "#methods", label: "Methods" },
 ];
 
 function Nav() {
@@ -107,7 +109,7 @@ function PredictOpener() {
               style={{
                 ...mono,
                 background: guess === o ? "#4f46e5" : "#f5f4f0",
-                color: guess === o ? "#fff" : guess !== null ? "#bbb" : "#555",
+                color: guess === o ? "#fff" : guess !== null ? "#8a8374" : "#555",
                 borderColor: guess === o ? "#4f46e5" : "#e0ddd6",
                 cursor: guess === null ? "pointer" : "default",
               }}
@@ -119,7 +121,7 @@ function PredictOpener() {
         {guess && (
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-[#aaa] w-[80px] text-right shrink-0" style={mono}>
+              <span className="text-[10px] text-[#867f6f] w-[80px] text-right shrink-0" style={mono}>
                 male-read
               </span>
               <div className="flex-1 h-[16px] bg-[#f0ede6] rounded-[4px] overflow-hidden">
@@ -158,7 +160,7 @@ function PredictOpener() {
 function Footer() {
   return (
     <footer
-      className="px-12 py-10 text-[12px] text-[#aaa]"
+      className="px-12 py-10 text-[12px] text-[#867f6f]"
       style={{ fontFamily: "'JetBrains Mono', monospace" }}
     >
       SD Assumption Explorable — Interactive Explainability Research
@@ -177,6 +179,7 @@ export default function App() {
       <Layer3 />
       <Layer4 />
       <Layer5 />
+      <Methods />
       <Footer />
     </div>
   );

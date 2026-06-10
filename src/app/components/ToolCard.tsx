@@ -18,7 +18,7 @@ export function ToolCard({ num, name, type, description, explanation, children, 
     >
       <div className="px-[18px] pt-[14px] pb-[10px] border-b border-[#f0ede6] flex items-center gap-[10px]">
         <span
-          className="text-[10px] font-semibold text-[#aaa] min-w-[20px]"
+          className="text-[10px] font-semibold text-[#867f6f] min-w-[20px]"
           style={{ fontFamily: "'JetBrains Mono', monospace" }}
         >
           {num}
@@ -81,7 +81,7 @@ export function PlanNote({ purpose, computed, useful, interaction }: PlanNotePro
           {rows.map(([label, text]) => (
             <div key={label} className="flex gap-3 text-[12px] leading-[1.6]">
               <span
-                className="w-[110px] shrink-0 text-[9px] uppercase tracking-[0.06em] text-[#aaa] pt-[3px]"
+                className="w-[110px] shrink-0 text-[9px] uppercase tracking-[0.06em] text-[#867f6f] pt-[3px]"
                 style={{ fontFamily: "'JetBrains Mono', monospace" }}
               >
                 {label}
@@ -162,7 +162,7 @@ export function SubsectionLabel({ children, explanation }: { children: ReactNode
   return (
     <div className="mt-9 mb-4">
       <div
-        className="text-[11px] font-semibold tracking-[0.07em] uppercase text-[#aaa] pb-2 border-b border-[#e8e5de]"
+        className="text-[11px] font-semibold tracking-[0.07em] uppercase text-[#867f6f] pb-2 border-b border-[#e8e5de]"
         style={{ fontFamily: "'JetBrains Mono', monospace" }}
       >
         {children}

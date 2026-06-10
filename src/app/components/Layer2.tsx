@@ -19,11 +19,11 @@ function EmptyPrompt() {
         </code>
       </div>
       <div
-        className="flex-1 flex flex-col gap-[6px] justify-center text-[9px] text-[#aaa]"
+        className="flex-1 flex flex-col gap-[6px] justify-center text-[9px] text-[#867f6f]"
         style={{ fontFamily: "'JetBrains Mono', monospace" }}
       >
         <div>guidance: no-op</div>
-        <div className="text-[8px] text-[#ccc]">(cond = uncond when prompt is empty)</div>
+        <div className="text-[8px] text-[#a39d8e]">(cond = uncond when prompt is empty)</div>
         <div>DDIM 30 steps</div>
         <div>seeds 0–29</div>
         <div>SD 2.1</div>
@@ -67,7 +67,7 @@ function CFGStability() {
     <div className="p-3 flex flex-col gap-3">
       {/* CFG level selector */}
       <div className="flex items-center gap-2">
-        <span className="text-[9px] text-[#bbb] shrink-0" style={mono}>
+        <span className="text-[9px] text-[#8a8374] shrink-0" style={mono}>
           guidance scale:
         </span>
         {CFG_LEVELS.map((v, i) => (
@@ -108,14 +108,14 @@ function CFGStability() {
                 }}
               />
             </div>
-            <span className="text-[9px] text-[#aaa] w-[40px] shrink-0" style={mono}>
+            <span className="text-[9px] text-[#867f6f] w-[40px] shrink-0" style={mono}>
               {Math.round(CFG_DIST[p][levelIdx] * 100)}% ♂
             </span>
           </div>
         ))}
       </div>
 
-      <p className="text-[9px] text-[#bbb] leading-[1.5]" style={mono}>
+      <p className="text-[9px] text-[#8a8374] leading-[1.5]" style={mono}>
         bars = FairFace distribution from 30 seeds per CFG level (evidence) · thumbnails = one
         seed (illustration only) · note how little the bars move — guidance strength does not
         remove the assumption
@@ -134,10 +134,10 @@ export function Layer2() {
       explanation="The modality gap creates a void that the model fills with its own learned prior — a weighted average of everything in its training distribution. Generating with an empty prompt forces this prior into the open, revealing the model's default visual world before any semantic steering takes place. The CFG experiment then makes a counterintuitive point: turning the prompt's influence up or down barely changes the demographic outcome. The assumption is not a function of guidance strength — it lives in the prior itself."
     >
       <PlanNote
-        purpose="Show what occupies the space text cannot control: the model's learned prior, and demonstrate that the obvious knob (guidance scale) cannot tune the assumption away."
-        computed={`Empty-prompt batch: 30 seeds with prompt="" (guidance is a no-op since conditional and unconditional paths coincide), DDIM 30 steps, SD 2.1. CFG stability: 4 occupations × 4 CFG levels × 30 seeds, FairFace distribution per cell.`}
-        useful="Counters the most common user intuition — 'I'll just tweak the settings.' Seeing the distribution stay flat across CFG levels teaches that the assumption precedes the prompt, which motivates the rest of the article."
-        interaction="Click through CFG levels and watch the per-prompt distribution bars stay nearly still while the single-seed thumbnail sharpens. Hover a bar to see the 30 underlying images (final version)."
+        purpose="Show the prior that fills the gap — and that the guidance knob can't tune it away."
+        computed={`prompt="" batch (30 seeds) for the raw prior. CFG stability: 4 occupations × 4 CFG levels × 30 seeds → FairFace per cell.`}
+        useful="Kills the most common intuition: 'I'll just tweak the settings.' The assumption precedes the prompt."
+        interaction="Switch CFG levels — the bars barely move. Hover a bar for the 30 images behind it."
       />
       <ToolsGrid cols={2}>
         <ToolCard

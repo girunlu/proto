@@ -17,7 +17,7 @@ const DEMO_DATA: Record<string, { bare: number; contextual: number; override: nu
 function BarRow({ label, value, color, suffix }: { label: string; value: number; color: string; suffix?: string }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[9px] text-[#aaa] w-[74px] text-right shrink-0" style={MONO}>
+      <span className="text-[9px] text-[#867f6f] w-[74px] text-right shrink-0" style={MONO}>
         {label}
       </span>
       <div className="flex-1 h-[13px] bg-[#f0ede6] rounded-[3px] overflow-hidden">
@@ -26,8 +26,8 @@ function BarRow({ label, value, color, suffix }: { label: string; value: number;
           style={{ width: `${value * 100}%`, background: color }}
         />
       </div>
-      <span className="text-[9px] text-[#aaa] w-[36px] shrink-0" style={MONO}>
-        {suffix ?? `${Math.round(value * 100)}%`}
+      <span className="text-[9px] text-[#867f6f] w-[44px] shrink-0" style={MONO}>
+        {suffix ?? `${Math.round(value * 100)}% ♂`}
       </span>
     </div>
   );
@@ -60,8 +60,9 @@ function DistributionBars() {
         <BarRow label="contextual" value={d.contextual} color="#4f46e5" />
         <BarRow label="override" value={d.override} color="#a5b4fc" />
       </div>
-      <p className="text-[9px] text-[#bbb] leading-[1.5]" style={MONO}>
-        bare = no context · contextual = professional setting added · override = explicit gender added
+      <p className="text-[9px] text-[#8a8374] leading-[1.5]" style={MONO}>
+        each bar = share of 50 images whose face reads as <b>male</b> (FairFace) · bare = no
+        context · contextual = professional setting added · override = explicit gender added
       </p>
     </div>
   );
@@ -100,7 +101,7 @@ function ImageBatch() {
           />
         ))}
       </div>
-      <p className="text-[9px] h-[14px]" style={{ ...MONO, color: hovered !== null ? "#4f46e5" : "#ccc" }}>
+      <p className="text-[9px] h-[14px]" style={{ ...MONO, color: hovered !== null ? "#4f46e5" : "#a39d8e" }}>
         {hovered !== null
           ? `seed ${String(hovered).padStart(2, "0")} — FairFace: ${BATCH_LABELS[hovered].gender} · ${BATCH_LABELS[hovered].race}`
           : "hover a thumbnail to see its per-image FairFace label"}
@@ -112,30 +113,36 @@ function ImageBatch() {
 // ─── Tool 08 — Amplification delta (moved here from Layer 4) ───────────────
 
 function AmplificationDelta() {
+  const rows = [
+    { label: "bare", pct: 0.65, color: "#fbbf24", delta: "reference" },
+    { label: "contextual", pct: 0.91, color: "#f59e0b", delta: "+26 pp" },
+    { label: "override", pct: 0.22, color: "#fcd34d", delta: "−43 pp" },
+  ];
   return (
-    <div className="p-3 flex flex-col gap-[10px] h-[110px] justify-center">
-      {[
-        { label: "bare", pct: 0.65, color: "#fbbf24" },
-        { label: "contextual", pct: 0.91, color: "#f59e0b" },
-      ].map((r) => (
+    <div className="p-3 flex flex-col gap-[10px] justify-center">
+      {rows.map((r) => (
         <div key={r.label} className="flex items-center gap-2">
-          <span className="text-[9px] text-[#aaa] w-[70px] text-right shrink-0" style={MONO}>
+          <span className="text-[9px] text-[#867f6f] w-[70px] text-right shrink-0" style={MONO}>
             {r.label}
           </span>
           <div className="flex-1 h-[13px] bg-[#f0ede6] rounded-[3px] overflow-hidden">
             <div className="h-full rounded-[3px]" style={{ width: `${r.pct * 100}%`, background: r.color }} />
           </div>
-          <span className="text-[9px] text-[#aaa] w-[36px] shrink-0" style={MONO}>
-            {Math.round(r.pct * 100)}%♂
+          <span className="text-[9px] text-[#867f6f] w-[44px] shrink-0" style={MONO}>
+            {Math.round(r.pct * 100)}% ♂
+          </span>
+          <span
+            className="text-[9px] w-[64px] shrink-0 font-semibold"
+            style={{ ...MONO, color: r.delta === "reference" ? "#a39d8e" : r.delta.startsWith("+") ? "#ef4444" : "#16a34a" }}
+          >
+            {r.delta}
           </span>
         </div>
       ))}
-      <div className="flex items-center gap-2 pl-[78px]">
-        <div className="flex-1 h-[2px] bg-transparent" />
-        <span className="text-[10px] font-semibold" style={{ color: "#ef4444", ...MONO }}>
-          Δ +26 pp — context strengthens, not weakens, the prior
-        </span>
-      </div>
+      <p className="text-[9px] text-[#8a8374] pl-[78px]" style={MONO}>
+        both deltas vs. the same bare prompt — context amplifies the default for free; undoing it
+        costs an explicit override
+      </p>
     </div>
   );
 }
@@ -146,7 +153,7 @@ const CULTURAL_CONCEPTS = ["a wedding", "a breakfast table", "a school classroom
 const CULTURAL_LOCATIONS = [
   { label: "default", shades: ["#d4cec8", "#cdc8c2", "#d0cbc5"] },
   { label: "in Nigeria", shades: ["#c8b8a0", "#c0b098", "#c4b4a2"] },
-  { label: "in USA", shades: ["#d0ccc8", "#ccc8c4", "#cec8c4"] },
+  { label: "in USA", shades: ["#d0ccc8", "#a39d8e8c4", "#cec8c4"] },
 ];
 
 function CulturalGrid() {
@@ -175,7 +182,10 @@ function CulturalGrid() {
       <div className="flex gap-[6px] h-[100px]">
         {CULTURAL_LOCATIONS.map((loc) => (
           <div key={loc.label} className="flex-1 flex flex-col gap-[4px]">
-            <span className="text-[8px] text-[#bbb] text-center" style={MONO}>
+            <span
+              className="text-[9px] text-[#555] text-center font-semibold bg-[#f0ede6] rounded-[3px] py-[2px]"
+              style={MONO}
+            >
               {loc.label}
             </span>
             <div className="flex-1 rounded-[4px] transition-colors duration-400" style={{ background: loc.shades[conceptIdx] }} />
@@ -202,13 +212,13 @@ function EmbeddingDistanceBars() {
     <div className="p-3 flex flex-col gap-[8px] h-[140px] justify-center">
       {DISTANCE_DATA.map((d) => (
         <div key={d.country} className="flex items-center gap-2">
-          <span className="text-[9px] text-[#aaa] w-[56px] text-right shrink-0" style={MONO}>
+          <span className="text-[9px] text-[#867f6f] w-[56px] text-right shrink-0" style={MONO}>
             {d.country}
           </span>
           <div className="flex-1 h-[12px] bg-[#f0ede6] rounded-[3px] overflow-hidden">
             <div className="h-full rounded-[3px]" style={{ width: `${d.pct * 100}%`, background: "#34d399" }} />
           </div>
-          <span className="text-[9px] text-[#aaa] w-[28px]" style={MONO}>
+          <span className="text-[9px] text-[#867f6f] w-[28px]" style={MONO}>
             {d.dist.toFixed(2)}
           </span>
         </div>
@@ -219,28 +229,85 @@ function EmbeddingDistanceBars() {
 
 // ─── Tool 11 — DAAM overlay ─────────────────────────────────────────────────
 
+const DAAM_TOKENS = ["a", "red", "cube", "next", "to", "a", "blue", "sphere"];
+
+const DAAM_MAPS: Record<string, { rgb: string; note: string; gradient: string }> = {
+  red: {
+    rgb: "239,68,68",
+    note: '"red" leaks onto the sphere too — attribute not bound to the cube',
+    gradient: "linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(239,68,68,0.70) 38%, rgba(239,68,68,0.55) 80%, rgba(239,68,68,0.1) 100%)",
+  },
+  cube: {
+    rgb: "245,158,11",
+    note: '"cube" attends mostly to the left object — shape binding mostly works',
+    gradient: "linear-gradient(135deg, rgba(245,158,11,0.65) 0%, rgba(245,158,11,0.5) 35%, rgba(245,158,11,0.06) 70%)",
+  },
+  blue: {
+    rgb: "59,130,246",
+    note: '"blue" splits across both objects — this is the bleed that recolors the cube',
+    gradient: "linear-gradient(135deg, rgba(59,130,246,0.55) 0%, rgba(59,130,246,0.08) 55%, rgba(59,130,246,0.6) 100%)",
+  },
+  sphere: {
+    rgb: "16,185,129",
+    note: '"sphere" is localized right — but inherits whatever color won the fight',
+    gradient: "linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(16,185,129,0.12) 45%, rgba(16,185,129,0.6) 100%)",
+  },
+};
+
 function DAAMOverlay() {
+  const [token, setToken] = useState("red");
+  const map = DAAM_MAPS[token];
+
   return (
     <div className="p-3 flex flex-col gap-2">
-      <div className="flex gap-[8px] h-[130px]">
+      {/* Word-by-word prompt — content tokens clickable */}
+      <div className="flex flex-wrap gap-[4px] items-center">
+        <span className="text-[9px] text-[#8a8374] mr-1" style={MONO}>
+          prompt:
+        </span>
+        {DAAM_TOKENS.map((w, i) => {
+          const clickable = w in DAAM_MAPS;
+          const active = clickable && token === w;
+          return (
+            <button
+              key={i}
+              onClick={() => clickable && setToken(w)}
+              disabled={!clickable}
+              className="text-[10px] px-[7px] py-[2px] rounded-[3px] border transition-all"
+              style={{
+                ...MONO,
+                background: active ? `rgb(${map.rgb})` : clickable ? "#f0ede6" : "transparent",
+                color: active ? "#fff" : clickable ? "#555" : "#8a8374",
+                borderColor: active ? `rgb(${map.rgb})` : clickable ? "#e0ddd6" : "transparent",
+                cursor: clickable ? "pointer" : "default",
+              }}
+            >
+              {w}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex gap-[8px] h-[120px]">
         <div className="flex-1 rounded-[5px] bg-[#d0c8c0] relative">
-          <span className="absolute bottom-[5px] left-0 right-0 text-center text-[8px] text-[#aaa]" style={MONO}>generated image</span>
+          <span className="absolute bottom-[5px] left-0 right-0 text-center text-[8px] text-[#867f6f]" style={MONO}>
+            generated image
+          </span>
         </div>
         <div
-          className="flex-1 rounded-[5px] border border-dashed border-[#f0ede6] relative"
-          style={{ background: "linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(239,68,68,0.70) 38%, rgba(239,68,68,0.1) 100%)" }}
+          className="flex-1 rounded-[5px] border border-dashed border-[#f0ede6] relative transition-all duration-300"
+          style={{ background: map.gradient }}
         >
-          <span className="absolute bottom-[5px] left-0 right-0 text-center text-[8px]" style={{ color: "rgba(239,68,68,0.9)", ...MONO }}>token: "red"</span>
-        </div>
-        <div
-          className="flex-1 rounded-[5px] border border-dashed border-[#f0ede6] relative"
-          style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.55) 0%, rgba(59,130,246,0.08) 55%, rgba(59,130,246,0.6) 100%)" }}
-        >
-          <span className="absolute bottom-[5px] left-0 right-0 text-center text-[8px]" style={{ color: "rgba(59,130,246,0.9)", ...MONO }}>token: "cube"</span>
+          <span
+            className="absolute bottom-[5px] left-0 right-0 text-center text-[8px]"
+            style={{ color: `rgba(${map.rgb},0.95)`, ...MONO }}
+          >
+            heatmap: "{token}"
+          </span>
         </div>
       </div>
-      <p className="text-[9px] text-[#bbb] text-center" style={MONO}>
-        prompt: "a red cube next to a blue sphere" — note cross-token bleed · final version: click any token to switch the overlay
+      <p className="text-[9px] text-center transition-colors" style={{ ...MONO, color: `rgba(${map.rgb},0.85)` }}>
+        {map.note}
       </p>
     </div>
   );
@@ -256,24 +323,24 @@ function AttentionSwapPair() {
           <div className="absolute top-[6px] left-[6px] text-[8px] text-[#888] bg-white/80 px-[5px] py-[1px] rounded" style={MONO}>
             original failure
           </div>
-          <span className="absolute bottom-[5px] left-0 right-0 text-center text-[8px] text-[#aaa]" style={MONO}>
+          <span className="absolute bottom-[5px] left-0 right-0 text-center text-[8px] text-[#867f6f]" style={MONO}>
             before attention swap
           </span>
         </div>
-        <div className="flex flex-col items-center gap-1 text-[#ccc]">
+        <div className="flex flex-col items-center gap-1 text-[#a39d8e]">
           <span className="text-[18px] select-none">→</span>
-          <span className="text-[8px] text-[#bbb]" style={MONO}>P2P swap</span>
+          <span className="text-[8px] text-[#8a8374]" style={MONO}>P2P swap</span>
         </div>
         <div className="flex-1 rounded-[5px] bg-[#c0d0bc] relative h-full">
           <div className="absolute top-[6px] left-[6px] text-[8px] text-[#888] bg-white/80 px-[5px] py-[1px] rounded" style={MONO}>
             corrected output
           </div>
-          <span className="absolute bottom-[5px] left-0 right-0 text-center text-[8px] text-[#aaa]" style={MONO}>
+          <span className="absolute bottom-[5px] left-0 right-0 text-center text-[8px] text-[#867f6f]" style={MONO}>
             after attention swap
           </span>
         </div>
       </div>
-      <p className="text-[9px] text-[#bbb] text-center" style={MONO}>
+      <p className="text-[9px] text-[#8a8374] text-center" style={MONO}>
         only the cross-attention maps are swapped — spatial layout and identity preserved
       </p>
     </div>
@@ -290,10 +357,10 @@ export function Layer3() {
       explanation="Once we know that assumptions are structurally possible (Layer 1) and that a prior exists to fill that space (Layer 2), we can ask what that prior actually contains. This layer presents three categories of default: demographic assumptions about who a person is, cultural assumptions about what everyday scenes look like, and compositional failures where attributes leak between objects through cross-attention."
     >
       <PlanNote
-        purpose="Show the content of the defaults: who the doctor is, whose wedding is 'a wedding', and how adjectives end up on the wrong objects — the layer where the viewer sees the assumptions, not just their mechanism."
-        computed="50 images per prompt (fixed seeds, DDIM 30 steps, SD 2.1) → FairFace gender/race distributions with bootstrap CIs; amplification delta = contextual minus bare; cultural variants compared via DINOv2 (primary) and CLIP distance (supporting); DAAM per-token heatmaps + Prompt-to-Prompt causal swap on color-binding pairs."
-        useful="The distribution-not-single-image idea becomes concrete here: each claim is backed by a visible batch the user can inspect image by image, which is what makes the statistics trustworthy to a non-expert."
-        interaction="Switch prompts via chips; hover any batch thumbnail for its per-image FairFace label; hover aggregate bars to see the underlying images; click DAAM tokens to switch heatmap overlays (final version)."
+        purpose="Show what the defaults contain: who the doctor is, whose wedding 'a wedding' is, where adjectives actually land."
+        computed="50 images per prompt → FairFace distributions + bootstrap CIs; amplification delta = contextual − bare; cultural distance via DINOv2; DAAM heatmaps + attention swap."
+        useful="Every claim is backed by a visible batch — the viewer can check the statistics against the images."
+        interaction="Chips switch prompts; hover thumbnails for per-image labels; click DAAM tokens to switch overlays."
       />
 
       <SubsectionLabel
@@ -324,10 +391,10 @@ export function Layer3() {
 
         <ToolCard
           num="08"
-          name="Amplification delta"
+          name="Amplification vs. override — two deltas, one prompt"
           type="Derived metric"
-          description="The percentage-point shift between bare and contextual variants — adding realistic context makes assumptions stronger, not weaker. A core empirical result of this work."
-          explanation="A naive intuition says a richer prompt gives the model more signal, which should reduce bias. The delta shows the opposite: a realistic professional setting sharpens the prior rather than diluting it, because the added context is semantically consistent with the stereotyped default. This matters because real users write contextual prompts — the problem is worst exactly where usage is most natural."
+          description="Both variants measured against the same bare prompt: realistic context pushes the skew up (+26 pp); an explicit gender term is needed to push it down (−43 pp)."
+          explanation="The bare prompt is the reference, so its own delta is zero — the comparison that matters is what each modification does to it. Adding realistic context amplifies the default without any demographic word. Undoing the default requires naming it explicitly. The asymmetry is the finding: bias comes free, correction costs intent."
         >
           <AmplificationDelta />
         </ToolCard>

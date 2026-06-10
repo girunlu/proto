@@ -12,7 +12,7 @@ function OverrideComparison() {
       ].map((r) => (
         <div key={r.label} className="flex items-center gap-2">
           <span
-            className="text-[9px] text-[#aaa] w-[110px] text-right shrink-0"
+            className="text-[9px] text-[#867f6f] w-[110px] text-right shrink-0"
             style={{ fontFamily: "'JetBrains Mono', monospace" }}
           >
             {r.label}
@@ -20,12 +20,12 @@ function OverrideComparison() {
           <div className="flex-1 h-[13px] bg-[#f0ede6] rounded-[3px] overflow-hidden">
             <div className="h-full rounded-[3px]" style={{ width: `${r.pct * 100}%`, background: r.color }} />
           </div>
-          <span className="text-[9px] text-[#aaa] w-[44px] shrink-0" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+          <span className="text-[9px] text-[#867f6f] w-[44px] shrink-0" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
             {Math.round(r.pct * 100)}% ♂
           </span>
         </div>
       ))}
-      <p className="text-[9px] text-[#bbb] pl-[118px]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+      <p className="text-[9px] text-[#8a8374] pl-[118px]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
         works — but the burden of knowing what to override is on the user
       </p>
     </div>
@@ -46,13 +46,13 @@ function StructuredConditioning() {
             text only
           </div>
           <span
-            className="absolute bottom-[5px] left-0 right-0 text-center text-[8px] text-[#aaa]"
+            className="absolute bottom-[5px] left-0 right-0 text-center text-[8px] text-[#867f6f]"
             style={{ fontFamily: "'JetBrains Mono', monospace" }}
           >
             attributes drift, layout random
           </span>
         </div>
-        <span className="text-[18px] text-[#ccc] select-none">→</span>
+        <span className="text-[18px] text-[#a39d8e] select-none">→</span>
         <div className="flex-1 rounded-[5px] bg-[#c0ccd4] relative h-full">
           {/* layout boxes overlay */}
           <div
@@ -70,14 +70,14 @@ function StructuredConditioning() {
             text + layout boxes
           </div>
           <span
-            className="absolute bottom-[5px] left-0 right-0 text-center text-[8px] text-[#aaa]"
+            className="absolute bottom-[5px] left-0 right-0 text-center text-[8px] text-[#867f6f]"
             style={{ fontFamily: "'JetBrains Mono', monospace" }}
           >
             spatial structure enforced
           </span>
         </div>
       </div>
-      <p className="text-[9px] text-[#bbb] text-center" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+      <p className="text-[9px] text-[#8a8374] text-center" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
         GLIGEN / ControlNet inject structure the bag-of-words text encoder cannot express
       </p>
     </div>
@@ -88,46 +88,91 @@ function StructuredConditioning() {
 
 function FairnessSteering() {
   const [strength, setStrength] = useState(0);
-  const levels = [0, 1, 2, 3];
+  const levels = ["off", "gentle", "medium", "strong"];
   const malePct = [0.84, 0.71, 0.58, 0.51][strength];
+  const mono = { fontFamily: "'JetBrains Mono', monospace" };
+
   return (
-    <div className="p-3 flex flex-col gap-3 h-[120px] justify-center">
+    <div className="p-3 flex flex-col gap-3 justify-center">
+      <p className="text-[12px] text-[#555] leading-[1.6]">
+        The model generates <b>"a doctor"</b> 50 times. By default, 42 of those 50 doctors are
+        men. Fair Diffusion adds a <b>nudge during generation</b>: when an image starts forming
+        as the over-represented group, some generations get gently steered toward the
+        under-represented one — without changing your prompt. Turn the nudge up and watch the
+        balance change.
+      </p>
+
       <div className="flex items-center gap-2">
-        <span className="text-[9px] text-[#aaa] shrink-0" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          fairness guidance:
+        <span className="text-[9px] text-[#867f6f] shrink-0" style={mono}>
+          nudge strength:
         </span>
-        {levels.map((l) => (
+        {levels.map((label, l) => (
           <button
-            key={l}
+            key={label}
             onClick={() => setStrength(l)}
-            className="text-[10px] px-[8px] py-[2px] rounded-[3px] border transition-colors"
+            className="text-[10px] px-[10px] py-[3px] rounded-[3px] border transition-colors"
             style={{
-              fontFamily: "'JetBrains Mono', monospace",
+              ...mono,
               background: strength === l ? "#0c4a6e" : "#f5f4f0",
               color: strength === l ? "#e0f2fe" : "#666",
               borderColor: strength === l ? "#0c4a6e" : "#e0ddd6",
             }}
           >
-            {l === 0 ? "off" : l}
+            {label}
           </button>
         ))}
       </div>
-      <div className="flex items-center gap-2">
-        <span className="text-[9px] text-[#aaa] w-[70px] text-right shrink-0" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          "a doctor"
-        </span>
-        <div className="flex-1 h-[13px] bg-[#f0ede6] rounded-[3px] overflow-hidden">
-          <div
-            className="h-full rounded-[3px] transition-all duration-500"
-            style={{ width: `${malePct * 100}%`, background: "#0ea5e9" }}
-          />
-        </div>
-        <span className="text-[9px] text-[#aaa] w-[44px] shrink-0" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          {Math.round(malePct * 100)}% ♂
-        </span>
+
+      {/* The batch itself — 25 thumbnails recoloring as the nudge increases */}
+      <div className="grid gap-[3px]" style={{ gridTemplateColumns: "repeat(25, 1fr)" }}>
+        {Array.from({ length: 25 }, (_, i) => {
+          const isWoman = i < Math.round((1 - malePct) * 25);
+          return (
+            <div
+              key={i}
+              className="rounded-[2px] flex items-center justify-center transition-colors duration-500"
+              style={{
+                height: "26px",
+                background: isWoman ? "#d8b4c8" : "#b0bece",
+              }}
+              title={isWoman ? "woman" : "man"}
+            >
+              <span className="text-[8px]" style={{ color: "rgba(255,255,255,0.85)", ...mono }}>
+                {isWoman ? "♀" : "♂"}
+              </span>
+            </div>
+          );
+        })}
       </div>
-      <p className="text-[9px] text-[#bbb]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-        Fair Diffusion (Friedrich et al. 2023) — semantic steering toward parity at inference time
+
+      {/* Stacked bar: men vs women out of 50 */}
+      <div className="flex items-center gap-2">
+        <span className="text-[9px] text-[#867f6f] w-[70px] text-right shrink-0" style={mono}>
+          50 doctors:
+        </span>
+        <div className="flex-1 h-[18px] rounded-[4px] overflow-hidden flex">
+          <div
+            className="h-full flex items-center justify-center transition-all duration-500"
+            style={{ width: `${malePct * 100}%`, background: "#0ea5e9" }}
+          >
+            <span className="text-[9px] text-white" style={mono}>
+              {Math.round(malePct * 50)} men
+            </span>
+          </div>
+          <div
+            className="h-full flex items-center justify-center transition-all duration-500"
+            style={{ width: `${(1 - malePct) * 100}%`, background: "#f472b6" }}
+          >
+            <span className="text-[9px] text-white" style={mono}>
+              {Math.round((1 - malePct) * 50)} women
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <p className="text-[9px] text-[#8a8374]" style={mono}>
+        each square ≈ 2 of the 50 generations (final version: the actual images) · the prompt
+        never changes — only the nudge does · Fair Diffusion, Friedrich et al. 2023
       </p>
     </div>
   );
@@ -145,10 +190,10 @@ export function Layer5() {
       explanation="The article cannot end with 'you are trapped.' This closing layer contrasts three escape routes, ordered by how much they demand of the user: explicit override (you must already know the assumption exists), structured conditioning (layout and pose injected outside the text channel), and inference-time fairness steering. Each works — partially — and each works by routing around the text encoder rather than fixing it, which is the final confirmation of the article's central claim."
     >
       <PlanNote
-        purpose="Resolve the narrative: show that escapes exist, what they cost, and that all of them bypass — rather than repair — the text-conditioning path where the assumptions live."
-        computed="Override: FairFace distributions for explicit-attribute variants (already in the main study manifest). Structured conditioning: qualitative image pairs generated with GLIGEN/ControlNet on 2–3 prompts. Fair Diffusion: distributions at 3 steering strengths for 2 occupations. All precomputed; small n, framed as demonstration, not finding."
-        useful="Turns the article from diagnosis into understanding: a reader leaves knowing not just that defaults exist but why prompt-level fixes are fragile and structural fixes work."
-        interaction="Toggle fairness-guidance strength and watch the distribution move toward parity; compare text-only vs. layout-conditioned pairs; hover bars for the underlying images."
+        purpose="Show the escapes and their cost — all of them bypass the text encoder rather than fix it."
+        computed="Override variants from the main study; GLIGEN/ControlNet image pairs; Fair Diffusion at 3 nudge strengths. All precomputed, framed as demonstration."
+        useful="Reader leaves knowing why prompt-level fixes are fragile and structural ones work."
+        interaction="Toggle nudge strength; compare text-only vs. layout-conditioned pairs."
       />
       <ToolsGrid cols={2}>
         <ToolCard
