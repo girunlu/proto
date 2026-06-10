@@ -71,11 +71,24 @@ function Hero() {
         <br />
         <em className="italic text-[#555]">assume</em> before you say anything?
       </h1>
+      <div
+        className="flex flex-col gap-[6px] mb-6 text-[14px]"
+        style={{ fontFamily: "'JetBrains Mono', monospace" }}
+      >
+        <span className="text-[#a39d8e]">
+          what you think happens:&nbsp;&nbsp;
+          <span className="line-through decoration-[#ef4444]/60">image = f( prompt )</span>
+        </span>
+        <span className="text-[#1a1a1a]">
+          what actually happens:&nbsp;&nbsp;&nbsp;image ~ P( · | prompt, <b className="text-[#4f46e5]">the model's worldview</b> )
+        </span>
+      </div>
       <p className="text-[16px] leading-[1.7] text-[#555] max-w-[640px]">
-        Stable Diffusion does not generate from a neutral starting point. Every prompt arrives
-        into a model that has already made decisions — about who a person looks like, which
-        culture is the default, and what "realistic" means. This explorable makes those
-        decisions visible.
+        Your prompt is never the whole input. It is read inside a worldview the model learned
+        before you arrived — decisions about who a person looks like, which culture is the
+        default, and what "realistic" means. You can't see that second condition, and you can't
+        opt out of it. This explorable makes it visible: where it lives, when it locks in, and
+        what it costs to override.
       </p>
     </div>
   );

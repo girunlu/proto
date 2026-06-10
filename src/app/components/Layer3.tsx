@@ -313,7 +313,86 @@ function DAAMOverlay() {
   );
 }
 
-// ─── Tool 12 — Attention swap pair ──────────────────────────────────────────
+// ─── Tool 12a — Directional fidelity ────────────────────────────────────────
+
+const FIDELITY = [
+  {
+    label: '"a white male doctor"',
+    grain: "with the grain",
+    shade: "#c6cdd6",
+    metrics: [
+      { name: "requested attributes present", value: 0.96, good: true },
+      { name: "off-prompt errors (VQA)", value: 0.06, good: false },
+      { name: "face detection failures", value: 0.02, good: false },
+    ],
+  },
+  {
+    label: '"a Nigerian female doctor"',
+    grain: "against the grain",
+    shade: "#cdc2b2",
+    metrics: [
+      { name: "requested attributes present", value: 0.71, good: true },
+      { name: "off-prompt errors (VQA)", value: 0.22, good: false },
+      { name: "face detection failures", value: 0.09, good: false },
+    ],
+  },
+];
+
+function DirectionalFidelity() {
+  return (
+    <div className="p-3 flex flex-col gap-2">
+      <div className="flex gap-4">
+        {FIDELITY.map((side) => (
+          <div key={side.label} className="flex-1 flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-[#1a1a1a] font-medium" style={MONO}>
+                {side.label}
+              </span>
+              <span
+                className="text-[8px] px-[6px] py-[1px] rounded-[3px]"
+                style={{
+                  ...MONO,
+                  background: side.grain === "with the grain" ? "#dcfce7" : "#fee2e2",
+                  color: side.grain === "with the grain" ? "#166534" : "#991b1b",
+                }}
+              >
+                {side.grain}
+              </span>
+            </div>
+            <div className="h-[64px] rounded-[5px]" style={{ background: side.shade }} />
+            <div className="flex flex-col gap-[5px]">
+              {side.metrics.map((m) => (
+                <div key={m.name} className="flex items-center gap-2">
+                  <span className="text-[8px] text-[#867f6f] w-[150px] shrink-0 text-right" style={MONO}>
+                    {m.name}
+                  </span>
+                  <div className="flex-1 h-[9px] bg-[#f0ede6] rounded-[2px] overflow-hidden">
+                    <div
+                      className="h-full rounded-[2px]"
+                      style={{
+                        width: `${m.value * 100}%`,
+                        background: m.good ? "#34d399" : "#f87171",
+                      }}
+                    />
+                  </div>
+                  <span className="text-[8px] text-[#867f6f] w-[30px] shrink-0" style={MONO}>
+                    {Math.round(m.value * 100)}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="text-[9px] text-[#8a8374] text-center leading-[1.5]" style={MONO}>
+        identical sentence structure, n=50 each, full 2×2 grid (race × gender) so the direction
+        effect decomposes · green = should be high · red = should be low
+      </p>
+    </div>
+  );
+}
+
+// ─── Tool 12b — Attention swap pair ─────────────────────────────────────────
 
 function AttentionSwapPair() {
   return (
@@ -444,7 +523,18 @@ export function Layer3() {
         </ToolCard>
 
         <ToolCard
-          num="12"
+          num="12a"
+          name="Directional fidelity — the model works better with the grain"
+          type="Comparison"
+          description="Same sentence structure, opposite assumption directions: 'a white male doctor' vs 'a Nigerian female doctor'. Error rates rise when the prompt fights the default."
+          explanation="Fidelity is measured, not judged: how often the requested attributes actually appear (FairFace), how often off-prompt errors occur (VQA + object detection), how often face detection fails. Against-the-grain prompts pay an error tax — the model doesn't refuse, it just quietly does worse. Aesthetic scores drop too, which is expected by construction: the aesthetic filter is part of the worldview being fought."
+          fullWidth
+        >
+          <DirectionalFidelity />
+        </ToolCard>
+
+        <ToolCard
+          num="12b"
           name="Causal attribution — attention swap pair"
           type="Image pair"
           description="Original compositional failure alongside the corrected output after forcing cross-attention maps to swap mid-generation via Prompt-to-Prompt — proves attention routing is the causal mechanism."

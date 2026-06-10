@@ -331,8 +331,10 @@ function PromptBuilder() {
   return (
     <div className="p-3 flex flex-col gap-3">
       <p className="text-[12px] text-[#555] leading-[1.6]">
-        Build a prompt from the slots below. For every combination we generated <b>50 images</b>{" "}
-        — the bar shows <b>how many of them depict a man</b>. Watch what each small change does.
+        None of these changes should matter. <i>"A photo of a doctor"</i> means the same as{" "}
+        <i>"a doctor"</i>. A minivan says nothing about a person. For every combination we
+        generated <b>50 images</b> — the bar shows <b>how many depict a man</b>. Watch how much
+        meaning the model finds in changes that have none.
       </p>
 
       {/* The sentence with slots */}
@@ -446,10 +448,10 @@ export function Layer4() {
 
         <ToolCard
           num="16"
-          name="Prompt builder — every word is a slot"
+          name="No neutral words — meaningless edits, measurable shifts"
           type="Interactive"
-          description={`Same sentence, swappable slots: format ("doctor" / "a doctor" / "a photo of a doctor"), occupation, optional object. Watch the distribution move with each swap.`}
-          explanation="Two findings in one widget. First, even the sentence format triggers assumptions — 'a photo of a nurse' skews more female than 'a nurse' alone. Second, adding an object with no demographic meaning ('next to a minivan') still steers who gets generated. Nothing in the prompt said anything about gender; the associations did the work."
+          description="Swap slots that carry no demographic meaning — the sentence format, a background object — and the distribution moves anyway. The point is not to build a prompt; it is that there is nothing neutral to build it from."
+          explanation="Every slot here is semantically empty with respect to the person: 'a photo of a' adds no information, a minivan describes a car. Yet each swap shifts who appears, because the model reads every word through its learned associations. This is the project's claim in miniature: the prompt is never the whole input — it is always evaluated inside the model's worldview, and that worldview leaks through even the words that say nothing."
           fullWidth
         >
           <PromptBuilder />
