@@ -200,9 +200,7 @@ function TimestepSlider() {
       {/* Image viewer for cultural pairs; colour-swatch strip for others */}
       {zoomedSrc && <Lightbox src={zoomedSrc} onClose={() => setZoomedSrc(null)} />}
 
-      {/* All pairs now have images */}
-      {true ? (
-        <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3">
           {/* Two images side by side */}
           <div className="flex gap-3 items-start">
             <div className="flex-1 flex flex-col gap-[5px]">
@@ -277,8 +275,7 @@ function TimestepSlider() {
           <p className="text-[9px] text-[#8a8374] text-center" style={MONO}>
             drag slider to change swap step · green = B wins · red = A locked in · click images to enlarge
           </p>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
