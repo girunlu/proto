@@ -9,13 +9,24 @@ const MONO = { fontFamily: "'JetBrains Mono', monospace" };
 // attribute-override prompt (B). If the output still shows A's default,
 // the assumption was already locked in before step k.
 
+// Only pairs with real generated swap images — demographic pairs removed pending Phase 2
 const SWAP_PAIRS = [
-  { base: "a doctor",              override: "a female doctor",         kind: "gender"    },
-  { base: "a nurse",               override: "a male nurse",            kind: "gender"    },
-  { base: "a wedding in Nigeria",  override: "a wedding in USA",        kind: "culture"   },
-  { base: "a red car",             override: "a blue car",              kind: "attribute" },
-  { base: "a breakfast in Nigeria",override: "a breakfast in Germany",  kind: "culture"   },
-  { base: "a breakfast in Japan",  override: "a breakfast in Russia",   kind: "culture"   },
+  {
+    base: "a wedding in Nigeria",   override: "a wedding in USA",       kind: "culture",
+    // tokens: shared (grey) and changed (highlighted)
+    sharedTokens: ["a", "wedding", "in"],
+    fromToken: "Nigeria", toToken: "United States",
+  },
+  {
+    base: "a breakfast in Nigeria", override: "a breakfast in Germany", kind: "culture",
+    sharedTokens: ["a", "breakfast", "in"],
+    fromToken: "Nigeria", toToken: "Germany",
+  },
+  {
+    base: "a breakfast in Japan",   override: "a breakfast in Russia",  kind: "culture",
+    sharedTokens: ["a", "breakfast", "in"],
+    fromToken: "Japan", toToken: "Russia",
+  },
 ];
 
 // Step keys used for swap images
@@ -26,62 +37,40 @@ const STEP_NAMES = ["step_01", "step_05", "step_10", "step_15", "step_25"] as co
 // Pairs 2, 4, 5 — real data from lockup_curve.json; real swap images in public/images/swaps/.
 //   originImg: the prompt-A image (no swap, seed_00, CFG 7)
 //   swapImgs:  swap output at each step k (seed_00, illustration only)
+// Seeds available per swap: s00 (no suffix), s01, s02
+const SWAP_SEED_SUFFIXES = ["", "_s01", "_s02"] as const;
+
 const PAIR_CURVES = [
-  { // pair 0: a doctor → a female doctor (placeholder)
-    k: [0, 4, 8, 12, 16, 20, 24],
-    p:     [0.97, 0.91, 0.72, 0.48, 0.21, 0.07, 0.02],
-    ci_lo: [0.84, 0.78, 0.59, 0.35, 0.08, 0.00, 0.00],
-    ci_hi: [1.00, 1.00, 0.85, 0.61, 0.34, 0.14, 0.05],
-    lockInIdx: 3, lockInLabel: "lock-in k≈12 (placeholder)",
-    originImg: null as string | null, swapImgs: null as string[] | null,
-  },
-  { // pair 1: a nurse → a male nurse (placeholder)
-    k: [0, 4, 8, 12, 16, 20, 24],
-    p:     [0.97, 0.91, 0.72, 0.48, 0.21, 0.07, 0.02],
-    ci_lo: [0.84, 0.78, 0.59, 0.35, 0.08, 0.00, 0.00],
-    ci_hi: [1.00, 1.00, 0.85, 0.61, 0.34, 0.14, 0.05],
-    lockInIdx: 3, lockInLabel: "lock-in k≈12 (placeholder)",
-    originImg: null as string | null, swapImgs: null as string[] | null,
-  },
-  { // pair 2: wedding Nigeria→USA — REAL DATA
+  { // pair 0: wedding Nigeria→USA — REAL DATA
     k: [1, 5, 10, 15, 25],
     p:     [1.000, 1.000, 0.333, 0.000, 0.000],
     ci_lo: [1.000, 1.000, 0.083, 0.000, 0.000],
     ci_hi: [1.000, 1.000, 0.583, 0.000, 0.000],
     lockInIdx: 1, lockInLabel: "lock-in k≈7–10",
-    originImg: "/images/cultural/wedding_nigeria.png",
-    swapImgs:  STEP_NAMES.map(s => `/images/swaps/wedding_NG_to_US_${s}.png`),
+    originImgBase: "/images/cultural/wedding_nigeria",
+    swapImgBase:   (s: string) => STEP_NAMES.map(step => `/images/swaps/wedding_NG_to_US_${step}${s}.png`),
   },
-  { // pair 3: a red car → a blue car (placeholder)
-    k: [0, 4, 8, 12, 16, 20, 24],
-    p:     [0.97, 0.91, 0.72, 0.48, 0.21, 0.07, 0.02],
-    ci_lo: [0.84, 0.78, 0.59, 0.35, 0.08, 0.00, 0.00],
-    ci_hi: [1.00, 1.00, 0.85, 0.61, 0.34, 0.14, 0.05],
-    lockInIdx: 3, lockInLabel: "lock-in k≈12 (placeholder)",
-    originImg: null as string | null, swapImgs: null as string[] | null,
-  },
-  { // pair 4: breakfast Nigeria→Germany — REAL DATA
+  { // pair 1: breakfast Nigeria→Germany — REAL DATA
     k: [1, 5, 10, 15, 25],
     p:     [1.000, 1.000, 0.917, 0.667, 0.167],
     ci_lo: [1.000, 1.000, 0.750, 0.417, 0.000],
     ci_hi: [1.000, 1.000, 1.000, 0.917, 0.417],
     lockInIdx: 3, lockInLabel: "lock-in k≈18–22",
-    originImg: "/images/cultural/breakfast_nigeria.png",
-    swapImgs:  STEP_NAMES.map(s => `/images/swaps/breakfast_NG_to_DE_${s}.png`),
+    originImgBase: "/images/cultural/breakfast_nigeria",
+    swapImgBase:   (s: string) => STEP_NAMES.map(step => `/images/swaps/breakfast_NG_to_DE_${step}${s}.png`),
   },
-  { // pair 5: breakfast Japan→Russia — REAL DATA (weak pair)
+  { // pair 2: breakfast Japan→Russia — REAL DATA (weak pair)
     k: [1, 5, 10, 15, 25],
     p:     [1.000, 1.000, 0.333, 0.083, 0.000],
     ci_lo: [1.000, 1.000, 0.083, 0.000, 0.000],
     ci_hi: [1.000, 1.000, 0.583, 0.250, 0.000],
     lockInIdx: 2, lockInLabel: "lock-in k≈7–10 (weak pair)",
-    originImg: "/images/cultural/breakfast_japan.png",
-    swapImgs:  STEP_NAMES.map(s => `/images/swaps/breakfast_JP_to_RU_${s}.png`),
+    originImgBase: "/images/cultural/breakfast_japan",
+    swapImgBase:   (s: string) => STEP_NAMES.map(step => `/images/swaps/breakfast_JP_to_RU_${step}${s}.png`),
   },
 ];
 
-// Legacy globals kept for the TimestepSlider frame-colour animation (pair 0 default)
-const K_VALUES = PAIR_CURVES[0].k;
+const K_VALUES = PAIR_CURVES[0].k;       // ponytail: used only by colour-swatch path (now dead)
 const LOCK_IN_IDX = PAIR_CURVES[0].lockInIdx;
 
 const BASE_SHADES: [number, number, number][] = [
@@ -152,14 +141,18 @@ function LockInCurve({ pairIdx }: { pairIdx: number }) {
 function TimestepSlider() {
   const [pairIdx, setPairIdx] = useState(0);
   const [kIdx, setKIdx] = useState(0);
+  const [seedIdx, setSeedIdx] = useState(0);
   const [zoomedSrc, setZoomedSrc] = useState<string | null>(null);
 
   const pair = SWAP_PAIRS[pairIdx];
   const baseShade = BASE_SHADES[pairIdx];
   const overrideShade = OVERRIDE_SHADES[pairIdx];
-  const activeCurve = PAIR_CURVES[pairIdx];
-  const activeKValues = activeCurve.k;
+  const activeCurve    = PAIR_CURVES[pairIdx];
+  const activeKValues  = activeCurve.k;
   const activeLockInIdx = activeCurve.lockInIdx;
+  const seedSuffix     = SWAP_SEED_SUFFIXES[seedIdx];
+  const originImg      = `${activeCurve.originImgBase}${seedIdx === 0 ? "" : `_0${seedIdx}`}.png`;
+  const swapImgs       = activeCurve.swapImgBase(seedSuffix);
 
   const getFrameColor = (i: number) => {
     if (i >= activeLockInIdx) return `rgb(${baseShade[0]},${baseShade[1]},${baseShade[2]})`;
@@ -176,7 +169,7 @@ function TimestepSlider() {
         {SWAP_PAIRS.map((p, i) => (
           <button
             key={p.base}
-            onClick={() => { setPairIdx(i); setKIdx(0); }}
+            onClick={() => { setPairIdx(i); setKIdx(0); setSeedIdx(0); }}
             className="text-[10px] px-[8px] py-[3px] rounded-[4px] border transition-colors"
             style={{
               ...MONO,
@@ -190,17 +183,25 @@ function TimestepSlider() {
         ))}
       </div>
 
-      <p className="text-[11px] text-[#666] leading-[1.5]">
-        Denoising starts with <b>"{pair.base}"</b>. At step k we change the prompt to{" "}
-        <b>"{pair.override}"</b> and keep going. If the output still shows the default{" "}
-        <b>{pair.kind}</b>, the assumption was locked in before the change arrived — the same
-        probe works for gender, culture, or any other attribute.
-      </p>
+      {/* Tokenized prompt display */}
+      <div className="flex flex-wrap gap-[4px] items-center">
+        <span className="text-[9px] text-[#8a8374]" style={MONO}>start:</span>
+        {pair.sharedTokens.map((w, i) => (
+          <span key={i} className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#f0ede6] text-[#555] border border-[#d0cdc6]" style={MONO}>{w}</span>
+        ))}
+        <span className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#fef3c7] text-[#92400e] border border-[#fbbf24] font-semibold" style={MONO}>{pair.fromToken}</span>
+        <span className="text-[9px] text-[#8a8374] mx-1" style={MONO}>→ at step k →</span>
+        {pair.sharedTokens.map((w, i) => (
+          <span key={i} className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#f0ede6] text-[#555] border border-[#d0cdc6]" style={MONO}>{w}</span>
+        ))}
+        <span className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#d1fae5] text-[#064e3b] border border-[#34d399] font-semibold" style={MONO}>{pair.toToken}</span>
+      </div>
 
       {/* Image viewer for cultural pairs; colour-swatch strip for others */}
       {zoomedSrc && <Lightbox src={zoomedSrc} onClose={() => setZoomedSrc(null)} />}
 
-      {activeCurve.swapImgs ? (
+      {/* All pairs now have images */}
+      {true ? (
         <div className="flex flex-col gap-3">
           {/* Two images side by side */}
           <div className="flex gap-3 items-start">
@@ -209,11 +210,11 @@ function TimestepSlider() {
                 prompt A — no swap
               </span>
               <img
-                src={activeCurve.originImg!}
+                src={originImg}
                 alt="prompt A original"
                 className="w-full rounded-[6px] object-cover hover:opacity-90 transition-opacity"
                 style={{ aspectRatio: "1 / 1", cursor: "zoom-in" }}
-                onClick={() => setZoomedSrc(activeCurve.originImg!)}
+                onClick={() => setZoomedSrc(originImg)}
               />
               <span className="text-[9px] text-[#555] text-center truncate" style={MONO}>
                 "{pair.base}"
@@ -225,11 +226,11 @@ function TimestepSlider() {
                 swapped at k={activeKValues[kIdx]} → prompt B
               </span>
               <img
-                src={activeCurve.swapImgs[kIdx]}
+                src={swapImgs[kIdx]}
                 alt={`swap at step ${activeKValues[kIdx]}`}
                 className="w-full rounded-[6px] object-cover transition-all duration-200 hover:opacity-90"
                 style={{ aspectRatio: "1 / 1", outline: kIdx <= activeLockInIdx ? "2px solid #34d399" : "2px solid #ef4444", outlineOffset: "2px", cursor: "zoom-in" }}
-                onClick={() => setZoomedSrc(activeCurve.swapImgs![kIdx])}
+                onClick={() => setZoomedSrc(swapImgs[kIdx])}
               />
               <span className="text-[9px] text-center truncate" style={{ ...MONO, color: kIdx <= activeLockInIdx ? "#059669" : "#dc2626" }}>
                 {kIdx <= activeLockInIdx ? "✓ B wins — swap worked" : "✗ A locked in — too late"}
@@ -255,60 +256,27 @@ function TimestepSlider() {
             </Slider.Track>
             <Slider.Thumb className="block w-4 h-4 rounded-full shadow-sm border" style={{ background: "#fff", borderColor: "#818cf8" }} />
           </Slider.Root>
+          {/* Seed navigator */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSeedIdx(Math.max(0, seedIdx - 1))}
+              disabled={seedIdx === 0}
+              className="text-[10px] px-[8px] py-[2px] rounded-[3px] border disabled:opacity-30 transition-colors"
+              style={{ ...MONO, borderColor: "#d0cdc6", color: "#555" }}
+            >←</button>
+            <span className="text-[9px] text-[#8a8374] flex-1 text-center" style={MONO}>
+              seed {seedIdx + 1} / {SWAP_SEED_SUFFIXES.length} — use multiple seeds to see the pattern holds
+            </span>
+            <button
+              onClick={() => setSeedIdx(Math.min(SWAP_SEED_SUFFIXES.length - 1, seedIdx + 1))}
+              disabled={seedIdx === SWAP_SEED_SUFFIXES.length - 1}
+              className="text-[10px] px-[8px] py-[2px] rounded-[3px] border disabled:opacity-30 transition-colors"
+              style={{ ...MONO, borderColor: "#d0cdc6", color: "#555" }}
+            >→</button>
+          </div>
           <p className="text-[9px] text-[#8a8374] text-center" style={MONO}>
-            drag to change swap step · green outline = B wins · red = A locked in · seed 00, illustration only
+            drag slider to change swap step · green = B wins · red = A locked in · click images to enlarge
           </p>
-        </div>
-      ) : (
-        <div className="flex gap-5 items-start">
-          {/* Left: colour-swatch strip + slider (placeholder for non-image pairs) */}
-          <div className="flex-[3] flex flex-col gap-3">
-            <div className="flex gap-[4px] items-end">
-              {activeKValues.map((k, i) => (
-                <div
-                  key={k}
-                  className="flex-1 rounded-[4px] flex flex-col items-center justify-end pb-[5px] relative transition-all duration-200"
-                  style={{
-                    background: getFrameColor(i),
-                    height: `${58 + (i < activeLockInIdx ? (activeLockInIdx - i) * 4 : 0)}px`,
-                    opacity: i === kIdx ? 1 : 0.6,
-                    outline: i === kIdx ? "2px solid #818cf8" : "none",
-                    outlineOffset: "1px",
-                  }}
-                >
-                  {i === activeLockInIdx && (
-                    <span className="absolute -top-[16px] left-0 right-0 text-center text-[8px] text-[#ef4444]" style={MONO}>
-                      lock-in ↓
-                    </span>
-                  )}
-                  <span className="text-[8px]" style={{ color: "rgba(255,255,255,0.7)", ...MONO }}>
-                    k={k}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <Slider.Root
-              className="relative flex items-center select-none touch-none h-5"
-              min={0}
-              max={activeKValues.length - 1}
-              step={1}
-              value={[kIdx]}
-              onValueChange={([v]) => setKIdx(v)}
-            >
-              <Slider.Track className="relative h-[3px] flex-1 rounded-full" style={{ background: "#e0ddd6" }}>
-                <Slider.Range className="absolute h-full rounded-full" style={{ background: "#818cf8" }} />
-              </Slider.Track>
-              <Slider.Thumb className="block w-4 h-4 rounded-full shadow-sm border" style={{ background: "#fff", borderColor: "#818cf8" }} />
-            </Slider.Root>
-            <p className="text-[9px] text-[#8a8374] text-center" style={MONO}>
-              left of lock-in: "{pair.override}" still wins · right: too late, default locked · single seed, illustration only
-            </p>
-          </div>
-
-          {/* Right: flip-probability curve (evidence) */}
-          <div className="flex-[2] pt-1">
-            <LockInCurve pairIdx={pairIdx} />
-          </div>
         </div>
       )}
     </div>

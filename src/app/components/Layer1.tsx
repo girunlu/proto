@@ -95,101 +95,80 @@ function SimilarityHeatmap() {
 // Toker et al. 2024 decode the FULL prompt representation at each text-encoder
 // layer into an image. Per-token attribution is DAAM's job, not this tool's.
 
+// Real Diffusion Lens outputs — SD 2.1 text encoder (OpenCLIP ViT-H/14, 24 layers)
+// cumavg(k) = mean(hidden_states[1..k]) decoded through the SD 2.1 UNet
+// Layers 13/18/23 show early→late cultural representation forming
+
 const LENS_PROMPTS = [
-  "a photo of a doctor",
-  "a photo of a nurse",
-  "a CEO at a board meeting",
-  "a beautiful person",
-  "a wedding",
-  "a breakfast table",
+  { id: "wedding_default",   label: "a wedding",              slug: "wedding_default"   },
+  { id: "wedding_nigeria",   label: "a wedding in Nigeria",   slug: "wedding_nigeria"   },
+  { id: "wedding_japan",     label: "a wedding in Japan",     slug: "wedding_japan"     },
+  { id: "breakfast_default", label: "a breakfast",            slug: "breakfast_default" },
+  { id: "breakfast_nigeria", label: "a breakfast in Nigeria", slug: "breakfast_nigeria" },
+  { id: "breakfast_japan",   label: "a breakfast in Japan",   slug: "breakfast_japan"   },
 ];
 
-const CLIP_LAYERS = [1, 4, 8, 11, 12];
-const LAYER_NOTES = [
-  "word-level features — barely an image",
-  "rough objects emerge",
-  "scene composition settles",
-  "style, identity & demographics appear",
-  "final conditioning — what SD actually receives",
+const LENS_LAYERS = [13, 18, 23];
+const LENS_LAYER_NOTES = [
+  "layer 13 / 24 — mid-encoder, rough semantics forming",
+  "layer 18 / 24 — late encoder, style and cultural content emerging",
+  "layer 23 / 24 — final layer, what SD actually conditions on",
 ];
 
 function DiffusionLens() {
-  const [prompt, setPrompt] = useState(LENS_PROMPTS[0]);
+  const [promptId, setPromptId] = useState(LENS_PROMPTS[0].id);
   const [layerIdx, setLayerIdx] = useState(2);
 
-  const promptHue = (LENS_PROMPTS.indexOf(prompt) * 47 + 210) % 360;
-
-  const getGradient = (i: number) => {
-    const alpha = 0.2 + (i / (CLIP_LAYERS.length - 1)) * 0.55;
-    return `linear-gradient(135deg, hsla(${promptHue},45%,60%,${alpha}), hsla(${(promptHue + 30) % 360},40%,42%,${alpha + 0.18}))`;
-  };
+  const current = LENS_PROMPTS.find(p => p.id === promptId) ?? LENS_PROMPTS[0];
 
   return (
     <div className="p-3 flex flex-col gap-3">
-      {/* Prompt picker — precomputed set only */}
       <div className="flex gap-2 items-center">
-        <span className="text-[9px] text-[#8a8374] shrink-0" style={MONO}>
-          prompt:
-        </span>
+        <span className="text-[9px] text-[#8a8374] shrink-0" style={MONO}>prompt:</span>
         <select
-          value={prompt}
-          onChange={(e) => {
-            setPrompt(e.target.value);
-            setLayerIdx(2);
-          }}
+          value={promptId}
+          onChange={(e) => { setPromptId(e.target.value); setLayerIdx(2); }}
           className="flex-1 text-[11px] border border-[#d8d4cb] rounded-[4px] px-2 py-[5px] bg-white focus:outline-none focus:border-[#818cf8] transition-colors"
           style={MONO}
         >
-          {LENS_PROMPTS.map((p) => (
-            <option key={p}>{p}</option>
-          ))}
+          {LENS_PROMPTS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
         </select>
-        <span className="text-[9px] text-[#a39d8e] shrink-0" style={MONO}>
-          precomputed
-        </span>
       </div>
 
       <p className="text-[11px] text-[#666] leading-[1.5]">
-        The <b>whole prompt's</b> representation, pulled out of the text encoder at five depths
-        and decoded into an image. One prompt, five snapshots of it being understood — click a
-        layer.
+        The full prompt's representation pulled from the text encoder at three depths and decoded
+        into an image — one prompt, three snapshots of it being understood. Click a layer.
       </p>
 
-      {/* Layer image strip — click to select */}
+      {/* Layer strip — real images */}
       <div className="flex gap-[5px]">
-        {CLIP_LAYERS.map((layer, i) => (
+        {LENS_LAYERS.map((layer, i) => (
           <button
             key={layer}
             onClick={() => setLayerIdx(i)}
             className="flex-1 flex flex-col gap-[4px] cursor-pointer bg-transparent border-0 p-0"
           >
-            <div
-              className="rounded-[5px] flex items-end justify-center pb-[6px] transition-all duration-300"
+            <img
+              src={`/images/difflens/${current.slug}_layer${layer}.png`}
+              alt={`layer ${layer}`}
+              className="w-full rounded-[5px] object-cover transition-all duration-200"
               style={{
-                background: getGradient(i),
-                height: "78px",
-                outline: layerIdx === i ? "2px solid #818cf8" : "none",
-                outlineOffset: "1px",
-                opacity: layerIdx === i ? 1 : 0.75,
+                aspectRatio: "1 / 1",
+                outline: layerIdx === i ? "2px solid #818cf8" : "2px solid transparent",
+                outlineOffset: "2px",
+                opacity: layerIdx === i ? 1 : 0.6,
               }}
-            >
-              <span className="text-[8px]" style={{ color: "rgba(255,255,255,0.8)", ...MONO }}>
-                L{layer}
-              </span>
-            </div>
-            <span
-              className="text-[8px] text-center transition-colors"
-              style={{ ...MONO, color: layerIdx === i ? "#4f46e5" : "#8a8374" }}
-            >
+            />
+            <span className="text-[8px] text-center transition-colors"
+              style={{ ...MONO, color: layerIdx === i ? "#4f46e5" : "#8a8374" }}>
               layer {layer}
             </span>
           </button>
         ))}
       </div>
 
-      {/* Note for the selected layer */}
-      <p className="text-[10px] text-center font-medium" style={{ ...MONO, color: "#4f46e5" }}>
-        L{CLIP_LAYERS[layerIdx]}: {LAYER_NOTES[layerIdx]}
+      <p className="text-[10px] font-medium" style={{ ...MONO, color: "#4f46e5" }}>
+        {LENS_LAYER_NOTES[layerIdx]}
       </p>
     </div>
   );

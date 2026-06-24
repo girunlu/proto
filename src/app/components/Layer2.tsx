@@ -34,6 +34,50 @@ function EmptyPrompt() {
 
 // ─── Tool 05 — CFG stability ────────────────────────────────────────────────
 
+// Cultural CFG strip — "a wedding" at each CFG value (real images, seed 00)
+const CFG_VALUES_CULTURAL = [1, 4, 7, 12, 15];
+
+function CFGCulturalStrip() {
+  const [cfgIdx, setCfgIdx] = useState(2); // default to cfg=7
+  const mono = { fontFamily: "'JetBrains Mono', monospace" };
+  return (
+    <div className="p-3 flex flex-col gap-3">
+      <p className="text-[11px] text-[#666] leading-[1.5]">
+        "a wedding" generated at five guidance scale values — same seed, same scheduler.
+        The cultural default is stable across the full CFG range.
+      </p>
+      <div className="flex gap-[5px]">
+        {CFG_VALUES_CULTURAL.map((cfg, i) => (
+          <button
+            key={cfg}
+            onClick={() => setCfgIdx(i)}
+            className="flex-1 flex flex-col gap-[4px] cursor-pointer bg-transparent border-0 p-0"
+          >
+            <img
+              src={`/images/cfg/wedding_cfg${cfg}.png`}
+              alt={`cfg=${cfg}`}
+              className="w-full rounded-[5px] object-cover transition-all duration-200"
+              style={{
+                aspectRatio: "1 / 1",
+                outline: cfgIdx === i ? "2px solid #92400e" : "2px solid transparent",
+                outlineOffset: "2px",
+                opacity: cfgIdx === i ? 1 : 0.6,
+              }}
+            />
+            <span className="text-[9px] text-center transition-colors"
+              style={{ ...mono, color: cfgIdx === i ? "#92400e" : "#8a8374" }}>
+              cfg={cfg}
+            </span>
+          </button>
+        ))}
+      </div>
+      <p className="text-[8px] text-[#a39d8e]" style={mono}>
+        SD 2.1 · DDIM · seed 00 · 768×768 · single seed, illustration only
+      </p>
+    </div>
+  );
+}
+
 const CFG_LEVELS = [1, 3, 7, 15];
 const CFG_PROMPTS = ["a doctor", "a CEO", "a nurse", "a scientist"];
 
@@ -156,9 +200,18 @@ export function Layer2() {
           type="Interactive"
           description="Select a guidance scale and watch the FairFace gender distribution per occupation barely move — 30 seeds per CFG level, so the bars are evidence, not anecdote."
           explanation="A natural intuition says stronger guidance means the prompt 'wins' over the prior. The distributions show otherwise: from cfg=1 to cfg=15 the demographic skew stays essentially constant — if anything it sharpens slightly. The prompt never specified a demographic, so there is nothing for guidance to enforce; the gap is filled by the prior at every strength. You cannot parameter-tweak your way out of an assumption."
-          fullWidth
         >
           <CFGStability />
+        </ToolCard>
+
+        <ToolCard
+          num="05b"
+          name="CFG stability — cultural version"
+          type="Image strip"
+          description='"a wedding" generated at CFG 1 / 4 / 7 / 12 / 15 — same seed throughout. The cultural default is stable across the full guidance range. Click a CFG value to inspect.'
+          explanation="The Western wedding coding persists regardless of how strongly the model follows the prompt — because the prompt says nothing about culture, only about the event type. The assumption is pre-text: it lives in the denoising prior, not in guidance arithmetic."
+        >
+          <CFGCulturalStrip />
         </ToolCard>
       </ToolsGrid>
     </Section>

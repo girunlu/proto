@@ -160,24 +160,30 @@ const CULTURAL_LOCATIONS = [
   { id: "japan",   label: "in Japan" },
 ];
 
+const CULTURAL_SEEDS = [
+  { suffix: "",    label: "seed 00" },
+  { suffix: "_01", label: "seed 01" },
+  { suffix: "_02", label: "seed 02" },
+];
+
 function CulturalGrid({ sitId, onZoom }: { sitId: string; onZoom: (src: string) => void }) {
+  const [seedIdx, setSeedIdx] = useState(0);
+  const seed = CULTURAL_SEEDS[seedIdx];
+
   return (
     <div className="p-3 flex flex-col gap-3">
       <div className="flex gap-[6px]">
         {CULTURAL_LOCATIONS.map((loc) => {
-          const src = `/images/cultural/${sitId}_${loc.id}.png`;
+          const src = `/images/cultural/${sitId}_${loc.id}${seed.suffix}.png`;
           return (
             <div key={loc.id} className="flex-1 flex flex-col gap-[4px]">
-              <span
-                className="text-[9px] text-[#555] text-center font-semibold bg-[#f0ede6] rounded-[3px] py-[2px]"
-                style={MONO}
-              >
+              <span className="text-[9px] text-[#555] text-center font-semibold bg-[#f0ede6] rounded-[3px] py-[2px]" style={MONO}>
                 {loc.label}
               </span>
               <img
                 src={src}
                 alt={`${sitId} ${loc.label}`}
-                className="w-full rounded-[4px] object-cover transition-opacity hover:opacity-90"
+                className="w-full rounded-[4px] object-cover hover:opacity-90 transition-opacity"
                 style={{ aspectRatio: "1 / 1", cursor: "zoom-in" }}
                 onClick={() => onZoom(src)}
               />
@@ -185,8 +191,26 @@ function CulturalGrid({ sitId, onZoom }: { sitId: string; onZoom: (src: string) 
           );
         })}
       </div>
-      <p className="text-[8px] text-[#a39d8e] leading-[1.4]" style={MONO}>
-        SD 2.1 · DDIM · CFG 7.5 · seed 00 · click any image to enlarge
+      {/* Seed navigator */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setSeedIdx(Math.max(0, seedIdx - 1))}
+          disabled={seedIdx === 0}
+          className="text-[10px] px-[8px] py-[2px] rounded-[3px] border transition-colors disabled:opacity-30"
+          style={{ ...MONO, borderColor: "#d0cdc6", color: "#555" }}
+        >←</button>
+        <span className="text-[9px] text-[#867f6f] flex-1 text-center" style={MONO}>
+          {seed.label} / {CULTURAL_SEEDS.length - 1}  — drag to verify pattern holds across seeds
+        </span>
+        <button
+          onClick={() => setSeedIdx(Math.min(CULTURAL_SEEDS.length - 1, seedIdx + 1))}
+          disabled={seedIdx === CULTURAL_SEEDS.length - 1}
+          className="text-[10px] px-[8px] py-[2px] rounded-[3px] border transition-colors disabled:opacity-30"
+          style={{ ...MONO, borderColor: "#d0cdc6", color: "#555" }}
+        >→</button>
+      </div>
+      <p className="text-[8px] text-[#a39d8e]" style={MONO}>
+        SD 2.1 · DDIM · CFG 7 · click any image to enlarge
       </p>
     </div>
   );
@@ -239,24 +263,13 @@ function EmbeddingDistanceBars({ sitId }: { sitId: string }) {
       <div className="flex flex-col gap-[7px] mt-1">
         {rows.map((d) => {
           const pct = d.dist / maxDist;
-          const ciLoPct = d.ci_low / maxDist;
-          const ciHiPct = d.ci_high / maxDist;
           return (
             <div key={d.country} className="flex items-center gap-2">
               <span className="text-[9px] text-[#867f6f] w-[58px] text-right shrink-0" style={MONO}>
                 {d.country}
               </span>
-              <div className="flex-1 h-[12px] bg-[#f0ede6] rounded-[3px] overflow-visible relative">
-                {/* CI band */}
-                <div
-                  className="absolute top-0 h-full rounded-[3px] opacity-30"
-                  style={{ left: `${ciLoPct * 100}%`, width: `${(ciHiPct - ciLoPct) * 100}%`, background: "#059669" }}
-                />
-                {/* Mean bar */}
-                <div
-                  className="absolute top-0 h-full rounded-[3px]"
-                  style={{ width: `${pct * 100}%`, background: "#34d399" }}
-                />
+              <div className="flex-1 h-[12px] bg-[#f0ede6] rounded-[3px] overflow-hidden">
+                <div className="h-full rounded-[3px]" style={{ width: `${pct * 100}%`, background: "#34d399" }} />
               </div>
               <span className="text-[9px] text-[#867f6f] w-[28px]" style={MONO}>
                 {d.dist.toFixed(2)}
@@ -314,96 +327,174 @@ const CULTURAL_INTRASET: Record<string, { label: string; sim: number; isDefault:
 };
 
 function IntrasetBars({ sitId }: { sitId: string }) {
-  const rows = CULTURAL_INTRASET[sitId] ?? [];
+  const all = CULTURAL_INTRASET[sitId] ?? [];
+  const defaultSim = all.find(r => r.isDefault)?.sim ?? 0;
+  // compute relative change vs default, sort descending
+  const rows = all
+    .filter(r => !r.isDefault)
+    .map(r => ({ ...r, rate: (r.sim - defaultSim) / defaultSim }))
+    .sort((a, b) => b.rate - a.rate);
+
+  const maxAbs = Math.max(...rows.map(r => Math.abs(r.rate)), 0.01);
+
+  const barColor = (rate: number) => {
+    if (rate > 0.35) return "#ef4444";
+    if (rate > 0.10) return "#f59e0b";
+    if (rate > -0.05) return "#94a3b8";
+    return "#34d399";
+  };
 
   return (
     <div className="p-3 flex flex-col gap-2">
-      <div className="flex flex-col gap-[7px] mt-1">
-        {rows.map((r) => (
-          <div key={r.label} className="flex items-center gap-2">
-            <span
-              className="text-[9px] w-[58px] text-right shrink-0"
-              style={{ ...MONO, color: r.isDefault ? "#4f46e5" : "#867f6f", fontWeight: r.isDefault ? 700 : 400 }}
-            >
-              {r.label}
-            </span>
-            <div className="flex-1 h-[12px] bg-[#f0ede6] rounded-[3px] overflow-hidden">
-              <div
-                className="h-full rounded-[3px]"
-                style={{
-                  width: `${r.sim * 100}%`,
-                  background: r.isDefault ? "#818cf8" : r.sim > 0.65 ? "#ef4444" : r.sim > 0.5 ? "#f59e0b" : "#34d399",
-                }}
-              />
+      <p className="text-[10px] text-[#555] leading-[1.5]">
+        Relative change in output diversity vs the unqualified default.
+        <b style={{ color: "#ef4444" }}> Positive = more stereotyped</b> than
+        "{CULTURAL_SITUATIONS.find(s => s.id === sitId)?.label}".
+        <b style={{ color: "#34d399" }}> Negative = more diverse</b>.
+      </p>
+      <div className="flex flex-col gap-[6px]">
+        {rows.map((r) => {
+          const pct = Math.abs(r.rate) / maxAbs;
+          const isPos = r.rate >= 0;
+          return (
+            <div key={r.label} className="flex items-center gap-2">
+              <span className="text-[9px] text-[#867f6f] w-[58px] text-right shrink-0" style={MONO}>
+                {r.label}
+              </span>
+              <div className="flex-1 h-[12px] bg-[#f0ede6] rounded-[3px] overflow-hidden relative">
+                {/* zero line at midpoint */}
+                <div className="absolute top-0 bottom-0 w-[1px] bg-[#c4bfb8]" style={{ left: "0%" }} />
+                <div
+                  className="absolute top-[1px] bottom-[1px] rounded-[2px]"
+                  style={{
+                    left: isPos ? "0%" : `${(1 - pct) * 100}%`,
+                    width: `${pct * 100}%`,
+                    background: barColor(r.rate),
+                  }}
+                />
+              </div>
+              <span className="text-[9px] w-[38px] text-right shrink-0"
+                style={{ ...MONO, color: barColor(r.rate) }}>
+                {r.rate >= 0 ? "+" : ""}{(r.rate * 100).toFixed(0)}%
+              </span>
             </div>
-            <span className="text-[9px] text-[#867f6f] w-[28px]" style={MONO}>
-              {r.sim.toFixed(2)}
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </div>
-      <p className="text-[8px] text-[#a39d8e] mt-1 leading-[1.4]" style={MONO}>
-        Higher = more uniform output (more stereotyped). Red = high stereotyping.
-        <br />
-        DINOv2 mean pairwise cosine sim · n=50 seeds · sorted low→high
+      <p className="text-[8px] text-[#a39d8e] mt-1" style={MONO}>
+        (country_sim − default_sim) / default_sim · DINOv2 mean pairwise cosine · n=50 seeds
       </p>
     </div>
   );
 }
 
-// ─── Tool 11 — DAAM overlay ─────────────────────────────────────────────────
+// ─── Tool 11 — DAAM overlay (real cultural heatmaps) ────────────────────────
+// Each prompt has 1–2 token heatmaps saved under public/images/daam/
+// Format: daam_{situation}_{location}_{token}.png
 
-const DAAM_TOKENS = ["a", "red", "cube", "next", "to", "a", "blue", "sphere"];
+const DAAM_PROMPTS: { sitId: string; locId: string; label: string; tokens: string[]; notes: Record<string, string> }[] = [
+  {
+    sitId: "wedding", locId: "default", label: "a wedding",
+    tokens: ["wedding"],
+    notes: { wedding: '"wedding" activates the full scene — Western-coded by default' },
+  },
+  {
+    sitId: "wedding", locId: "nigeria", label: "a wedding in Nigeria",
+    tokens: ["wedding", "Nigeria"],
+    notes: {
+      wedding: '"wedding" still activates the event structure — shared with the default',
+      Nigeria: '"Nigeria" pulls attention to cultural markers: attire, colour, setting',
+    },
+  },
+  {
+    sitId: "breakfast", locId: "default", label: "a breakfast",
+    tokens: ["breakfast"],
+    notes: { breakfast: '"breakfast" activates the food/table scene — Western-coded by default' },
+  },
+  {
+    sitId: "breakfast", locId: "nigeria", label: "a breakfast in Nigeria",
+    tokens: ["breakfast", "Nigeria"],
+    notes: {
+      breakfast: '"breakfast" still drives the table structure',
+      Nigeria: '"Nigeria" pulls cultural specifics into the food and setting',
+    },
+  },
+  {
+    sitId: "breakfast", locId: "japan", label: "a breakfast in Japan",
+    tokens: ["breakfast", "Japan"],
+    notes: {
+      breakfast: '"breakfast" activates the scene structure',
+      Japan: '"Japan" redirects attention toward the aesthetic and food specifics',
+    },
+  },
+];
 
-const DAAM_MAPS: Record<string, { rgb: string; note: string; gradient: string }> = {
-  red: {
-    rgb: "239,68,68",
-    note: '"red" leaks onto the sphere too — attribute not bound to the cube',
-    gradient: "linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(239,68,68,0.70) 38%, rgba(239,68,68,0.55) 80%, rgba(239,68,68,0.1) 100%)",
-  },
-  cube: {
-    rgb: "245,158,11",
-    note: '"cube" attends mostly to the left object — shape binding mostly works',
-    gradient: "linear-gradient(135deg, rgba(245,158,11,0.65) 0%, rgba(245,158,11,0.5) 35%, rgba(245,158,11,0.06) 70%)",
-  },
-  blue: {
-    rgb: "59,130,246",
-    note: '"blue" splits across both objects — this is the bleed that recolors the cube',
-    gradient: "linear-gradient(135deg, rgba(59,130,246,0.55) 0%, rgba(59,130,246,0.08) 55%, rgba(59,130,246,0.6) 100%)",
-  },
-  sphere: {
-    rgb: "16,185,129",
-    note: '"sphere" is localized right — but inherits whatever color won the fight',
-    gradient: "linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(16,185,129,0.12) 45%, rgba(16,185,129,0.6) 100%)",
-  },
+const DAAM_COLORS: Record<string, string> = {
+  wedding: "239,68,68",
+  breakfast: "245,158,11",
+  Nigeria: "16,185,129",
+  Japan: "59,130,246",
+  Japan2: "99,102,241",
 };
 
-function DAAMOverlay() {
-  const [token, setToken] = useState("red");
-  const map = DAAM_MAPS[token];
+function DAAMOverlay({ onZoom }: { onZoom: (src: string) => void }) {
+  const [promptIdx, setPromptIdx] = useState(0);
+  const [token, setToken] = useState(DAAM_PROMPTS[0].tokens[0]);
+  const p = DAAM_PROMPTS[promptIdx];
+
+  const handlePrompt = (i: number) => {
+    setPromptIdx(i);
+    setToken(DAAM_PROMPTS[i].tokens[0]);
+  };
+
+  const imgSrc  = `/images/cultural/${p.sitId}_${p.locId}.png`;
+  const daamSrc = `/images/daam/${p.sitId}_${p.locId}_${token}.png`;
+  const rgb     = DAAM_COLORS[token] ?? "156,163,175";
+
+  // Build tokenised prompt chips
+  const words = p.label.split(" ");
 
   return (
-    <div className="p-3 flex flex-col gap-2">
-      {/* Word-by-word prompt — content tokens clickable */}
+    <div className="p-3 flex flex-col gap-3">
+      {/* Prompt selector */}
+      <div className="flex gap-[5px] flex-wrap">
+        {DAAM_PROMPTS.map((dp, i) => (
+          <button
+            key={dp.label}
+            onClick={() => handlePrompt(i)}
+            className="text-[10px] px-[8px] py-[3px] rounded-[4px] border transition-colors"
+            style={{
+              ...MONO,
+              background: promptIdx === i ? "#1e3a5f" : "#f5f4f0",
+              color:      promptIdx === i ? "#dbeafe" : "#555",
+              borderColor:promptIdx === i ? "#1e3a5f" : "#d0cdc6",
+            }}
+          >
+            {dp.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tokenised prompt — clickable tokens */}
       <div className="flex flex-wrap gap-[4px] items-center">
-        <span className="text-[9px] text-[#8a8374] mr-1" style={MONO}>
-          prompt:
-        </span>
-        {DAAM_TOKENS.map((w, i) => {
-          const clickable = w in DAAM_MAPS;
-          const active = clickable && token === w;
+        <span className="text-[9px] text-[#8a8374] mr-1" style={MONO}>tokens:</span>
+        {words.map((w, i) => {
+          const clickable = p.tokens.includes(w);
+          const active    = clickable && token === w;
+          const c         = DAAM_COLORS[w] ?? "156,163,175";
           return (
             <button
               key={i}
               onClick={() => clickable && setToken(w)}
               disabled={!clickable}
-              className="text-[10px] px-[7px] py-[2px] rounded-[3px] border transition-all"
+              className="text-[11px] px-[8px] py-[3px] rounded-[4px] border transition-all"
               style={{
                 ...MONO,
-                background: active ? `rgb(${map.rgb})` : clickable ? "#f0ede6" : "transparent",
-                color: active ? "#fff" : clickable ? "#555" : "#8a8374",
-                borderColor: active ? `rgb(${map.rgb})` : clickable ? "#e0ddd6" : "transparent",
-                cursor: clickable ? "pointer" : "default",
+                background:  active    ? `rgb(${c})` : clickable ? "#f0ede6" : "transparent",
+                color:       active    ? "#fff"       : clickable ? "#444"    : "#a39d8e",
+                borderColor: active    ? `rgb(${c})` : clickable ? "#d0cdc6" : "transparent",
+                cursor:      clickable ? "pointer"   : "default",
+                fontWeight:  clickable ? 600          : 400,
               }}
             >
               {w}
@@ -412,26 +503,123 @@ function DAAMOverlay() {
         })}
       </div>
 
-      <div className="flex gap-[8px] h-[120px]">
-        <div className="flex-1 rounded-[5px] bg-[#d0c8c0] relative">
-          <span className="absolute bottom-[5px] left-0 right-0 text-center text-[8px] text-[#867f6f]" style={MONO}>
-            generated image
-          </span>
+      {/* Generated image + DAAM heatmap side by side */}
+      <div className="flex gap-[8px]">
+        <div className="flex-1 flex flex-col gap-[4px]">
+          <span className="text-[8px] text-[#8a8374] text-center" style={MONO}>generated image</span>
+          <img
+            src={imgSrc}
+            alt={p.label}
+            className="w-full rounded-[5px] object-cover hover:opacity-90 transition-opacity"
+            style={{ aspectRatio: "1/1", cursor: "zoom-in" }}
+            onClick={() => onZoom(imgSrc)}
+          />
         </div>
-        <div
-          className="flex-1 rounded-[5px] border border-dashed border-[#f0ede6] relative transition-all duration-300"
-          style={{ background: map.gradient }}
-        >
-          <span
-            className="absolute bottom-[5px] left-0 right-0 text-center text-[8px]"
-            style={{ color: `rgba(${map.rgb},0.95)`, ...MONO }}
-          >
-            heatmap: "{token}"
+        <div className="flex-1 flex flex-col gap-[4px]">
+          <span className="text-[8px] text-center" style={{ ...MONO, color: `rgb(${rgb})` }}>
+            DAAM heatmap: "{token}"
           </span>
+          <img
+            src={daamSrc}
+            alt={`daam ${token}`}
+            className="w-full rounded-[5px] object-cover hover:opacity-90 transition-opacity"
+            style={{ aspectRatio: "1/1", cursor: "zoom-in" }}
+            onClick={() => onZoom(daamSrc)}
+          />
         </div>
       </div>
-      <p className="text-[9px] text-center transition-colors" style={{ ...MONO, color: `rgba(${map.rgb},0.85)` }}>
-        {map.note}
+
+      <p className="text-[9px] leading-[1.4]" style={{ ...MONO, color: `rgb(${rgb})` }}>
+        {p.notes[token] ?? ""}
+      </p>
+      <p className="text-[8px] text-[#a39d8e]" style={MONO}>
+        DAAM · SD 2.1 · CFG 7 · seed 00 · click images to enlarge
+      </p>
+    </div>
+  );
+}
+
+// ─── Intraset Scatter — distance vs homogeneity bubble chart ────────────────
+
+const SIT_COLORS: Record<string, string> = {
+  wedding: "#f472b6", breakfast: "#34d399", funeral: "#94a3b8",
+};
+
+// Pre-joined (distance, intraset) per (situation, country)
+const SCATTER_POINTS = [
+  // wedding
+  { sit:"wedding", cc:"US", dist:0.105, sim:0.418 }, { sit:"wedding", cc:"DE", dist:0.184, sim:0.440 },
+  { sit:"wedding", cc:"RU", dist:0.202, sim:0.368 }, { sit:"wedding", cc:"IN", dist:0.807, sim:0.632 },
+  { sit:"wedding", cc:"ID", dist:0.443, sim:0.435 }, { sit:"wedding", cc:"JP", dist:0.660, sim:0.670 },
+  { sit:"wedding", cc:"EG", dist:0.634, sim:0.398 }, { sit:"wedding", cc:"NG", dist:0.698, sim:0.687 },
+  // breakfast
+  { sit:"breakfast", cc:"US", dist:0.322, sim:0.648 }, { sit:"breakfast", cc:"DE", dist:0.279, sim:0.527 },
+  { sit:"breakfast", cc:"RU", dist:0.287, sim:0.562 }, { sit:"breakfast", cc:"IN", dist:0.631, sim:0.572 },
+  { sit:"breakfast", cc:"ID", dist:0.501, sim:0.596 }, { sit:"breakfast", cc:"JP", dist:0.696, sim:0.738 },
+  { sit:"breakfast", cc:"EG", dist:0.386, sim:0.415 }, { sit:"breakfast", cc:"NG", dist:0.498, sim:0.483 },
+  // funeral
+  { sit:"funeral", cc:"US", dist:0.094, sim:0.421 }, { sit:"funeral", cc:"DE", dist:0.153, sim:0.508 },
+  { sit:"funeral", cc:"RU", dist:0.127, sim:0.530 }, { sit:"funeral", cc:"IN", dist:0.502, sim:0.605 },
+  { sit:"funeral", cc:"ID", dist:0.315, sim:0.522 }, { sit:"funeral", cc:"JP", dist:0.254, sim:0.481 },
+  { sit:"funeral", cc:"EG", dist:0.357, sim:0.507 }, { sit:"funeral", cc:"NG", dist:0.620, sim:0.577 },
+];
+
+function IntrasetScatter() {
+  const [hov, setHov] = useState<typeof SCATTER_POINTS[0] | null>(null);
+  const W = 280; const H = 190;
+  const PAD = { l: 32, r: 10, t: 10, b: 28 };
+  const px = (d: number) => PAD.l + d * (W - PAD.l - PAD.r);
+  const py = (s: number) => H - PAD.b - s * (H - PAD.t - PAD.b);
+
+  return (
+    <div className="p-3 flex flex-col gap-2">
+      <p className="text-[10px] text-[#555] leading-[1.5]">
+        Each bubble = one (situation, country) pair. Countries far from SD's default
+        (right) tend to produce more uniform, stereotyped outputs (up).
+      </p>
+      <div className="flex gap-3 items-start">
+        <svg width={W} height={H} style={{ flexShrink: 0 }}>
+          {/* Axes */}
+          <line x1={PAD.l} y1={PAD.t} x2={PAD.l} y2={H-PAD.b} stroke="#e0ddd6" strokeWidth="1"/>
+          <line x1={PAD.l} y1={H-PAD.b} x2={W-PAD.r} y2={H-PAD.b} stroke="#e0ddd6" strokeWidth="1"/>
+          {/* Grid lines */}
+          {[0.25,0.5,0.75,1.0].map(v => (
+            <line key={v} x1={PAD.l} y1={py(v)} x2={W-PAD.r} y2={py(v)} stroke="#f0ede6" strokeWidth="1"/>
+          ))}
+          {/* Axis labels */}
+          <text x={PAD.l-2} y={py(0.25)} fontSize="7" fill="#a39d8e" textAnchor="end" fontFamily="JetBrains Mono,monospace" dominantBaseline="middle">0.25</text>
+          <text x={PAD.l-2} y={py(0.5)}  fontSize="7" fill="#a39d8e" textAnchor="end" fontFamily="JetBrains Mono,monospace" dominantBaseline="middle">0.5</text>
+          <text x={PAD.l-2} y={py(0.75)} fontSize="7" fill="#a39d8e" textAnchor="end" fontFamily="JetBrains Mono,monospace" dominantBaseline="middle">0.75</text>
+          {[0,0.25,0.5,0.75,1.0].map(v => (
+            <text key={v} x={px(v)} y={H-PAD.b+9} fontSize="7" fill="#a39d8e" textAnchor="middle" fontFamily="JetBrains Mono,monospace">{v.toFixed(2)}</text>
+          ))}
+          {/* Points */}
+          {SCATTER_POINTS.map((pt, i) => (
+            <g key={i} onMouseEnter={() => setHov(pt)} onMouseLeave={() => setHov(null)} style={{ cursor: "default" }}>
+              <circle cx={px(pt.dist)} cy={py(pt.sim)} r="5" fill={SIT_COLORS[pt.sit] ?? "#999"} opacity="0.75"/>
+              <text x={px(pt.dist)+6} y={py(pt.sim)} fontSize="6.5" fill="#555" fontFamily="JetBrains Mono,monospace" dominantBaseline="middle">{pt.cc}</text>
+            </g>
+          ))}
+        </svg>
+        {/* Legend + tooltip */}
+        <div className="flex flex-col gap-2 pt-1">
+          {Object.entries(SIT_COLORS).map(([sit, col]) => (
+            <div key={sit} className="flex items-center gap-1">
+              <div className="w-[8px] h-[8px] rounded-full" style={{ background: col }}/>
+              <span className="text-[8px] text-[#555]" style={MONO}>{sit}</span>
+            </div>
+          ))}
+          {hov && (
+            <div className="mt-2 p-2 rounded-[5px] border border-[#d0cdc6] bg-white text-[8px] leading-[1.6]" style={MONO}>
+              <b>{hov.sit} · {hov.cc}</b><br/>
+              dist: {hov.dist.toFixed(3)}<br/>
+              sim: {hov.sim.toFixed(3)}
+            </div>
+          )}
+        </div>
+      </div>
+      <p className="text-[8px] text-[#a39d8e]" style={MONO}>
+        X = DINOv2 distance from default · Y = intraset similarity · hover for values
       </p>
     </div>
   );
@@ -664,13 +852,22 @@ export function Layer3() {
 
           <ToolCard
             num="10b"
-            name="Output diversity — default vs country-qualified"
+            name="Stereotyping rate vs default"
             type="Bar chart"
-            description="Mean pairwise DINOv2 cosine similarity within each variant's 50-image batch. Higher = more uniform / more stereotyped."
-            explanation="A surprising finding: country-qualified prompts produce more homogeneous output than the unqualified default. 'A wedding in Nigeria' generates near-identical images across seeds (high similarity), while 'a wedding' generates diverse ones. The model has a narrow, stereotyped concept of each non-Western culture — and a richer, more varied concept of its own default."
-            fullWidth
+            description="(country_sim − default_sim) / default_sim — how much more (or less) homogeneous each country's output is compared to the unqualified default. Red = strongly stereotyped, green = more diverse than default."
+            explanation="Relative change makes the default the natural zero baseline. A country at +50% produces outputs 50% more uniform than the plain unqualified prompt — the model has collapsed to a narrow stereotype. Negative values are rare but exist (e.g. Egypt for breakfast) showing some qualifiers actually diversify the output."
           >
             <IntrasetBars sitId={sitId} />
+          </ToolCard>
+
+          <ToolCard
+            num="10c"
+            name="Distance vs homogeneity — the stereotype gap"
+            type="Scatter"
+            description="Each bubble is one (situation, country) pair. Countries far from SD's cultural default (right) tend to produce more stereotyped output (up). Hover any bubble for values."
+            explanation="The scatter makes the mechanism visible: distance from default and output homogeneity are correlated. The model doesn't have rich knowledge of underrepresented cultures — it has one narrow image. Specifying those cultures doesn't unlock diversity; it collapses to a stereotype."
+          >
+            <IntrasetScatter />
           </ToolCard>
         </ToolsGrid>
       </PredictionReveal>
@@ -688,7 +885,7 @@ export function Layer3() {
           description="Per-token pixel attribution aggregated across all U-Net layers and timesteps — click a token to see which pixels it actually controlled."
           explanation="DAAM integrates cross-attention maps across all timesteps and U-Net layers into a per-token saliency map. When attribute binding fails, the heatmap for a color token spreads over the wrong object. The visualization makes the failure mechanistically transparent: the model has the right information but routes it incorrectly."
         >
-          <DAAMOverlay />
+          <DAAMOverlay onZoom={setZoomedSrc} />
         </ToolCard>
 
         <ToolCard
