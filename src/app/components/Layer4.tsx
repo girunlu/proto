@@ -151,7 +151,8 @@ function LockInCurve({ pairIdx }: { pairIdx: number }) {
 
 function TimestepSlider() {
   const [pairIdx, setPairIdx] = useState(0);
-  const [kIdx, setKIdx] = useState(2);
+  const [kIdx, setKIdx] = useState(0);
+  const [zoomedSrc, setZoomedSrc] = useState<string | null>(null);
 
   const pair = SWAP_PAIRS[pairIdx];
   const baseShade = BASE_SHADES[pairIdx];
@@ -197,6 +198,8 @@ function TimestepSlider() {
       </p>
 
       {/* Image viewer for cultural pairs; colour-swatch strip for others */}
+      {zoomedSrc && <Lightbox src={zoomedSrc} onClose={() => setZoomedSrc(null)} />}
+
       {activeCurve.swapImgs ? (
         <div className="flex flex-col gap-3">
           {/* Two images side by side */}
@@ -205,14 +208,13 @@ function TimestepSlider() {
               <span className="text-[9px] text-[#8a8374] text-center" style={MONO}>
                 prompt A — no swap
               </span>
-              <Lightbox src={activeCurve.originImg!} alt={`prompt A: ${pair.base}`}>
-                <img
-                  src={activeCurve.originImg!}
-                  alt="prompt A original"
-                  className="w-full rounded-[6px] object-cover"
-                  style={{ aspectRatio: "1 / 1" }}
-                />
-              </Lightbox>
+              <img
+                src={activeCurve.originImg!}
+                alt="prompt A original"
+                className="w-full rounded-[6px] object-cover hover:opacity-90 transition-opacity"
+                style={{ aspectRatio: "1 / 1", cursor: "zoom-in" }}
+                onClick={() => setZoomedSrc(activeCurve.originImg!)}
+              />
               <span className="text-[9px] text-[#555] text-center truncate" style={MONO}>
                 "{pair.base}"
               </span>
@@ -222,14 +224,13 @@ function TimestepSlider() {
               <span className="text-[9px] text-[#8a8374] text-center" style={MONO}>
                 swapped at k={activeKValues[kIdx]} → prompt B
               </span>
-              <Lightbox src={activeCurve.swapImgs[kIdx]} alt={`swap at step ${activeKValues[kIdx]}: ${pair.override}`}>
-                <img
-                  src={activeCurve.swapImgs[kIdx]}
-                  alt={`swap at step ${activeKValues[kIdx]}`}
-                  className="w-full rounded-[6px] object-cover transition-all duration-200"
-                  style={{ aspectRatio: "1 / 1", outline: kIdx <= activeLockInIdx ? "2px solid #34d399" : "2px solid #ef4444", outlineOffset: "2px" }}
-                />
-              </Lightbox>
+              <img
+                src={activeCurve.swapImgs[kIdx]}
+                alt={`swap at step ${activeKValues[kIdx]}`}
+                className="w-full rounded-[6px] object-cover transition-all duration-200 hover:opacity-90"
+                style={{ aspectRatio: "1 / 1", outline: kIdx <= activeLockInIdx ? "2px solid #34d399" : "2px solid #ef4444", outlineOffset: "2px", cursor: "zoom-in" }}
+                onClick={() => setZoomedSrc(activeCurve.swapImgs![kIdx])}
+              />
               <span className="text-[9px] text-center truncate" style={{ ...MONO, color: kIdx <= activeLockInIdx ? "#059669" : "#dc2626" }}>
                 {kIdx <= activeLockInIdx ? "✓ B wins — swap worked" : "✗ A locked in — too late"}
               </span>

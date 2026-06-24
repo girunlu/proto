@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Section, ToolCard, ToolsGrid, SubsectionLabel, PlanNote, Lightbox } from "./ToolCard";
+import { Section, ToolCard, ToolsGrid, SubsectionLabel, PlanNote, Lightbox, PredictionReveal } from "./ToolCard";
 
 const MONO = { fontFamily: "'JetBrains Mono', monospace" };
 
@@ -160,43 +160,12 @@ const CULTURAL_LOCATIONS = [
   { id: "japan",   label: "in Japan" },
 ];
 
-const N_SEEDS = 3;
-
-interface CulturalGridProps {
-  sitId: string;
-  setSitId: (s: string) => void;
-  seedIdx: number;
-  setSeedIdx: (n: number) => void;
-}
-
-function CulturalGrid({ sitId, setSitId, seedIdx, setSeedIdx }: CulturalGridProps) {
-  const seedStr = String(seedIdx).padStart(2, "0");
-
+function CulturalGrid({ sitId, onZoom }: { sitId: string; onZoom: (src: string) => void }) {
   return (
     <div className="p-3 flex flex-col gap-3">
-      {/* Situation chips */}
-      <div className="flex gap-[5px] flex-wrap">
-        {CULTURAL_SITUATIONS.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => setSitId(s.id)}
-            className="text-[10px] px-[8px] py-[3px] rounded-[4px] border transition-colors"
-            style={{
-              ...MONO,
-              background: sitId === s.id ? "#064e3b" : "#f5f4f0",
-              color: sitId === s.id ? "#d1fae5" : "#666",
-              borderColor: sitId === s.id ? "#064e3b" : "#e0ddd6",
-            }}
-          >
-            {s.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Image grid */}
       <div className="flex gap-[6px]">
         {CULTURAL_LOCATIONS.map((loc) => {
-          const src = `/images/cultural/${sitId}_${loc.id}_seed${seedStr}.png`;
+          const src = `/images/cultural/${sitId}_${loc.id}.png`;
           return (
             <div key={loc.id} className="flex-1 flex flex-col gap-[4px]">
               <span
@@ -205,46 +174,20 @@ function CulturalGrid({ sitId, setSitId, seedIdx, setSeedIdx }: CulturalGridProp
               >
                 {loc.label}
               </span>
-              <Lightbox src={src} alt={`${sitId} ${loc.label} sample ${seedIdx + 1}`}>
-                <img
-                  src={src}
-                  alt={`${sitId} ${loc.label}`}
-                  className="w-full rounded-[4px] object-cover"
-                  style={{ aspectRatio: "1 / 1" }}
-                />
-              </Lightbox>
+              <img
+                src={src}
+                alt={`${sitId} ${loc.label}`}
+                className="w-full rounded-[4px] object-cover transition-opacity hover:opacity-90"
+                style={{ aspectRatio: "1 / 1", cursor: "zoom-in" }}
+                onClick={() => onZoom(src)}
+              />
             </div>
           );
         })}
       </div>
-
-      {/* Seed cycler */}
-      <div className="flex items-center justify-between">
-        <p className="text-[8px] text-[#a39d8e]" style={MONO}>
-          SD 2.1 · CFG 7.5 · 768×768 · click to zoom
-        </p>
-        <div className="flex items-center gap-[6px]">
-          <button
-            onClick={() => setSeedIdx(Math.max(0, seedIdx - 1))}
-            disabled={seedIdx === 0}
-            className="text-[10px] px-[7px] py-[2px] rounded-[3px] border transition-colors disabled:opacity-30"
-            style={{ ...MONO, background: "#f5f4f0", borderColor: "#e0ddd6" }}
-          >
-            ←
-          </button>
-          <span className="text-[9px] text-[#867f6f]" style={MONO}>
-            sample {seedIdx + 1}/{N_SEEDS}
-          </span>
-          <button
-            onClick={() => setSeedIdx(Math.min(N_SEEDS - 1, seedIdx + 1))}
-            disabled={seedIdx === N_SEEDS - 1}
-            className="text-[10px] px-[7px] py-[2px] rounded-[3px] border transition-colors disabled:opacity-30"
-            style={{ ...MONO, background: "#f5f4f0", borderColor: "#e0ddd6" }}
-          >
-            →
-          </button>
-        </div>
-      </div>
+      <p className="text-[8px] text-[#a39d8e] leading-[1.4]" style={MONO}>
+        SD 2.1 · DDIM · CFG 7.5 · seed 00 · click any image to enlarge
+      </p>
     </div>
   );
 }
@@ -287,29 +230,12 @@ const CULTURAL_DISTANCES: Record<string, { country: string; dist: number; ci_low
   ],
 };
 
-function EmbeddingDistanceBars({ sitId, setSitId }: { sitId: string; setSitId: (s: string) => void }) {
+function EmbeddingDistanceBars({ sitId }: { sitId: string }) {
   const rows = CULTURAL_DISTANCES[sitId] ?? [];
   const maxDist = Math.max(...rows.map((r) => r.dist));
 
   return (
     <div className="p-3 flex flex-col gap-2">
-      <div className="flex gap-[5px] flex-wrap">
-        {CULTURAL_SITUATIONS.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => setSitId(s.id)}
-            className="text-[10px] px-[8px] py-[3px] rounded-[4px] border transition-colors"
-            style={{
-              ...MONO,
-              background: sitId === s.id ? "#064e3b" : "#f5f4f0",
-              color: sitId === s.id ? "#d1fae5" : "#666",
-              borderColor: sitId === s.id ? "#064e3b" : "#e0ddd6",
-            }}
-          >
-            {s.label}
-          </button>
-        ))}
-      </div>
       <div className="flex flex-col gap-[7px] mt-1">
         {rows.map((d) => {
           const pct = d.dist / maxDist;
@@ -387,28 +313,11 @@ const CULTURAL_INTRASET: Record<string, { label: string; sim: number; isDefault:
   ],
 };
 
-function IntrasetBars({ sitId, setSitId }: { sitId: string; setSitId: (s: string) => void }) {
+function IntrasetBars({ sitId }: { sitId: string }) {
   const rows = CULTURAL_INTRASET[sitId] ?? [];
 
   return (
     <div className="p-3 flex flex-col gap-2">
-      <div className="flex gap-[5px] flex-wrap">
-        {CULTURAL_SITUATIONS.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => setSitId(s.id)}
-            className="text-[10px] px-[8px] py-[3px] rounded-[4px] border transition-colors"
-            style={{
-              ...MONO,
-              background: sitId === s.id ? "#4f46e5" : "#f5f4f0",
-              color: sitId === s.id ? "#e0e7ff" : "#666",
-              borderColor: sitId === s.id ? "#4f46e5" : "#e0ddd6",
-            }}
-          >
-            {s.label}
-          </button>
-        ))}
-      </div>
       <div className="flex flex-col gap-[7px] mt-1">
         {rows.map((r) => (
           <div key={r.label} className="flex items-center gap-2">
@@ -642,11 +551,14 @@ function AttentionSwapPair() {
 }
 
 export function Layer3() {
-  // Shared state for all three cultural tools — changing situation in any chip updates all three
-  const [culturalSit, setCulturalSit] = useState("wedding");
-  const [culturalSeed, setCulturalSeed] = useState(0);
+  // Shared cultural situation state — drives Tools 09, 10, 10b together
+  const [sitId, setSitId] = useState("wedding");
+  // Lightbox
+  const [zoomedSrc, setZoomedSrc] = useState<string | null>(null);
 
   return (
+    <>
+    {zoomedSrc && <Lightbox src={zoomedSrc} onClose={() => setZoomedSrc(null)} />}
     <Section
       id="l3"
       badge={{ label: "Layer 3", variant: "l3a" }}
@@ -703,38 +615,65 @@ export function Layer3() {
       >
         3b — Cultural defaults
       </SubsectionLabel>
-      <ToolsGrid cols={2}>
-        <ToolCard
-          num="09"
-          name="Side-by-side cultural image grids"
-          type="Interactive grid"
-          description="Same concept in default / Nigeria / Japan — select a situation to compare how SD's visual vocabulary shifts across geographic contexts. Real generated images, SD 2.1."
-          explanation="The default outputs reveal SD's implicit cultural baseline. Adding 'in Nigeria' or 'in Japan' produces dramatically different compositions, colour palettes, and material cultures. The unqualified prompt is indistinguishable from a Western framing — not because the model lacks other cultural knowledge, but because it treats one perspective as the unmarked default."
-        >
-          <CulturalGrid sitId={culturalSit} setSitId={setCulturalSit} seedIdx={culturalSeed} setSeedIdx={setCulturalSeed} />
-        </ToolCard>
 
-        <ToolCard
-          num="10"
-          name="Distance from the default"
-          type="Bar chart"
-          description="DINOv2 cosine distance between the mean embedding of the unqualified prompt and each country-qualified variant. n=50 seeds, 95% bootstrap CI. Select a situation."
-          explanation="Small distance means that adding a geographic qualifier changes almost nothing — that geography is already the model's default. Large distance measures how far SD must travel to represent that culture. DINOv2 is used instead of CLIP to avoid measuring CLIP's own bias with CLIP."
-        >
-          <EmbeddingDistanceBars sitId={culturalSit} setSitId={setCulturalSit} />
-        </ToolCard>
+      <PredictionReveal
+        question="Before we show you — which everyday situation do you think shows the biggest visual difference when you add a country qualifier to the prompt?"
+        options={CULTURAL_SITUATIONS}
+        onReveal={(picked) => setSitId(picked)}
+      >
+        {/* Shared situation selector — drives all three tools below */}
+        <div className="flex gap-[6px] items-center mb-4">
+          <span className="text-[10px] text-[#867f6f]" style={MONO}>situation:</span>
+          {CULTURAL_SITUATIONS.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setSitId(s.id)}
+              className="text-[10px] px-[10px] py-[4px] rounded-[4px] border transition-colors"
+              style={{
+                ...MONO,
+                background: sitId === s.id ? "#064e3b" : "#f5f4f0",
+                color: sitId === s.id ? "#d1fae5" : "#555",
+                borderColor: sitId === s.id ? "#064e3b" : "#d0cdc6",
+              }}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
 
-        <ToolCard
-          num="10b"
-          name="Output diversity — default vs country-qualified"
-          type="Bar chart"
-          description="Mean pairwise DINOv2 cosine similarity within each variant's 50-image batch. Higher = more uniform / more stereotyped. Select a situation."
-          explanation="A surprising finding: country-qualified prompts produce more homogeneous output than the unqualified default. 'A wedding in Nigeria' generates near-identical images across seeds (high similarity), while 'a wedding' generates diverse ones. The model has a narrow, stereotyped concept of each non-Western culture — and a richer, more varied concept of its own default."
-          fullWidth
-        >
-          <IntrasetBars sitId={culturalSit} setSitId={setCulturalSit} />
-        </ToolCard>
-      </ToolsGrid>
+        <ToolsGrid cols={2}>
+          <ToolCard
+            num="09"
+            name="Side-by-side cultural image grids"
+            type="Interactive grid"
+            description="Same concept in default / Nigeria / Japan — the selector above switches situation across all three cultural tools. Click any image to enlarge."
+            explanation="The default outputs reveal SD's implicit cultural baseline. Adding 'in Nigeria' or 'in Japan' produces dramatically different compositions, colour palettes, and material cultures. The unqualified prompt is indistinguishable from a Western framing — not because the model lacks other cultural knowledge, but because it treats one perspective as the unmarked default."
+          >
+            <CulturalGrid sitId={sitId} onZoom={setZoomedSrc} />
+          </ToolCard>
+
+          <ToolCard
+            num="10"
+            name="Distance from the default"
+            type="Bar chart"
+            description="DINOv2 cosine distance between the mean embedding of the unqualified prompt and each country-qualified variant. n=50 seeds, 95% bootstrap CI."
+            explanation="Small distance means adding a geographic qualifier changes almost nothing — that geography is already the model's default. Large distance measures how far SD must travel to represent that culture. DINOv2 is used instead of CLIP to avoid measuring CLIP's own bias with CLIP."
+          >
+            <EmbeddingDistanceBars sitId={sitId} />
+          </ToolCard>
+
+          <ToolCard
+            num="10b"
+            name="Output diversity — default vs country-qualified"
+            type="Bar chart"
+            description="Mean pairwise DINOv2 cosine similarity within each variant's 50-image batch. Higher = more uniform / more stereotyped."
+            explanation="A surprising finding: country-qualified prompts produce more homogeneous output than the unqualified default. 'A wedding in Nigeria' generates near-identical images across seeds (high similarity), while 'a wedding' generates diverse ones. The model has a narrow, stereotyped concept of each non-Western culture — and a richer, more varied concept of its own default."
+            fullWidth
+          >
+            <IntrasetBars sitId={sitId} />
+          </ToolCard>
+        </ToolsGrid>
+      </PredictionReveal>
 
       <SubsectionLabel
         explanation="Compositional failures occur when attributes specified for one object bleed into another through the cross-attention mechanism. This is a lower-level failure than demographic bias — not about who the model imagines people to be, but about how it binds adjectives to nouns during denoising."
@@ -774,5 +713,6 @@ export function Layer3() {
         </ToolCard>
       </ToolsGrid>
     </Section>
+    </>
   );
 }

@@ -1,5 +1,116 @@
-import { ReactNode, useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
+import { ReactNode, useState, useEffect } from "react";
+
+const MONO = { fontFamily: "'JetBrains Mono', monospace" };
+
+// ─── Lightbox ────────────────────────────────────────────────────────────────
+
+export function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: "rgba(10,10,8,0.88)" }}
+      onClick={onClose}
+    >
+      <img
+        src={src}
+        alt="zoomed"
+        className="rounded-[10px] shadow-2xl"
+        style={{ maxWidth: "90vw", maxHeight: "90vh", objectFit: "contain" }}
+        onClick={(e) => e.stopPropagation()}
+      />
+      <button
+        className="absolute top-5 right-6 text-[22px] leading-none transition-opacity"
+        style={{ color: "rgba(255,255,255,0.55)" }}
+        onClick={onClose}
+      >
+        ✕
+      </button>
+      <span
+        className="absolute bottom-5 text-[9px]"
+        style={{ color: "rgba(255,255,255,0.35)", ...MONO }}
+      >
+        click anywhere or press ESC to close
+      </span>
+    </div>
+  );
+}
+
+// ─── PredictionReveal ────────────────────────────────────────────────────────
+// Shows a question + options before revealing content.
+// onReveal(picked) is called when user confirms — use it to set shared state.
+
+interface PredictionRevealProps {
+  question: string;
+  options: { id: string; label: string }[];
+  onReveal: (picked: string) => void;
+  children: ReactNode;
+}
+
+export function PredictionReveal({ question, options, onReveal, children }: PredictionRevealProps) {
+  const [picked, setPicked] = useState<string | null>(null);
+  const [revealed, setRevealed] = useState(false);
+
+  const confirm = () => {
+    if (!picked) return;
+    onReveal(picked);
+    setRevealed(true);
+  };
+
+  if (revealed) {
+    const pickedLabel = options.find((o) => o.id === picked)?.label ?? picked;
+    return (
+      <div className="flex flex-col gap-4">
+        <div
+          className="flex items-center gap-2 text-[10px] text-[#867f6f] border border-dashed border-[#d0cdc6] rounded-[6px] px-3 py-2 self-start"
+          style={MONO}
+        >
+          <span style={{ color: "#34d399" }}>✓</span>
+          you predicted: <b style={{ color: "#1a1a1a" }}>{pickedLabel}</b>
+          <span className="text-[#a39d8e]">— see how it compares below</span>
+        </div>
+        {children}
+      </div>
+    );
+  }
+
+  return (
+    <div className="border border-dashed border-[#d0cdc6] rounded-[10px] bg-[#fbfaf6] p-5 flex flex-col gap-4 max-w-[680px]">
+      <p className="text-[13px] text-[#444] leading-[1.6]">{question}</p>
+      <div className="flex gap-[6px] flex-wrap">
+        {options.map((o) => (
+          <button
+            key={o.id}
+            onClick={() => setPicked(o.id)}
+            className="text-[11px] px-[12px] py-[5px] rounded-[5px] border transition-colors"
+            style={{
+              ...MONO,
+              background: picked === o.id ? "#064e3b" : "#f5f4f0",
+              color: picked === o.id ? "#d1fae5" : "#555",
+              borderColor: picked === o.id ? "#064e3b" : "#d0cdc6",
+            }}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+      {picked && (
+        <button
+          onClick={confirm}
+          className="self-start text-[11px] px-[14px] py-[6px] rounded-[5px] transition-colors"
+          style={{ background: "#064e3b", color: "#d1fae5", ...MONO }}
+        >
+          see what SD actually generates →
+        </button>
+      )}
+    </div>
+  );
+}
 
 interface ToolCardProps {
   num: string;
@@ -172,39 +283,6 @@ export function SubsectionLabel({ children, explanation }: { children: ReactNode
         <p className="text-[13px] text-[#666] leading-[1.65] mt-3 max-w-[720px]">{explanation}</p>
       )}
     </div>
-  );
-}
-
-// ─── Lightbox — click any image to see it full size ─────────────────────────
-
-export function Lightbox({ src, alt, children }: { src: string; alt: string; children: ReactNode }) {
-  return (
-    <Dialog.Root>
-      <Dialog.Trigger asChild>
-        <span className="cursor-zoom-in block">{children}</span>
-      </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80" />
-        <Dialog.Content
-          className="fixed inset-0 z-50 flex items-center justify-center p-6"
-          style={{ outline: "none" }}
-        >
-          <img
-            src={src}
-            alt={alt}
-            style={{ maxWidth: "min(768px, 90vw)", maxHeight: "90vh", objectFit: "contain", borderRadius: "8px" }}
-          />
-          <Dialog.Close asChild>
-            <button
-              className="absolute top-5 right-5 w-9 h-9 rounded-full flex items-center justify-center text-white text-lg font-light transition-colors"
-              style={{ background: "rgba(255,255,255,0.15)", fontFamily: "system-ui" }}
-            >
-              ✕
-            </button>
-          </Dialog.Close>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
   );
 }
 
