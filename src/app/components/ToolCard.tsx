@@ -1,4 +1,5 @@
 import { ReactNode, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 
 interface ToolCardProps {
   num: string;
@@ -171,6 +172,39 @@ export function SubsectionLabel({ children, explanation }: { children: ReactNode
         <p className="text-[13px] text-[#666] leading-[1.65] mt-3 max-w-[720px]">{explanation}</p>
       )}
     </div>
+  );
+}
+
+// ─── Lightbox — click any image to see it full size ─────────────────────────
+
+export function Lightbox({ src, alt, children }: { src: string; alt: string; children: ReactNode }) {
+  return (
+    <Dialog.Root>
+      <Dialog.Trigger asChild>
+        <span className="cursor-zoom-in block">{children}</span>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80" />
+        <Dialog.Content
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          style={{ outline: "none" }}
+        >
+          <img
+            src={src}
+            alt={alt}
+            style={{ maxWidth: "min(768px, 90vw)", maxHeight: "90vh", objectFit: "contain", borderRadius: "8px" }}
+          />
+          <Dialog.Close asChild>
+            <button
+              className="absolute top-5 right-5 w-9 h-9 rounded-full flex items-center justify-center text-white text-lg font-light transition-colors"
+              style={{ background: "rgba(255,255,255,0.15)", fontFamily: "system-ui" }}
+            >
+              ✕
+            </button>
+          </Dialog.Close>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 

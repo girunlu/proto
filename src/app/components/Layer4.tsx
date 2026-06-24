@@ -1,6 +1,6 @@
 import { useState } from "react";
 import * as Slider from "@radix-ui/react-slider";
-import { Section, ToolCard, ToolsGrid, PlanNote } from "./ToolCard";
+import { Section, ToolCard, ToolsGrid, PlanNote, Lightbox } from "./ToolCard";
 
 const MONO = { fontFamily: "'JetBrains Mono', monospace" };
 
@@ -205,12 +205,14 @@ function TimestepSlider() {
               <span className="text-[9px] text-[#8a8374] text-center" style={MONO}>
                 prompt A — no swap
               </span>
-              <img
-                src={activeCurve.originImg!}
-                alt="prompt A original"
-                className="w-full rounded-[6px] object-cover"
-                style={{ aspectRatio: "1 / 1" }}
-              />
+              <Lightbox src={activeCurve.originImg!} alt={`prompt A: ${pair.base}`}>
+                <img
+                  src={activeCurve.originImg!}
+                  alt="prompt A original"
+                  className="w-full rounded-[6px] object-cover"
+                  style={{ aspectRatio: "1 / 1" }}
+                />
+              </Lightbox>
               <span className="text-[9px] text-[#555] text-center truncate" style={MONO}>
                 "{pair.base}"
               </span>
@@ -220,12 +222,14 @@ function TimestepSlider() {
               <span className="text-[9px] text-[#8a8374] text-center" style={MONO}>
                 swapped at k={activeKValues[kIdx]} → prompt B
               </span>
-              <img
-                src={activeCurve.swapImgs[kIdx]}
-                alt={`swap at step ${activeKValues[kIdx]}`}
-                className="w-full rounded-[6px] object-cover transition-all duration-200"
-                style={{ aspectRatio: "1 / 1", outline: kIdx <= activeLockInIdx ? "2px solid #34d399" : "2px solid #ef4444", outlineOffset: "2px" }}
-              />
+              <Lightbox src={activeCurve.swapImgs[kIdx]} alt={`swap at step ${activeKValues[kIdx]}: ${pair.override}`}>
+                <img
+                  src={activeCurve.swapImgs[kIdx]}
+                  alt={`swap at step ${activeKValues[kIdx]}`}
+                  className="w-full rounded-[6px] object-cover transition-all duration-200"
+                  style={{ aspectRatio: "1 / 1", outline: kIdx <= activeLockInIdx ? "2px solid #34d399" : "2px solid #ef4444", outlineOffset: "2px" }}
+                />
+              </Lightbox>
               <span className="text-[9px] text-center truncate" style={{ ...MONO, color: kIdx <= activeLockInIdx ? "#059669" : "#dc2626" }}>
                 {kIdx <= activeLockInIdx ? "✓ B wins — swap worked" : "✗ A locked in — too late"}
               </span>

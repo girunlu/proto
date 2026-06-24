@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Section, ToolCard, ToolsGrid, SubsectionLabel, PlanNote } from "./ToolCard";
+import { Section, ToolCard, ToolsGrid, SubsectionLabel, PlanNote, Lightbox } from "./ToolCard";
 
 const MONO = { fontFamily: "'JetBrains Mono', monospace" };
 
@@ -160,11 +160,21 @@ const CULTURAL_LOCATIONS = [
   { id: "japan",   label: "in Japan" },
 ];
 
-function CulturalGrid() {
-  const [sitId, setSitId] = useState("wedding");
+const N_SEEDS = 3;
+
+interface CulturalGridProps {
+  sitId: string;
+  setSitId: (s: string) => void;
+  seedIdx: number;
+  setSeedIdx: (n: number) => void;
+}
+
+function CulturalGrid({ sitId, setSitId, seedIdx, setSeedIdx }: CulturalGridProps) {
+  const seedStr = String(seedIdx).padStart(2, "0");
 
   return (
     <div className="p-3 flex flex-col gap-3">
+      {/* Situation chips */}
       <div className="flex gap-[5px] flex-wrap">
         {CULTURAL_SITUATIONS.map((s) => (
           <button
@@ -182,27 +192,59 @@ function CulturalGrid() {
           </button>
         ))}
       </div>
+
+      {/* Image grid */}
       <div className="flex gap-[6px]">
-        {CULTURAL_LOCATIONS.map((loc) => (
-          <div key={loc.id} className="flex-1 flex flex-col gap-[4px]">
-            <span
-              className="text-[9px] text-[#555] text-center font-semibold bg-[#f0ede6] rounded-[3px] py-[2px]"
-              style={MONO}
-            >
-              {loc.label}
-            </span>
-            <img
-              src={`/images/cultural/${sitId}_${loc.id}.png`}
-              alt={`${sitId} ${loc.label}`}
-              className="w-full rounded-[4px] object-cover"
-              style={{ aspectRatio: "1 / 1" }}
-            />
-          </div>
-        ))}
+        {CULTURAL_LOCATIONS.map((loc) => {
+          const src = `/images/cultural/${sitId}_${loc.id}_seed${seedStr}.png`;
+          return (
+            <div key={loc.id} className="flex-1 flex flex-col gap-[4px]">
+              <span
+                className="text-[9px] text-[#555] text-center font-semibold bg-[#f0ede6] rounded-[3px] py-[2px]"
+                style={MONO}
+              >
+                {loc.label}
+              </span>
+              <Lightbox src={src} alt={`${sitId} ${loc.label} sample ${seedIdx + 1}`}>
+                <img
+                  src={src}
+                  alt={`${sitId} ${loc.label}`}
+                  className="w-full rounded-[4px] object-cover"
+                  style={{ aspectRatio: "1 / 1" }}
+                />
+              </Lightbox>
+            </div>
+          );
+        })}
       </div>
-      <p className="text-[8px] text-[#a39d8e] leading-[1.4]" style={MONO}>
-        SD 2.1 · DDIM · CFG 7.5 · seed 00 · 768×768 — single seed, illustration only
-      </p>
+
+      {/* Seed cycler */}
+      <div className="flex items-center justify-between">
+        <p className="text-[8px] text-[#a39d8e]" style={MONO}>
+          SD 2.1 · CFG 7.5 · 768×768 · click to zoom
+        </p>
+        <div className="flex items-center gap-[6px]">
+          <button
+            onClick={() => setSeedIdx(Math.max(0, seedIdx - 1))}
+            disabled={seedIdx === 0}
+            className="text-[10px] px-[7px] py-[2px] rounded-[3px] border transition-colors disabled:opacity-30"
+            style={{ ...MONO, background: "#f5f4f0", borderColor: "#e0ddd6" }}
+          >
+            ←
+          </button>
+          <span className="text-[9px] text-[#867f6f]" style={MONO}>
+            sample {seedIdx + 1}/{N_SEEDS}
+          </span>
+          <button
+            onClick={() => setSeedIdx(Math.min(N_SEEDS - 1, seedIdx + 1))}
+            disabled={seedIdx === N_SEEDS - 1}
+            className="text-[10px] px-[7px] py-[2px] rounded-[3px] border transition-colors disabled:opacity-30"
+            style={{ ...MONO, background: "#f5f4f0", borderColor: "#e0ddd6" }}
+          >
+            →
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -245,8 +287,7 @@ const CULTURAL_DISTANCES: Record<string, { country: string; dist: number; ci_low
   ],
 };
 
-function EmbeddingDistanceBars() {
-  const [sitId, setSitId] = useState("wedding");
+function EmbeddingDistanceBars({ sitId, setSitId }: { sitId: string; setSitId: (s: string) => void }) {
   const rows = CULTURAL_DISTANCES[sitId] ?? [];
   const maxDist = Math.max(...rows.map((r) => r.dist));
 
@@ -346,8 +387,7 @@ const CULTURAL_INTRASET: Record<string, { label: string; sim: number; isDefault:
   ],
 };
 
-function IntrasetBars() {
-  const [sitId, setSitId] = useState("wedding");
+function IntrasetBars({ sitId, setSitId }: { sitId: string; setSitId: (s: string) => void }) {
   const rows = CULTURAL_INTRASET[sitId] ?? [];
 
   return (
@@ -602,6 +642,10 @@ function AttentionSwapPair() {
 }
 
 export function Layer3() {
+  // Shared state for all three cultural tools — changing situation in any chip updates all three
+  const [culturalSit, setCulturalSit] = useState("wedding");
+  const [culturalSeed, setCulturalSeed] = useState(0);
+
   return (
     <Section
       id="l3"
@@ -667,7 +711,7 @@ export function Layer3() {
           description="Same concept in default / Nigeria / Japan — select a situation to compare how SD's visual vocabulary shifts across geographic contexts. Real generated images, SD 2.1."
           explanation="The default outputs reveal SD's implicit cultural baseline. Adding 'in Nigeria' or 'in Japan' produces dramatically different compositions, colour palettes, and material cultures. The unqualified prompt is indistinguishable from a Western framing — not because the model lacks other cultural knowledge, but because it treats one perspective as the unmarked default."
         >
-          <CulturalGrid />
+          <CulturalGrid sitId={culturalSit} setSitId={setCulturalSit} seedIdx={culturalSeed} setSeedIdx={setCulturalSeed} />
         </ToolCard>
 
         <ToolCard
@@ -677,7 +721,7 @@ export function Layer3() {
           description="DINOv2 cosine distance between the mean embedding of the unqualified prompt and each country-qualified variant. n=50 seeds, 95% bootstrap CI. Select a situation."
           explanation="Small distance means that adding a geographic qualifier changes almost nothing — that geography is already the model's default. Large distance measures how far SD must travel to represent that culture. DINOv2 is used instead of CLIP to avoid measuring CLIP's own bias with CLIP."
         >
-          <EmbeddingDistanceBars />
+          <EmbeddingDistanceBars sitId={culturalSit} setSitId={setCulturalSit} />
         </ToolCard>
 
         <ToolCard
@@ -688,7 +732,7 @@ export function Layer3() {
           explanation="A surprising finding: country-qualified prompts produce more homogeneous output than the unqualified default. 'A wedding in Nigeria' generates near-identical images across seeds (high similarity), while 'a wedding' generates diverse ones. The model has a narrow, stereotyped concept of each non-Western culture — and a richer, more varied concept of its own default."
           fullWidth
         >
-          <IntrasetBars />
+          <IntrasetBars sitId={culturalSit} setSitId={setCulturalSit} />
         </ToolCard>
       </ToolsGrid>
 
