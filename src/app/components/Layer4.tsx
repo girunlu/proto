@@ -16,8 +16,44 @@ const SWAP_PAIRS = [
   { base: "a red car", override: "a blue car", kind: "attribute" },
 ];
 
-const K_VALUES = [0, 4, 8, 12, 16, 20, 24];
-const LOCK_IN_IDX = 3; // lock-in at k=12 (placeholder)
+// Per-pair curve data. Pairs 0,1,3 use placeholder demographic data (not yet generated).
+// Pair 2 (culture) uses real data from lockup_curve.json — wedding Nigeria→USA,
+// 12 seeds per swap point, 10k bootstrap CIs.
+const PAIR_CURVES = [
+  { // pair 0: a doctor → a female doctor (placeholder)
+    k: [0, 4, 8, 12, 16, 20, 24],
+    p:     [0.97, 0.91, 0.72, 0.48, 0.21, 0.07, 0.02],
+    ci_lo: [0.84, 0.78, 0.59, 0.35, 0.08, 0.00, 0.00],
+    ci_hi: [1.00, 1.00, 0.85, 0.61, 0.34, 0.14, 0.05],
+    lockInIdx: 3, lockInLabel: "lock-in k≈12 (placeholder)",
+  },
+  { // pair 1: a nurse → a male nurse (placeholder)
+    k: [0, 4, 8, 12, 16, 20, 24],
+    p:     [0.97, 0.91, 0.72, 0.48, 0.21, 0.07, 0.02],
+    ci_lo: [0.84, 0.78, 0.59, 0.35, 0.08, 0.00, 0.00],
+    ci_hi: [1.00, 1.00, 0.85, 0.61, 0.34, 0.14, 0.05],
+    lockInIdx: 3, lockInLabel: "lock-in k≈12 (placeholder)",
+  },
+  { // pair 2: a wedding → a wedding in Nigeria — REAL DATA (wedding_NG_to_US)
+    // P(swap image resembles target culture | swap at step k), 12 seeds per point
+    k: [1, 5, 10, 15, 25],
+    p:     [1.000, 1.000, 0.333, 0.000, 0.000],
+    ci_lo: [1.000, 1.000, 0.083, 0.000, 0.000],
+    ci_hi: [1.000, 1.000, 0.583, 0.000, 0.000],
+    lockInIdx: 1, lockInLabel: "lock-in k≈7–10",
+  },
+  { // pair 3: a red car → a blue car (placeholder)
+    k: [0, 4, 8, 12, 16, 20, 24],
+    p:     [0.97, 0.91, 0.72, 0.48, 0.21, 0.07, 0.02],
+    ci_lo: [0.84, 0.78, 0.59, 0.35, 0.08, 0.00, 0.00],
+    ci_hi: [1.00, 1.00, 0.85, 0.61, 0.34, 0.14, 0.05],
+    lockInIdx: 3, lockInLabel: "lock-in k≈12 (placeholder)",
+  },
+];
+
+// Legacy globals kept for the TimestepSlider frame-colour animation (pair 0 default)
+const K_VALUES = PAIR_CURVES[0].k;
+const LOCK_IN_IDX = PAIR_CURVES[0].lockInIdx;
 
 const BASE_SHADES: [number, number, number][] = [
   [176, 192, 208],
@@ -37,46 +73,48 @@ function blend(a: [number, number, number], b: [number, number, number], t: numb
   return `rgb(${Math.round(a[0] * (1 - t) + b[0] * t)},${Math.round(a[1] * (1 - t) + b[1] * t)},${Math.round(a[2] * (1 - t) + b[2] * t)})`;
 }
 
-// P(swap succeeds | swap at k) — placeholder sigmoid, 12 seeds per point
-const FLIP_PROB = [0.97, 0.91, 0.72, 0.48, 0.21, 0.07, 0.02];
-const FLIP_CI = 0.13;
+function LockInCurve({ pairIdx }: { pairIdx: number }) {
+  const curve = PAIR_CURVES[pairIdx];
+  const { k: kVals, p: probs, ci_lo, ci_hi, lockInIdx, lockInLabel } = curve;
 
-function LockInCurve() {
   const w = 240;
   const h = 110;
-  const px = (i: number) => 18 + (i / (K_VALUES.length - 1)) * (w - 34);
+  const n = kVals.length;
+  const px = (i: number) => 18 + (i / (n - 1)) * (w - 34);
   const py = (p: number) => 12 + (1 - p) * (h - 34);
 
-  const linePts = FLIP_PROB.map((p, i) => `${px(i)},${py(p)}`).join(" ");
-  const bandPts = [
-    ...FLIP_PROB.map((p, i) => `${px(i)},${py(Math.min(1, p + FLIP_CI))}`),
-    ...[...FLIP_PROB].reverse().map((p, i) => `${px(FLIP_PROB.length - 1 - i)},${py(Math.max(0, p - FLIP_CI))}`),
+  const linePts  = probs.map((p, i) => `${px(i)},${py(p)}`).join(" ");
+  const bandPts  = [
+    ...probs.map((_, i) => `${px(i)},${py(Math.min(1, ci_hi[i]))}`),
+    ...[...probs].reverse().map((_, i) => `${px(n - 1 - i)},${py(Math.max(0, ci_lo[n - 1 - i]))}`),
   ].join(" ");
+
+  const isReal = pairIdx === 2;
 
   return (
     <div className="flex flex-col items-center">
       <svg width={w} height={h}>
         <polygon points={bandPts} fill="rgba(129,140,248,0.15)" />
         <line x1="18" y1={py(0.5)} x2={w - 16} y2={py(0.5)} stroke="#e0ddd6" strokeWidth="1" strokeDasharray="3,3" />
-        <line x1={px(LOCK_IN_IDX)} y1="10" x2={px(LOCK_IN_IDX)} y2={h - 20} stroke="#ef4444" strokeWidth="1" strokeDasharray="2,2" />
+        <line x1={px(lockInIdx)} y1="10" x2={px(lockInIdx)} y2={h - 20} stroke="#ef4444" strokeWidth="1" strokeDasharray="2,2" />
         <polyline points={linePts} fill="none" stroke="#4f46e5" strokeWidth="1.5" />
-        {FLIP_PROB.map((p, i) => (
+        {probs.map((p, i) => (
           <circle key={i} cx={px(i)} cy={py(p)} r="2.4" fill="#4f46e5" />
         ))}
-        {K_VALUES.map((k, i) => (
+        {kVals.map((k, i) => (
           <text key={k} x={px(i)} y={h - 6} fontSize="7" fill="#8a8374" textAnchor="middle" fontFamily="JetBrains Mono, monospace">
             {k}
           </text>
         ))}
-        <text x={px(LOCK_IN_IDX) + 4} y="16" fontSize="7" fill="#ef4444" fontFamily="JetBrains Mono, monospace">
-          lock-in k≈12 (CI 10–14)
+        <text x={px(lockInIdx) + 4} y="16" fontSize="7" fill="#ef4444" fontFamily="JetBrains Mono, monospace">
+          {lockInLabel}
         </text>
         <text x="14" y={py(0.5) - 3} fontSize="7" fill="#a39d8e" fontFamily="JetBrains Mono, monospace">
           50%
         </text>
       </svg>
       <span className="text-[8px] text-[#8a8374]" style={MONO}>
-        P(override wins) vs swap step — 12 seeds per point · the evidence
+        P(override wins) vs swap step · 12 seeds per point{isReal ? " · real data" : " · placeholder"}
       </span>
     </div>
   );
@@ -89,12 +127,13 @@ function TimestepSlider() {
   const pair = SWAP_PAIRS[pairIdx];
   const baseShade = BASE_SHADES[pairIdx];
   const overrideShade = OVERRIDE_SHADES[pairIdx];
+  const activeCurve = PAIR_CURVES[pairIdx];
+  const activeKValues = activeCurve.k;
+  const activeLockInIdx = activeCurve.lockInIdx;
 
-  // frames left of lock-in: the override still wins (B visible);
-  // right of lock-in: locked to the base prompt's default (A)
   const getFrameColor = (i: number) => {
-    if (i >= LOCK_IN_IDX) return `rgb(${baseShade[0]},${baseShade[1]},${baseShade[2]})`;
-    return blend(overrideShade, baseShade, i / LOCK_IN_IDX);
+    if (i >= activeLockInIdx) return `rgb(${baseShade[0]},${baseShade[1]},${baseShade[2]})`;
+    return blend(overrideShade, baseShade, i / activeLockInIdx);
   };
 
   return (
@@ -132,19 +171,19 @@ function TimestepSlider() {
         {/* Left: single-seed strip + slider (illustration) */}
         <div className="flex-[3] flex flex-col gap-3">
           <div className="flex gap-[4px] items-end">
-            {K_VALUES.map((k, i) => (
+            {activeKValues.map((k, i) => (
               <div
                 key={k}
                 className="flex-1 rounded-[4px] flex flex-col items-center justify-end pb-[5px] relative transition-all duration-200"
                 style={{
                   background: getFrameColor(i),
-                  height: `${58 + (i < LOCK_IN_IDX ? (LOCK_IN_IDX - i) * 4 : 0)}px`,
+                  height: `${58 + (i < activeLockInIdx ? (activeLockInIdx - i) * 4 : 0)}px`,
                   opacity: i === kIdx ? 1 : 0.6,
                   outline: i === kIdx ? "2px solid #818cf8" : "none",
                   outlineOffset: "1px",
                 }}
               >
-                {i === LOCK_IN_IDX && (
+                {i === activeLockInIdx && (
                   <span className="absolute -top-[16px] left-0 right-0 text-center text-[8px] text-[#ef4444]" style={MONO}>
                     lock-in ↓
                   </span>
@@ -158,7 +197,7 @@ function TimestepSlider() {
           <Slider.Root
             className="relative flex items-center select-none touch-none h-5"
             min={0}
-            max={K_VALUES.length - 1}
+            max={activeKValues.length - 1}
             step={1}
             value={[kIdx]}
             onValueChange={([v]) => setKIdx(v)}
@@ -175,7 +214,7 @@ function TimestepSlider() {
 
         {/* Right: flip-probability curve (evidence) */}
         <div className="flex-[2] pt-1">
-          <LockInCurve />
+          <LockInCurve pairIdx={pairIdx} />
         </div>
       </div>
     </div>

@@ -147,82 +147,257 @@ function AmplificationDelta() {
   );
 }
 
-// ─── Tool 09 — Cultural grid ────────────────────────────────────────────────
+// ─── Tool 09 — Cultural grid (real images, SD 2.1 CFG=7 seed_00) ────────────
 
-const CULTURAL_CONCEPTS = ["a wedding", "a breakfast table", "a school classroom"];
+const CULTURAL_SITUATIONS = [
+  { id: "wedding",   label: "a wedding" },
+  { id: "breakfast", label: "a breakfast" },
+  { id: "funeral",   label: "a funeral" },
+];
 const CULTURAL_LOCATIONS = [
-  { label: "default", shades: ["#d4cec8", "#cdc8c2", "#d0cbc5"] },
-  { label: "in Nigeria", shades: ["#c8b8a0", "#c0b098", "#c4b4a2"] },
-  { label: "in USA", shades: ["#d0ccc8", "#a39d8e8c4", "#cec8c4"] },
+  { id: "default", label: "default" },
+  { id: "nigeria", label: "in Nigeria" },
+  { id: "japan",   label: "in Japan" },
 ];
 
 function CulturalGrid() {
-  const [concept, setConcept] = useState(CULTURAL_CONCEPTS[0]);
-  const conceptIdx = CULTURAL_CONCEPTS.indexOf(concept);
+  const [sitId, setSitId] = useState("wedding");
 
   return (
     <div className="p-3 flex flex-col gap-3">
       <div className="flex gap-[5px] flex-wrap">
-        {CULTURAL_CONCEPTS.map((c) => (
+        {CULTURAL_SITUATIONS.map((s) => (
           <button
-            key={c}
-            onClick={() => setConcept(c)}
+            key={s.id}
+            onClick={() => setSitId(s.id)}
             className="text-[10px] px-[8px] py-[3px] rounded-[4px] border transition-colors"
             style={{
               ...MONO,
-              background: concept === c ? "#064e3b" : "#f5f4f0",
-              color: concept === c ? "#d1fae5" : "#666",
-              borderColor: concept === c ? "#064e3b" : "#e0ddd6",
+              background: sitId === s.id ? "#064e3b" : "#f5f4f0",
+              color: sitId === s.id ? "#d1fae5" : "#666",
+              borderColor: sitId === s.id ? "#064e3b" : "#e0ddd6",
             }}
           >
-            {c}
+            {s.label}
           </button>
         ))}
       </div>
-      <div className="flex gap-[6px] h-[100px]">
+      <div className="flex gap-[6px]">
         {CULTURAL_LOCATIONS.map((loc) => (
-          <div key={loc.label} className="flex-1 flex flex-col gap-[4px]">
+          <div key={loc.id} className="flex-1 flex flex-col gap-[4px]">
             <span
               className="text-[9px] text-[#555] text-center font-semibold bg-[#f0ede6] rounded-[3px] py-[2px]"
               style={MONO}
             >
               {loc.label}
             </span>
-            <div className="flex-1 rounded-[4px] transition-colors duration-400" style={{ background: loc.shades[conceptIdx] }} />
-            <div className="h-[18px] rounded-[4px] transition-colors duration-400" style={{ background: loc.shades[conceptIdx], opacity: 0.7 }} />
+            <img
+              src={`/images/cultural/${sitId}_${loc.id}.png`}
+              alt={`${sitId} ${loc.label}`}
+              className="w-full rounded-[4px] object-cover"
+              style={{ aspectRatio: "1 / 1" }}
+            />
           </div>
         ))}
       </div>
+      <p className="text-[8px] text-[#a39d8e] leading-[1.4]" style={MONO}>
+        SD 2.1 · DDIM · CFG 7.5 · seed 00 · 768×768 — single seed, illustration only
+      </p>
     </div>
   );
 }
 
-// ─── Tool 10 — Embedding distance bars ──────────────────────────────────────
+// ─── Tool 10 — Embedding distance bars (real DINOv2 data) ───────────────────
+// Source: src/materials/analysis/cultural/distances.json
+// Method: cosine distance between L2-normalised mean DINOv2 embeddings,
+//         n=50 seeds per variant, 10k bootstrap CIs (percentile method)
 
-const DISTANCE_DATA = [
-  { country: "Nigeria", dist: 0.41, pct: 0.88 },
-  { country: "India", dist: 0.28, pct: 0.60 },
-  { country: "Brazil", dist: 0.19, pct: 0.41 },
-  { country: "Germany", dist: 0.07, pct: 0.15 },
-  { country: "USA", dist: 0.02, pct: 0.04 },
-];
+const CULTURAL_DISTANCES: Record<string, { country: string; dist: number; ci_low: number; ci_high: number }[]> = {
+  wedding: [
+    { country: "India",     dist: 0.807, ci_low: 0.778, ci_high: 0.840 },
+    { country: "Nigeria",   dist: 0.698, ci_low: 0.658, ci_high: 0.750 },
+    { country: "Japan",     dist: 0.660, ci_low: 0.613, ci_high: 0.713 },
+    { country: "Egypt",     dist: 0.634, ci_low: 0.577, ci_high: 0.707 },
+    { country: "Indonesia", dist: 0.443, ci_low: 0.397, ci_high: 0.516 },
+    { country: "Russia",    dist: 0.202, ci_low: 0.166, ci_high: 0.296 },
+    { country: "Germany",   dist: 0.184, ci_low: 0.154, ci_high: 0.257 },
+    { country: "USA",       dist: 0.105, ci_low: 0.096, ci_high: 0.167 },
+  ],
+  breakfast: [
+    { country: "Japan",     dist: 0.696, ci_low: 0.660, ci_high: 0.737 },
+    { country: "India",     dist: 0.631, ci_low: 0.600, ci_high: 0.674 },
+    { country: "Indonesia", dist: 0.501, ci_low: 0.459, ci_high: 0.559 },
+    { country: "Nigeria",   dist: 0.498, ci_low: 0.467, ci_high: 0.548 },
+    { country: "Egypt",     dist: 0.386, ci_low: 0.355, ci_high: 0.450 },
+    { country: "USA",       dist: 0.322, ci_low: 0.278, ci_high: 0.386 },
+    { country: "Russia",    dist: 0.287, ci_low: 0.256, ci_high: 0.347 },
+    { country: "Germany",   dist: 0.279, ci_low: 0.246, ci_high: 0.341 },
+  ],
+  funeral: [
+    { country: "Nigeria",   dist: 0.620, ci_low: 0.545, ci_high: 0.703 },
+    { country: "India",     dist: 0.502, ci_low: 0.451, ci_high: 0.572 },
+    { country: "Egypt",     dist: 0.357, ci_low: 0.299, ci_high: 0.448 },
+    { country: "Indonesia", dist: 0.315, ci_low: 0.285, ci_high: 0.371 },
+    { country: "Japan",     dist: 0.254, ci_low: 0.210, ci_high: 0.339 },
+    { country: "Germany",   dist: 0.153, ci_low: 0.121, ci_high: 0.232 },
+    { country: "Russia",    dist: 0.127, ci_low: 0.115, ci_high: 0.175 },
+    { country: "USA",       dist: 0.094, ci_low: 0.075, ci_high: 0.169 },
+  ],
+};
 
 function EmbeddingDistanceBars() {
+  const [sitId, setSitId] = useState("wedding");
+  const rows = CULTURAL_DISTANCES[sitId] ?? [];
+  const maxDist = Math.max(...rows.map((r) => r.dist));
+
   return (
-    <div className="p-3 flex flex-col gap-[8px] h-[140px] justify-center">
-      {DISTANCE_DATA.map((d) => (
-        <div key={d.country} className="flex items-center gap-2">
-          <span className="text-[9px] text-[#867f6f] w-[56px] text-right shrink-0" style={MONO}>
-            {d.country}
-          </span>
-          <div className="flex-1 h-[12px] bg-[#f0ede6] rounded-[3px] overflow-hidden">
-            <div className="h-full rounded-[3px]" style={{ width: `${d.pct * 100}%`, background: "#34d399" }} />
+    <div className="p-3 flex flex-col gap-2">
+      <div className="flex gap-[5px] flex-wrap">
+        {CULTURAL_SITUATIONS.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => setSitId(s.id)}
+            className="text-[10px] px-[8px] py-[3px] rounded-[4px] border transition-colors"
+            style={{
+              ...MONO,
+              background: sitId === s.id ? "#064e3b" : "#f5f4f0",
+              color: sitId === s.id ? "#d1fae5" : "#666",
+              borderColor: sitId === s.id ? "#064e3b" : "#e0ddd6",
+            }}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+      <div className="flex flex-col gap-[7px] mt-1">
+        {rows.map((d) => {
+          const pct = d.dist / maxDist;
+          const ciLoPct = d.ci_low / maxDist;
+          const ciHiPct = d.ci_high / maxDist;
+          return (
+            <div key={d.country} className="flex items-center gap-2">
+              <span className="text-[9px] text-[#867f6f] w-[58px] text-right shrink-0" style={MONO}>
+                {d.country}
+              </span>
+              <div className="flex-1 h-[12px] bg-[#f0ede6] rounded-[3px] overflow-visible relative">
+                {/* CI band */}
+                <div
+                  className="absolute top-0 h-full rounded-[3px] opacity-30"
+                  style={{ left: `${ciLoPct * 100}%`, width: `${(ciHiPct - ciLoPct) * 100}%`, background: "#059669" }}
+                />
+                {/* Mean bar */}
+                <div
+                  className="absolute top-0 h-full rounded-[3px]"
+                  style={{ width: `${pct * 100}%`, background: "#34d399" }}
+                />
+              </div>
+              <span className="text-[9px] text-[#867f6f] w-[28px]" style={MONO}>
+                {d.dist.toFixed(2)}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <p className="text-[8px] text-[#a39d8e] mt-1" style={MONO}>
+        DINOv2 ViT-B/14 · n=50 seeds · bars = mean, shading = 95% CI
+      </p>
+    </div>
+  );
+}
+
+// ─── Tool 10b — Intraset similarity (stereotyping finding) ──────────────────
+// Source: src/materials/analysis/cultural/intraset_sim.json
+// Finding: country-qualified prompts produce more homogeneous (more stereotyped)
+// output than the unqualified default — the model narrows its concept of a culture.
+
+const CULTURAL_INTRASET: Record<string, { label: string; sim: number; isDefault: boolean }[]> = {
+  wedding: [
+    { label: "default",   sim: 0.444, isDefault: true  },
+    { label: "Russia",    sim: 0.368, isDefault: false },
+    { label: "USA",       sim: 0.418, isDefault: false },
+    { label: "Egypt",     sim: 0.398, isDefault: false },
+    { label: "Indonesia", sim: 0.435, isDefault: false },
+    { label: "Germany",   sim: 0.440, isDefault: false },
+    { label: "India",     sim: 0.632, isDefault: false },
+    { label: "Japan",     sim: 0.670, isDefault: false },
+    { label: "Nigeria",   sim: 0.687, isDefault: false },
+  ],
+  breakfast: [
+    { label: "Egypt",     sim: 0.415, isDefault: false },
+    { label: "Nigeria",   sim: 0.483, isDefault: false },
+    { label: "default",   sim: 0.491, isDefault: true  },
+    { label: "Germany",   sim: 0.527, isDefault: false },
+    { label: "Russia",    sim: 0.562, isDefault: false },
+    { label: "India",     sim: 0.572, isDefault: false },
+    { label: "Indonesia", sim: 0.596, isDefault: false },
+    { label: "USA",       sim: 0.648, isDefault: false },
+    { label: "Japan",     sim: 0.738, isDefault: false },
+  ],
+  funeral: [
+    { label: "USA",       sim: 0.421, isDefault: false },
+    { label: "default",   sim: 0.474, isDefault: true  },
+    { label: "Japan",     sim: 0.481, isDefault: false },
+    { label: "Egypt",     sim: 0.507, isDefault: false },
+    { label: "Germany",   sim: 0.508, isDefault: false },
+    { label: "Indonesia", sim: 0.522, isDefault: false },
+    { label: "Russia",    sim: 0.530, isDefault: false },
+    { label: "Nigeria",   sim: 0.577, isDefault: false },
+    { label: "India",     sim: 0.605, isDefault: false },
+  ],
+};
+
+function IntrasetBars() {
+  const [sitId, setSitId] = useState("wedding");
+  const rows = CULTURAL_INTRASET[sitId] ?? [];
+
+  return (
+    <div className="p-3 flex flex-col gap-2">
+      <div className="flex gap-[5px] flex-wrap">
+        {CULTURAL_SITUATIONS.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => setSitId(s.id)}
+            className="text-[10px] px-[8px] py-[3px] rounded-[4px] border transition-colors"
+            style={{
+              ...MONO,
+              background: sitId === s.id ? "#4f46e5" : "#f5f4f0",
+              color: sitId === s.id ? "#e0e7ff" : "#666",
+              borderColor: sitId === s.id ? "#4f46e5" : "#e0ddd6",
+            }}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+      <div className="flex flex-col gap-[7px] mt-1">
+        {rows.map((r) => (
+          <div key={r.label} className="flex items-center gap-2">
+            <span
+              className="text-[9px] w-[58px] text-right shrink-0"
+              style={{ ...MONO, color: r.isDefault ? "#4f46e5" : "#867f6f", fontWeight: r.isDefault ? 700 : 400 }}
+            >
+              {r.label}
+            </span>
+            <div className="flex-1 h-[12px] bg-[#f0ede6] rounded-[3px] overflow-hidden">
+              <div
+                className="h-full rounded-[3px]"
+                style={{
+                  width: `${r.sim * 100}%`,
+                  background: r.isDefault ? "#818cf8" : r.sim > 0.65 ? "#ef4444" : r.sim > 0.5 ? "#f59e0b" : "#34d399",
+                }}
+              />
+            </div>
+            <span className="text-[9px] text-[#867f6f] w-[28px]" style={MONO}>
+              {r.sim.toFixed(2)}
+            </span>
           </div>
-          <span className="text-[9px] text-[#867f6f] w-[28px]" style={MONO}>
-            {d.dist.toFixed(2)}
-          </span>
-        </div>
-      ))}
+        ))}
+      </div>
+      <p className="text-[8px] text-[#a39d8e] mt-1 leading-[1.4]" style={MONO}>
+        Higher = more uniform output (more stereotyped). Red = high stereotyping.
+        <br />
+        DINOv2 mean pairwise cosine sim · n=50 seeds · sorted low→high
+      </p>
     </div>
   );
 }
@@ -489,8 +664,8 @@ export function Layer3() {
           num="09"
           name="Side-by-side cultural image grids"
           type="Interactive grid"
-          description="Same concept in default / Nigeria / USA — select a concept to compare how SD's visual vocabulary shifts across geographic contexts."
-          explanation="The default outputs reveal SD's implicit cultural baseline. Adding 'in Nigeria' or 'in India' produces dramatically different compositions, color palettes, and material cultures — not because the model lacks that knowledge, but because it treats one cultural perspective as the unmarked default. The near-identical 'in USA' column shows the US is already the implicit default."
+          description="Same concept in default / Nigeria / Japan — select a situation to compare how SD's visual vocabulary shifts across geographic contexts. Real generated images, SD 2.1."
+          explanation="The default outputs reveal SD's implicit cultural baseline. Adding 'in Nigeria' or 'in Japan' produces dramatically different compositions, colour palettes, and material cultures. The unqualified prompt is indistinguishable from a Western framing — not because the model lacks other cultural knowledge, but because it treats one perspective as the unmarked default."
         >
           <CulturalGrid />
         </ToolCard>
@@ -499,10 +674,21 @@ export function Layer3() {
           num="10"
           name="Distance from the default"
           type="Bar chart"
-          description="Distance between mean embeddings of default vs. each geographic variant — DINOv2 as the primary (CLIP-independent) measure, CLIP distance as supporting signal."
-          explanation="Small distances mean adding a geographic qualifier changes almost nothing — that geography is already the default. Large distances measure how far the model must travel to represent that culture. Measured with DINOv2 to avoid the circularity of judging CLIP's bias with CLIP itself."
+          description="DINOv2 cosine distance between the mean embedding of the unqualified prompt and each country-qualified variant. n=50 seeds, 95% bootstrap CI. Select a situation."
+          explanation="Small distance means that adding a geographic qualifier changes almost nothing — that geography is already the model's default. Large distance measures how far SD must travel to represent that culture. DINOv2 is used instead of CLIP to avoid measuring CLIP's own bias with CLIP."
         >
           <EmbeddingDistanceBars />
+        </ToolCard>
+
+        <ToolCard
+          num="10b"
+          name="Output diversity — default vs country-qualified"
+          type="Bar chart"
+          description="Mean pairwise DINOv2 cosine similarity within each variant's 50-image batch. Higher = more uniform / more stereotyped. Select a situation."
+          explanation="A surprising finding: country-qualified prompts produce more homogeneous output than the unqualified default. 'A wedding in Nigeria' generates near-identical images across seeds (high similarity), while 'a wedding' generates diverse ones. The model has a narrow, stereotyped concept of each non-Western culture — and a richer, more varied concept of its own default."
+          fullWidth
+        >
+          <IntrasetBars />
         </ToolCard>
       </ToolsGrid>
 
