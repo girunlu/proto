@@ -174,7 +174,7 @@ function CulturalGrid({ sitId, onZoom }: { sitId: string; onZoom: (src: string) 
     <div className="p-3 flex flex-col gap-3">
       <div className="flex gap-[6px]">
         {CULTURAL_LOCATIONS.map((loc) => {
-          const src = `/images/cultural/${sitId}_${loc.id}${seed.suffix}.png`;
+          const src = `/images/cultural/${sitId}_${loc.id}${seed.suffix}.webp`;
           return (
             <div key={loc.id} className="flex-1 flex flex-col gap-[4px]">
               <span className="text-[9px] text-[#555] text-center font-semibold bg-[#f0ede6] rounded-[3px] py-[2px]" style={MONO}>
@@ -183,6 +183,7 @@ function CulturalGrid({ sitId, onZoom }: { sitId: string; onZoom: (src: string) 
               <img
                 src={src}
                 alt={`${sitId} ${loc.label}`}
+                loading="lazy"
                 className="w-full rounded-[4px] object-cover hover:opacity-90 transition-opacity"
                 style={{ aspectRatio: "1 / 1", cursor: "zoom-in" }}
                 onClick={() => onZoom(src)}
@@ -447,8 +448,8 @@ function DAAMOverlay({ onZoom }: { onZoom: (src: string) => void }) {
     setToken(DAAM_PROMPTS[i].tokens[0]);
   };
 
-  const imgSrc  = `/images/cultural/${p.sitId}_${p.locId}.png`;
-  const daamSrc = `/images/daam/${p.sitId}_${p.locId}_${token}.png`;
+  const imgSrc  = `/images/cultural/${p.sitId}_${p.locId}.webp`;
+  const daamSrc = `/images/daam/${p.sitId}_${p.locId}_${token}.webp`;
   const rgb     = DAAM_COLORS[token] ?? "156,163,175";
 
   // Build tokenised prompt chips
@@ -510,6 +511,7 @@ function DAAMOverlay({ onZoom }: { onZoom: (src: string) => void }) {
           <img
             src={imgSrc}
             alt={p.label}
+            loading="lazy"
             className="w-full rounded-[5px] object-cover hover:opacity-90 transition-opacity"
             style={{ aspectRatio: "1/1", cursor: "zoom-in" }}
             onClick={() => onZoom(imgSrc)}
@@ -522,6 +524,7 @@ function DAAMOverlay({ onZoom }: { onZoom: (src: string) => void }) {
           <img
             src={daamSrc}
             alt={`daam ${token}`}
+            loading="lazy"
             className="w-full rounded-[5px] object-cover hover:opacity-90 transition-opacity"
             style={{ aspectRatio: "1/1", cursor: "zoom-in" }}
             onClick={() => onZoom(daamSrc)}

@@ -54,7 +54,8 @@ function CFGCulturalStrip() {
             className="flex-1 flex flex-col gap-[4px] cursor-pointer bg-transparent border-0 p-0"
           >
             <img
-              src={`/images/cfg/wedding_cfg${cfg}.png`}
+              src={`/images/cfg/wedding_cfg${cfg}.webp`}
+              loading="lazy"
               alt={`cfg=${cfg}`}
               className="w-full rounded-[5px] object-cover transition-all duration-200"
               style={{

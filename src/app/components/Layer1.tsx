@@ -149,7 +149,8 @@ function DiffusionLens() {
             className="flex-1 flex flex-col gap-[4px] cursor-pointer bg-transparent border-0 p-0"
           >
             <img
-              src={`/images/difflens/${current.slug}_layer${layer}.png`}
+              src={`/images/difflens/${current.slug}_layer${layer}.webp`}
+              loading="lazy"
               alt={`layer ${layer}`}
               className="w-full rounded-[5px] object-cover transition-all duration-200"
               style={{

@@ -48,7 +48,7 @@ const PAIR_CURVES = [
     ci_hi: [1.000, 1.000, 0.583, 0.000, 0.000],
     lockInIdx: 1, lockInLabel: "lock-in k≈7–10",
     originImgBase: "/images/cultural/wedding_nigeria",
-    swapImgBase:   (s: string) => STEP_NAMES.map(step => `/images/swaps/wedding_NG_to_US_${step}${s}.png`),
+    swapImgBase:   (s: string) => STEP_NAMES.map(step => `/images/swaps/wedding_NG_to_US_${step}${s}.webp`),
   },
   { // pair 1: breakfast Nigeria→Germany — REAL DATA
     k: [1, 5, 10, 15, 25],
@@ -57,7 +57,7 @@ const PAIR_CURVES = [
     ci_hi: [1.000, 1.000, 1.000, 0.917, 0.417],
     lockInIdx: 3, lockInLabel: "lock-in k≈18–22",
     originImgBase: "/images/cultural/breakfast_nigeria",
-    swapImgBase:   (s: string) => STEP_NAMES.map(step => `/images/swaps/breakfast_NG_to_DE_${step}${s}.png`),
+    swapImgBase:   (s: string) => STEP_NAMES.map(step => `/images/swaps/breakfast_NG_to_DE_${step}${s}.webp`),
   },
   { // pair 2: breakfast Japan→Russia — REAL DATA (weak pair)
     k: [1, 5, 10, 15, 25],
@@ -66,7 +66,7 @@ const PAIR_CURVES = [
     ci_hi: [1.000, 1.000, 0.583, 0.250, 0.000],
     lockInIdx: 2, lockInLabel: "lock-in k≈7–10 (weak pair)",
     originImgBase: "/images/cultural/breakfast_japan",
-    swapImgBase:   (s: string) => STEP_NAMES.map(step => `/images/swaps/breakfast_JP_to_RU_${step}${s}.png`),
+    swapImgBase:   (s: string) => STEP_NAMES.map(step => `/images/swaps/breakfast_JP_to_RU_${step}${s}.webp`),
   },
 ];
 
@@ -151,7 +151,7 @@ function TimestepSlider() {
   const activeKValues  = activeCurve.k;
   const activeLockInIdx = activeCurve.lockInIdx;
   const seedSuffix     = SWAP_SEED_SUFFIXES[seedIdx];
-  const originImg      = `${activeCurve.originImgBase}${seedIdx === 0 ? "" : `_0${seedIdx}`}.png`;
+  const originImg      = `${activeCurve.originImgBase}${seedIdx === 0 ? "" : `_0${seedIdx}`}.webp`;
   const swapImgs       = activeCurve.swapImgBase(seedSuffix);
 
   const getFrameColor = (i: number) => {
@@ -210,6 +210,7 @@ function TimestepSlider() {
               <img
                 src={originImg}
                 alt="prompt A original"
+                loading="lazy"
                 className="w-full rounded-[6px] object-cover hover:opacity-90 transition-opacity"
                 style={{ aspectRatio: "1 / 1", cursor: "zoom-in" }}
                 onClick={() => setZoomedSrc(originImg)}
@@ -226,6 +227,7 @@ function TimestepSlider() {
               <img
                 src={swapImgs[kIdx]}
                 alt={`swap at step ${activeKValues[kIdx]}`}
+                loading="lazy"
                 className="w-full rounded-[6px] object-cover transition-all duration-200 hover:opacity-90"
                 style={{ aspectRatio: "1 / 1", outline: kIdx <= activeLockInIdx ? "2px solid #34d399" : "2px solid #ef4444", outlineOffset: "2px", cursor: "zoom-in" }}
                 onClick={() => setZoomedSrc(swapImgs[kIdx])}
