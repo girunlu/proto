@@ -67,8 +67,8 @@ const CFG_COUNTRIES = [
 type CfgDistanceJson = { results: Record<string, Record<string, Record<string, { mean: number; ci_low: number; ci_high: number }>>> };
 const CFG_DISTANCE = (cfgDistanceData as CfgDistanceJson).results;
 
-// Fixed y-scale across every event/country pair, so switching the selectors
-// changes the curve's shape, not the axis.
+// Fixed y-scale across every event/country pair, so switching the event
+// changes the curves' shape, not the axis.
 const GLOBAL_MAX_CFG_DIST = Math.max(
   0.01,
   ...Object.values(CFG_DISTANCE).flatMap((byCountry) =>
@@ -76,25 +76,47 @@ const GLOBAL_MAX_CFG_DIST = Math.max(
   ),
 );
 
+// Same per-country identity colors used in Layer3's cluster-gravity heatmap,
+// kept consistent so a country reads the same color everywhere in the site.
+const CFG_COUNTRY_COLOR: Record<string, string> = {
+  US: "#60a5fa", DE: "#34d399", RU: "#a78bfa", IN: "#f472b6",
+  ID: "#fb923c", JP: "#38bdf8", EG: "#fbbf24", NG: "#f87171",
+};
+
 function CFGCulturalStrip() {
   const [sitId, setSitId] = useState("wedding");
-  const [country, setCountry] = useState("NG");
   const [cfgIdx, setCfgIdx] = useState(2); // default to cfg=7
+  const [hoverCode, setHoverCode] = useState<string | null>(null);
   const mono = { fontFamily: "'JetBrains Mono', monospace" };
 
-  const rows = CFG_VALUES.map((cfg) => CFG_DISTANCE[sitId]?.[country]?.[String(cfg)]);
   const maxDist = GLOBAL_MAX_CFG_DIST;
 
+  // Median-split countries by their mean distance-from-default across the CFG
+  // sweep, for *this* event — "near" = already close to the default, "far" =
+  // needs real cultural override. Recomputed per event since who's near/far
+  // shifts with the situation.
+  const meanDistByCountry = CFG_COUNTRIES.map((c) => {
+    const vals = CFG_VALUES.map((cfg) => CFG_DISTANCE[sitId]?.[c.code]?.[String(cfg)]?.mean ?? 0);
+    return { code: c.code, label: c.label, mean: vals.reduce((s, v) => s + v, 0) / vals.length };
+  });
+  const sortedByDist = [...meanDistByCountry].sort((a, b) => a.mean - b.mean);
+  const median = sortedByDist[Math.floor(sortedByDist.length / 2)].mean;
+  const groupOf = (code: string) =>
+    (meanDistByCountry.find((c) => c.code === code)?.mean ?? 0) < median ? "near" : "far";
+
+  const nearGroup = meanDistByCountry.filter((c) => c.mean < median).map((c) => c.label);
+  const farGroup = meanDistByCountry.filter((c) => c.mean >= median).map((c) => c.label);
+  const nearAvg = nearGroup.length ? sortedByDist.slice(0, Math.floor(sortedByDist.length / 2)).reduce((s, c) => s + c.mean, 0) / nearGroup.length : 0;
+  const farAvg = farGroup.length ? sortedByDist.slice(Math.floor(sortedByDist.length / 2)).reduce((s, c) => s + c.mean, 0) / farGroup.length : 0;
+
   // Line chart: x = actual CFG value (so the 1→4 jump vs. the 4→15 plateau is
-  // spatially honest, not evenly spaced), y = DINOv2 distance from default.
-  const W = 320, H = 130;
+  // spatially honest, not evenly spaced), y = DINOv2 distance from default,
+  // one line per country so all 8 are directly comparable at once.
+  const W = 340, H = 160;
   const PAD = { l: 34, r: 14, t: 12, b: 22 };
   const cfgMin = CFG_VALUES[0], cfgMax = CFG_VALUES[CFG_VALUES.length - 1];
   const px = (cfg: number) => PAD.l + ((cfg - cfgMin) / (cfgMax - cfgMin)) * (W - PAD.l - PAD.r);
   const py = (dist: number) => H - PAD.b - (dist / maxDist) * (H - PAD.t - PAD.b);
-  const linePath = CFG_VALUES
-    .map((cfg, i) => `${i === 0 ? "M" : "L"} ${px(cfg)} ${py(rows[i]?.mean ?? 0)}`)
-    .join(" ");
 
   return (
     <div className="p-3 flex flex-col gap-3">
@@ -107,15 +129,6 @@ function CFGCulturalStrip() {
           style={mono}
         >
           {CFG_SITUATIONS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-        </select>
-        <span className="text-[9px] text-[#8a8374] shrink-0 ml-2">vs default in:</span>
-        <select
-          value={country}
-          onChange={(e) => setCountry(e.target.value)}
-          className="text-[10px] border border-[#d8d4cb] rounded-[4px] px-[6px] py-[3px] bg-white"
-          style={mono}
-        >
-          {CFG_COUNTRIES.map((c) => <option key={c.code} value={c.code}>{c.label}</option>)}
         </select>
       </div>
 
@@ -147,11 +160,12 @@ function CFGCulturalStrip() {
         ))}
       </div>
       <p className="text-[8px] text-[#a39d8e]" style={mono}>
-        default variant · seed 00 · illustration only — the bars below are the evidence
+        default variant · seed 00 · illustration only — the chart below is the evidence
       </p>
 
-      {/* Evidence: DINOv2 distance from default, per CFG level — line chart, not
-          bars, so the shape (steep rise then plateau) reads as a trend */}
+      {/* Evidence: DINOv2 distance from default, per CFG level, one line per
+          country so all 8 are compared directly instead of one at a time.
+          Solid = "far" group (median split, this event), dashed = "near". */}
       <svg width={W} height={H}>
         <line x1={PAD.l} y1={PAD.t} x2={PAD.l} y2={H - PAD.b} stroke="#e0ddd6" strokeWidth="1" />
         <line x1={PAD.l} y1={H - PAD.b} x2={W - PAD.r} y2={H - PAD.b} stroke="#e0ddd6" strokeWidth="1" />
@@ -160,29 +174,70 @@ function CFGCulturalStrip() {
         ))}
         <text x={PAD.l - 4} y={py(maxDist)} fontSize="7" fill="#a39d8e" textAnchor="end" fontFamily="JetBrains Mono,monospace" dominantBaseline="middle">{maxDist.toFixed(2)}</text>
         <text x={PAD.l - 4} y={py(0)} fontSize="7" fill="#a39d8e" textAnchor="end" fontFamily="JetBrains Mono,monospace" dominantBaseline="middle">0</text>
-        <path d={linePath} fill="none" stroke="#34d399" strokeWidth="2" />
-        {CFG_VALUES.map((cfg, i) => {
-          const r = rows[i];
-          const active = cfgIdx === i;
+        {/* selected-cfg guide line, synced with the image strip above */}
+        <line x1={px(CFG_VALUES[cfgIdx])} y1={PAD.t} x2={px(CFG_VALUES[cfgIdx])} y2={H - PAD.b} stroke="#92400e" strokeWidth="1" strokeDasharray="2 2" opacity="0.4" />
+
+        {CFG_COUNTRIES.map((c) => {
+          const rows = CFG_VALUES.map((cfg) => CFG_DISTANCE[sitId]?.[c.code]?.[String(cfg)]);
+          const linePath = CFG_VALUES
+            .map((cfg, i) => `${i === 0 ? "M" : "L"} ${px(cfg)} ${py(rows[i]?.mean ?? 0)}`)
+            .join(" ");
+          const isFar = groupOf(c.code) === "far";
+          const isHov = hoverCode === c.code;
           return (
-            <g key={cfg} onClick={() => setCfgIdx(i)} style={{ cursor: "pointer" }}>
-              <circle cx={px(cfg)} cy={py(r?.mean ?? 0)} r={active ? 5 : 3.5} fill={active ? "#92400e" : "#34d399"} />
-              <text x={px(cfg)} y={py(r?.mean ?? 0) - 9} fontSize="7.5" fill={active ? "#92400e" : "#8a8374"} textAnchor="middle" fontFamily="JetBrains Mono,monospace" fontWeight={active ? 700 : 400}>
-                {r ? r.mean.toFixed(2) : "—"}
-              </text>
-              <text x={px(cfg)} y={H - PAD.b + 11} fontSize="7.5" fill={active ? "#92400e" : "#8a8374"} textAnchor="middle" fontFamily="JetBrains Mono,monospace">
-                {cfg}
-              </text>
+            <g
+              key={c.code}
+              onMouseEnter={() => setHoverCode(c.code)}
+              onMouseLeave={() => setHoverCode(null)}
+              opacity={hoverCode && !isHov ? 0.25 : 1}
+              style={{ cursor: "default", transition: "opacity 0.15s" }}
+            >
+              <path
+                d={linePath}
+                fill="none"
+                stroke={CFG_COUNTRY_COLOR[c.code]}
+                strokeWidth={isHov ? 2.5 : 1.5}
+                strokeDasharray={isFar ? undefined : "3 2"}
+              />
+              {CFG_VALUES.map((cfg, i) => (
+                <circle key={cfg} cx={px(cfg)} cy={py(rows[i]?.mean ?? 0)} r={isHov ? 3 : 2} fill={CFG_COUNTRY_COLOR[c.code]} />
+              ))}
             </g>
           );
         })}
       </svg>
+
+      {/* Legend, doubles as hover trigger + near/far group tag */}
+      <div className="flex items-center gap-[10px] flex-wrap" style={mono}>
+        {CFG_COUNTRIES.map((c) => (
+          <span
+            key={c.code}
+            onMouseEnter={() => setHoverCode(c.code)}
+            onMouseLeave={() => setHoverCode(null)}
+            className="flex items-center gap-1 text-[8px] cursor-default"
+            style={{ color: hoverCode === c.code ? "#1a1a1a" : "#8a8374" }}
+          >
+            <span
+              className="w-[9px] h-[9px] rounded-[2px] inline-block"
+              style={{ background: CFG_COUNTRY_COLOR[c.code], opacity: groupOf(c.code) === "far" ? 1 : 0.55 }}
+            />
+            {c.label} <span className="text-[7px]">({groupOf(c.code)})</span>
+          </span>
+        ))}
+      </div>
+
       <p className="text-[9px] text-[#8a8374] leading-[1.5]" style={mono}>
-        line = DINOv2 cosine distance between "{CFG_SITUATIONS.find(s=>s.id===sitId)?.label}" and
-        the {CFG_COUNTRIES.find(c=>c.code===country)?.label}-qualified variant, n=50 seeds per CFG
-        level (evidence), x-axis at true CFG spacing · click a point to jump the image strip above
-        · note how steep the rise is from cfg=1→4, then how flat it is all the way to cfg=15 —
-        guidance strength sharpens the assumption, it does not add it
+        DINOv2 cosine distance between "{CFG_SITUATIONS.find(s=>s.id===sitId)?.label}" and each
+        country-qualified variant, n=50 seeds per CFG level · x-axis at true CFG spacing · solid
+        line = "far" group, dashed = "near" group (median split on mean distance for this event) ·
+        hover a country to isolate its line
+      </p>
+      <p className="text-[10px] text-[#555] leading-[1.6] border-t border-dashed border-[#e8e5de] pt-2" style={mono}>
+        <b>near</b> ({nearGroup.join(", ")}, mean dist {nearAvg.toFixed(2)}) sit close to the
+        default already, so there's little room for a CFG spike either way — the flat, low dashed
+        lines are a ceiling effect, not evidence CFG doesn't matter. <b>far</b> ({farGroup.join(", ")},
+        mean dist {farAvg.toFixed(2)}) is where the cfg=1→4 rise actually happens, because there's
+        real distance left to open up.
       </p>
     </div>
   );

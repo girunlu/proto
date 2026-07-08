@@ -3,6 +3,7 @@ import { Section, ToolCard, ToolsGrid, SubsectionLabel, PlanNote, Lightbox, Pred
 import distancesData from "../../data/cultural/distances.json";
 import intrasetData from "../../data/cultural/intraset_sim.json";
 import pairwiseData from "../../data/cultural/pairwise_distance.json";
+import umapData from "../../data/cultural/umap.json";
 
 const MONO = { fontFamily: "'JetBrains Mono', monospace" };
 
@@ -769,6 +770,248 @@ function CountryClusterGravity() {
   );
 }
 
+// ─── Tool 10e — Full pairwise distance heatmap (symmetric, one situation) ───
+// 10d only shows the argmin ("nearest") per cell, which is one-directional —
+// A's nearest can be B without B's nearest being A. This shows the whole 9x9
+// matrix of real distances at once, so the underlying numbers actually mean
+// something (color = magnitude) instead of two numbers on hover.
+
+const HEATMAP_ROWS = [{ code: "default", label: "default" }, ...CFG_COUNTRIES];
+
+function heatColor(v: number, max: number): string {
+  const t = Math.max(0, Math.min(1, v / max));
+  // light amber → dark amber, so 0 reads as "identical" and max as "far"
+  const r = Math.round(255 - t * (255 - 120));
+  const g = Math.round(247 - t * (247 - 53));
+  const b = Math.round(237 - t * (237 - 15));
+  return `rgb(${r},${g},${b})`;
+}
+
+function PairwiseHeatmap() {
+  const [sitId, setSitId] = useState("wedding");
+  const [hov, setHov] = useState<{ a: string; b: string } | null>(null);
+
+  const cellsFlat = HEATMAP_ROWS.flatMap((a) => HEATMAP_ROWS.map((b) => PAIRWISE[sitId]?.[a.code]?.[b.code] ?? 0));
+  const maxDist = Math.max(...cellsFlat, 0.01);
+
+  return (
+    <div className="p-3 flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <span className="text-[9px] text-[#8a8374] shrink-0" style={MONO}>event:</span>
+        <select
+          value={sitId}
+          onChange={(e) => setSitId(e.target.value)}
+          className="text-[10px] border border-[#d8d4cb] rounded-[4px] px-[6px] py-[3px] bg-white"
+          style={MONO}
+        >
+          {CULTURAL_SITUATIONS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+        </select>
+      </div>
+
+      <div className="inline-flex flex-col gap-[2px] w-fit">
+        <div className="flex gap-[2px]">
+          <span className="w-[64px] shrink-0" />
+          {HEATMAP_ROWS.map((c) => (
+            <span key={c.code} className="w-[30px] text-center text-[7px] text-[#8a8374] shrink-0" style={MONO}>
+              {c.code === "default" ? "def" : c.code}
+            </span>
+          ))}
+        </div>
+        {HEATMAP_ROWS.map((a) => (
+          <div key={a.code} className="flex items-center gap-[2px]">
+            <span className="w-[64px] text-right text-[9px] text-[#867f6f] shrink-0 pr-1" style={MONO}>
+              {a.label}
+            </span>
+            {HEATMAP_ROWS.map((b) => {
+              const v = PAIRWISE[sitId]?.[a.code]?.[b.code] ?? 0;
+              const isHov = hov?.a === a.code && hov?.b === b.code;
+              return (
+                <div
+                  key={b.code}
+                  onMouseEnter={() => setHov({ a: a.code, b: b.code })}
+                  onMouseLeave={() => setHov(null)}
+                  className="w-[30px] h-[20px] flex items-center justify-center shrink-0"
+                  style={{
+                    background: a.code === b.code ? "#f5f4f0" : heatColor(v, maxDist),
+                    outline: isHov ? "2px solid #1a1a1a" : "none",
+                    outlineOffset: "-1px",
+                  }}
+                >
+                  {a.code !== b.code && (
+                    <span className="text-[6.5px]" style={{ ...MONO, color: v / maxDist > 0.55 ? "#fff" : "#78350f" }}>
+                      {v.toFixed(2)}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
+      {hov && (
+        <div className="text-[9px] leading-[1.6] text-[#555] bg-white border border-[#e0ddd6] rounded-[6px] px-3 py-2 w-fit" style={MONO}>
+          <b>{HEATMAP_ROWS.find(r => r.code === hov.a)?.label}</b> ↔{" "}
+          <b>{HEATMAP_ROWS.find(r => r.code === hov.b)?.label}</b>: distance {(PAIRWISE[sitId]?.[hov.a]?.[hov.b] ?? 0).toFixed(4)}
+        </div>
+      )}
+
+      <p className="text-[9px] text-[#8a8374] leading-[1.5]" style={MONO}>
+        every cell = real DINOv2 distance between that row/column pair (symmetric — unlike 10d's
+        nearest-only view, both directions are shown). Darker = farther apart. Rows/columns fade
+        together = a shared cluster; a dark row against everything = a genuinely distinct one.
+      </p>
+    </div>
+  );
+}
+
+// ─── Tool 10f — UMAP scatter of actual images, with centroids ──────────────
+// 2D projection of the same DINOv2 embeddings (9 diverse seeds per variant,
+// see cultural_umap.py) — the cluster-gravity finding as an actual picture:
+// points, centroids, and the real thumbnail on hover, not just numbers.
+
+type UmapPoint = { country: string; k: number; seed: number; x: number; y: number };
+type UmapJson = {
+  results: Record<string, { points: UmapPoint[]; centroids: Record<string, { x: number; y: number }> }>;
+};
+const UMAP = (umapData as UmapJson).results;
+const ID_COLOR: Record<string, string> = Object.fromEntries([
+  ["default", NEIGHBOR_COLOR.default],
+  ...COUNTRIES.map((c) => [c.id, NEIGHBOR_COLOR[c.code]]),
+]);
+
+function UMAPScatter({ onZoom }: { onZoom: (src: string) => void }) {
+  const [sitId, setSitId] = useState("wedding");
+  const [hovPt, setHovPt] = useState<UmapPoint | null>(null);
+
+  const data = UMAP[sitId] ?? { points: [], centroids: {} };
+  const allX = [...data.points.map((p) => p.x), ...Object.values(data.centroids).map((c) => c.x)];
+  const allY = [...data.points.map((p) => p.y), ...Object.values(data.centroids).map((c) => c.y)];
+  const xMin = Math.min(...allX), xMax = Math.max(...allX);
+  const yMin = Math.min(...allY), yMax = Math.max(...allY);
+  const W = 320, H = 260, PAD = 20;
+  const px = (x: number) => PAD + ((x - xMin) / (xMax - xMin || 1)) * (W - 2 * PAD);
+  const py = (y: number) => H - PAD - ((y - yMin) / (yMax - yMin || 1)) * (H - 2 * PAD);
+
+  const dist2D = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(a.x - b.x, a.y - b.y);
+  const hovInfo = hovPt && (() => {
+    const ownCentroid = data.centroids[hovPt.country];
+    const others = Object.entries(data.centroids).filter(([id]) => id !== hovPt.country);
+    const nearest = others.length
+      ? others.reduce((best, cur) => (dist2D(hovPt, { x: cur[1].x, y: cur[1].y }) < dist2D(hovPt, { x: best[1].x, y: best[1].y }) ? cur : best))
+      : null;
+    return {
+      toOwn: ownCentroid ? dist2D(hovPt, ownCentroid) : 0,
+      nearestId: nearest?.[0],
+      toNearest: nearest ? dist2D(hovPt, { x: nearest[1].x, y: nearest[1].y }) : 0,
+    };
+  })();
+
+  return (
+    <div className="p-3 flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <span className="text-[9px] text-[#8a8374] shrink-0" style={MONO}>event:</span>
+        <select
+          value={sitId}
+          onChange={(e) => { setSitId(e.target.value); setHovPt(null); }}
+          className="text-[10px] border border-[#d8d4cb] rounded-[4px] px-[6px] py-[3px] bg-white"
+          style={MONO}
+        >
+          {CULTURAL_SITUATIONS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+        </select>
+      </div>
+
+      <div className="flex gap-4 items-start">
+        <svg width={W} height={H} style={{ flexShrink: 0, background: "#fbfaf6", borderRadius: 6 }}>
+          {/* dashed line from hovered point to its own centroid + nearest other centroid */}
+          {hovPt && hovInfo && (
+            <>
+              <line x1={px(hovPt.x)} y1={py(hovPt.y)} x2={px(data.centroids[hovPt.country].x)} y2={py(data.centroids[hovPt.country].y)}
+                stroke={ID_COLOR[hovPt.country]} strokeWidth="1.5" strokeDasharray="3 2" opacity="0.7" />
+              {hovInfo.nearestId && (
+                <line x1={px(hovPt.x)} y1={py(hovPt.y)} x2={px(data.centroids[hovInfo.nearestId].x)} y2={py(data.centroids[hovInfo.nearestId].y)}
+                  stroke="#1a1a1a" strokeWidth="1" strokeDasharray="2 2" opacity="0.4" />
+              )}
+            </>
+          )}
+          {/* points */}
+          {data.points.map((p, i) => {
+            const isHov = hovPt?.country === p.country && hovPt?.k === p.k;
+            return (
+              <circle
+                key={i}
+                cx={px(p.x)} cy={py(p.y)} r={isHov ? 5 : 3.5}
+                fill={ID_COLOR[p.country] ?? "#999"}
+                opacity={hovPt && !isHov ? 0.35 : 0.85}
+                stroke={isHov ? "#1a1a1a" : "none"} strokeWidth="1"
+                style={{ cursor: "pointer" }}
+                onMouseEnter={() => setHovPt(p)}
+                onMouseLeave={() => setHovPt(null)}
+              />
+            );
+          })}
+          {/* centroids — larger, white-ringed */}
+          {Object.entries(data.centroids).map(([id, c]) => (
+            <g key={id}>
+              <circle cx={px(c.x)} cy={py(c.y)} r="7" fill={ID_COLOR[id] ?? "#999"} stroke="#fff" strokeWidth="2" />
+              <circle cx={px(c.x)} cy={py(c.y)} r="7" fill="none" stroke="#1a1a1a" strokeWidth="0.75" opacity="0.3" />
+            </g>
+          ))}
+        </svg>
+
+        <div className="flex flex-col gap-2 w-[190px]">
+          {hovPt && hovInfo ? (
+            <>
+              <img
+                src={`/images/cultural/${sitId}_${hovPt.country}_div${hovPt.k}.webp`}
+                alt="preview"
+                onClick={() => onZoom(`/images/cultural/${sitId}_${hovPt.country}_div${hovPt.k}.webp`)}
+                className="w-full rounded-[6px] object-cover shadow-md"
+                style={{ aspectRatio: "1/1", cursor: "zoom-in" }}
+              />
+              <div className="text-[9px] leading-[1.6] text-[#555] bg-white border border-[#e0ddd6] rounded-[6px] px-3 py-2" style={MONO}>
+                <div><b>{hovPt.country === "default" ? "default" : countryById(hovPt.country)?.label ?? hovPt.country}</b> · seed {String(hovPt.seed).padStart(2, "0")}</div>
+                <div className="mt-1">dist to own centroid: {hovInfo.toOwn.toFixed(2)}</div>
+                {hovInfo.nearestId && (
+                  <div>nearest other centroid: <b>{hovInfo.nearestId === "default" ? "default" : countryById(hovInfo.nearestId)?.label ?? hovInfo.nearestId}</b> ({hovInfo.toNearest.toFixed(2)})</div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div
+              className="w-full flex items-center justify-center text-center text-[9px] text-[#a39d8e] border border-dashed border-[#d0cdc6] rounded-[6px] px-3"
+              style={{ ...MONO, aspectRatio: "1/1" }}
+            >
+              hover a point to see its image and distances
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-[10px] flex-wrap text-[8px] text-[#8a8374]" style={MONO}>
+        {COUNTRIES.map((c) => (
+          <span key={c.id} className="flex items-center gap-1">
+            <span className="w-[9px] h-[9px] rounded-full inline-block" style={{ background: ID_COLOR[c.id] }} />
+            {c.label}
+          </span>
+        ))}
+        <span className="flex items-center gap-1">
+          <span className="w-[9px] h-[9px] rounded-full inline-block" style={{ background: ID_COLOR.default }} />
+          default
+        </span>
+      </div>
+
+      <p className="text-[8px] text-[#a39d8e] leading-[1.5]" style={MONO}>
+        UMAP (cosine metric) on DINOv2 embeddings · small dots = 9 most-diverse seeds per variant
+        (same images as Tool 05c) · large ringed dots = true centroid (mean of all 50 seeds,
+        projected into this space) · hover a dot for its actual image and projected distances ·
+        distances here are 2D-projection distances, an approximation of the real cosine distances
+        used elsewhere, useful for reading relative layout not exact magnitude
+      </p>
+    </div>
+  );
+}
+
 function DirectionalFidelity() {
   return (
     <div className="p-3 flex flex-col gap-2">
@@ -991,6 +1234,28 @@ export function Layer3() {
           fullWidth
         >
           <CountryClusterGravity />
+        </ToolCard>
+
+        <ToolCard
+          num="10e"
+          name="Full pairwise distance heatmap"
+          type="Heatmap"
+          description="10d only shows each country's single nearest neighbor, which is one-directional (A's nearest can be B without B's nearest being A). This is the whole 9x9 matrix of real distances for one event — every pair, both directions, actual numbers."
+          explanation="Same pairwise DINOv2 matrix as 10d, but shown whole instead of collapsed to an argmin. Color intensity is the real distance value, so you can see not just which cluster is nearest but how much nearer it is than everything else, and whether a whole block of countries sits close together (light square) or one country is far from all others (a uniformly dark row)."
+          fullWidth
+        >
+          <PairwiseHeatmap />
+        </ToolCard>
+
+        <ToolCard
+          num="10f"
+          name="UMAP — the clusters as an actual picture"
+          type="Scatter + images"
+          description="2D projection of the real DINOv2 embeddings: small dots are actual generated images (hover to see them), large ringed dots are each variant's true centroid. The cluster-gravity finding, seen directly instead of read off two numbers."
+          explanation="10d and 10e establish the finding numerically. This is the same data projected to 2D with UMAP so the clustering is visible as shape: which countries' point clouds overlap, how far a centroid sits from the default, and — by hovering — which specific generated image is closest to which cluster. Distances shown on hover are 2D-projection distances (a layout approximation), not the exact cosine distances used for the numeric claims elsewhere."
+          fullWidth
+        >
+          <UMAPScatter onZoom={setZoomedSrc} />
         </ToolCard>
       </ToolsGrid>
 
