@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Section, ToolCard, ToolsGrid, PlanNote, Lightbox } from "./ToolCard";
 import diverseGridData from "../../data/cultural/diverse_grid.json";
+import cfgDistanceData from "../../data/cultural/cfg_distance.json";
 
 // ─── Tool 04 — Empty-prompt prior ───────────────────────────────────────────
 
@@ -33,29 +34,81 @@ function EmptyPrompt() {
   );
 }
 
-// ─── Tool 05 — CFG stability ────────────────────────────────────────────────
+// ─── Tool 05 — CFG stability, cultural version (real images + real DINOv2) ──
+// Merges the old demographic placeholder (fake FairFace numbers) and the old
+// wedding-only image strip into one real, data-backed tool: does the cultural
+// gap (country variant vs. unqualified default) change with guidance strength?
+// Source: src/materials/analysis/cultural/ — DINOv2 distance recomputed at
+// every CFG level [1,4,7,12,15] the cultural run already swept (no new
+// generation, see cultural_cfg_distance.py).
 
-// Cultural CFG strip — "a wedding" at each CFG value (real images, seed 00)
-const CFG_VALUES_CULTURAL = [1, 4, 7, 12, 15];
+const CFG_VALUES = [1, 4, 7, 12, 15];
+
+const CFG_SITUATIONS = [
+  { id: "wedding", label: "a wedding" },
+  { id: "funeral", label: "a funeral" },
+  { id: "breakfast", label: "a breakfast" },
+  { id: "family", label: "a family" },
+  { id: "celebration", label: "a celebration" },
+  { id: "school", label: "a school" },
+];
+
+const CFG_COUNTRIES = [
+  { code: "NG", label: "Nigeria" },
+  { code: "IN", label: "India" },
+  { code: "JP", label: "Japan" },
+  { code: "EG", label: "Egypt" },
+  { code: "ID", label: "Indonesia" },
+  { code: "RU", label: "Russia" },
+  { code: "DE", label: "Germany" },
+  { code: "US", label: "USA" },
+];
+
+type CfgDistanceJson = { results: Record<string, Record<string, Record<string, { mean: number; ci_low: number; ci_high: number }>>> };
+const CFG_DISTANCE = (cfgDistanceData as CfgDistanceJson).results;
 
 function CFGCulturalStrip() {
+  const [sitId, setSitId] = useState("wedding");
+  const [country, setCountry] = useState("NG");
   const [cfgIdx, setCfgIdx] = useState(2); // default to cfg=7
   const mono = { fontFamily: "'JetBrains Mono', monospace" };
+
+  const rows = CFG_VALUES.map((cfg) => CFG_DISTANCE[sitId]?.[country]?.[String(cfg)]);
+  const maxDist = Math.max(...rows.map((r) => r?.mean ?? 0), 0.01);
+
   return (
     <div className="p-3 flex flex-col gap-3">
-      <p className="text-[11px] text-[#666] leading-[1.5]">
-        "a wedding" generated at five guidance scale values — same seed, same scheduler.
-        The cultural default is stable across the full CFG range.
-      </p>
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-[9px] text-[#8a8374] shrink-0" style={mono}>event:</span>
+        <select
+          value={sitId}
+          onChange={(e) => setSitId(e.target.value)}
+          className="text-[10px] border border-[#d8d4cb] rounded-[4px] px-[6px] py-[3px] bg-white"
+          style={mono}
+        >
+          {CFG_SITUATIONS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+        </select>
+        <span className="text-[9px] text-[#8a8374] shrink-0 ml-2">vs default in:</span>
+        <select
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+          className="text-[10px] border border-[#d8d4cb] rounded-[4px] px-[6px] py-[3px] bg-white"
+          style={mono}
+        >
+          {CFG_COUNTRIES.map((c) => <option key={c.code} value={c.code}>{c.label}</option>)}
+        </select>
+      </div>
+
+      {/* Illustration: default-variant image strip across CFG (single seed) */}
       <div className="flex gap-[5px]">
-        {CFG_VALUES_CULTURAL.map((cfg, i) => (
+        {CFG_VALUES.map((cfg, i) => (
           <button
             key={cfg}
             onClick={() => setCfgIdx(i)}
             className="flex-1 flex flex-col gap-[4px] cursor-pointer bg-transparent border-0 p-0"
           >
             <img
-              src={`/images/cfg/wedding_cfg${cfg}.webp`}
+              src={`/images/cfg/${sitId}_cfg${cfg}.webp`}
               loading="lazy"
               alt={`cfg=${cfg}`}
               className="w-full rounded-[5px] object-cover transition-all duration-200"
@@ -74,97 +127,41 @@ function CFGCulturalStrip() {
         ))}
       </div>
       <p className="text-[8px] text-[#a39d8e]" style={mono}>
-        SD 2.1 · DDIM · seed 00 · 768×768 · single seed, illustration only
+        default variant · seed 00 · illustration only — the bars below are the evidence
       </p>
-    </div>
-  );
-}
 
-const CFG_LEVELS = [1, 3, 7, 15];
-const CFG_PROMPTS = ["a doctor", "a CEO", "a nurse", "a scientist"];
-
-// % male-read per CFG level, n=30 per cell (placeholder values).
-// The point: the bars barely move.
-const CFG_DIST: Record<string, number[]> = {
-  "a doctor":    [0.81, 0.83, 0.85, 0.86],
-  "a CEO":       [0.80, 0.83, 0.85, 0.87],
-  "a nurse":     [0.13, 0.11, 0.10, 0.09],
-  "a scientist": [0.74, 0.77, 0.79, 0.82],
-};
-
-const PROMPT_SHADES: Record<string, [number, number, number]> = {
-  "a doctor":    [178, 190, 205],
-  "a CEO":       [168, 178, 162],
-  "a nurse":     [200, 182, 182],
-  "a scientist": [180, 176, 198],
-};
-
-function CFGStability() {
-  const [levelIdx, setLevelIdx] = useState(2);
-  const mono = { fontFamily: "'JetBrains Mono', monospace" };
-
-  const shade = (p: string) => {
-    const [r, g, b] = PROMPT_SHADES[p];
-    const f = 1 - levelIdx * 0.07; // image sharpens/darkens slightly with CFG
-    return `rgb(${Math.round(r * f)},${Math.round(g * f)},${Math.round(b * f)})`;
-  };
-
-  return (
-    <div className="p-3 flex flex-col gap-3">
-      {/* CFG level selector */}
-      <div className="flex items-center gap-2">
-        <span className="text-[9px] text-[#8a8374] shrink-0" style={mono}>
-          guidance scale:
-        </span>
-        {CFG_LEVELS.map((v, i) => (
-          <button
-            key={v}
-            onClick={() => setLevelIdx(i)}
-            className="text-[10px] px-[10px] py-[3px] rounded-[4px] border transition-colors"
-            style={{
-              ...mono,
-              background: levelIdx === i ? "#78350f" : "#f5f4f0",
-              color: levelIdx === i ? "#fef3c7" : "#666",
-              borderColor: levelIdx === i ? "#78350f" : "#e0ddd6",
-            }}
-          >
-            cfg={v}
-          </button>
-        ))}
-      </div>
-
-      {/* One row per prompt: illustration image + distribution bar */}
-      <div className="flex flex-col gap-[7px]">
-        {CFG_PROMPTS.map((p) => (
-          <div key={p} className="flex items-center gap-2">
-            <span className="text-[9px] text-[#888] w-[78px] text-right shrink-0" style={mono}>
-              {p}
-            </span>
-            <div
-              className="w-[44px] h-[30px] rounded-[3px] shrink-0 transition-colors duration-300"
-              style={{ background: shade(p) }}
-              title="single-seed illustration"
-            />
-            <div className="flex-1 h-[12px] bg-[#f0ede6] rounded-[3px] overflow-hidden">
-              <div
-                className="h-full rounded-[3px] transition-all duration-500"
-                style={{
-                  width: `${CFG_DIST[p][levelIdx] * 100}%`,
-                  background: p === "a nurse" ? "#34d399" : "#818cf8",
-                }}
-              />
+      {/* Evidence: DINOv2 distance from default, per CFG level */}
+      <div className="flex flex-col gap-[6px] mt-1">
+        {CFG_VALUES.map((cfg, i) => {
+          const r = rows[i];
+          const pct = r ? r.mean / maxDist : 0;
+          return (
+            <div key={cfg} className="flex items-center gap-2">
+              <span
+                className="text-[9px] w-[46px] text-right shrink-0 cursor-pointer"
+                style={{ ...mono, color: cfgIdx === i ? "#92400e" : "#867f6f", fontWeight: cfgIdx === i ? 600 : 400 }}
+                onClick={() => setCfgIdx(i)}
+              >
+                cfg={cfg}
+              </span>
+              <div className="flex-1 h-[12px] bg-[#f0ede6] rounded-[3px] overflow-hidden">
+                <div
+                  className="h-full rounded-[3px] transition-all duration-500"
+                  style={{ width: `${pct * 100}%`, background: "#34d399" }}
+                />
+              </div>
+              <span className="text-[9px] text-[#867f6f] w-[36px] shrink-0" style={mono}>
+                {r ? r.mean.toFixed(2) : "—"}
+              </span>
             </div>
-            <span className="text-[9px] text-[#867f6f] w-[40px] shrink-0" style={mono}>
-              {Math.round(CFG_DIST[p][levelIdx] * 100)}% ♂
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </div>
-
       <p className="text-[9px] text-[#8a8374] leading-[1.5]" style={mono}>
-        bars = FairFace distribution from 30 seeds per CFG level (evidence) · thumbnails = one
-        seed (illustration only) · note how little the bars move — guidance strength does not
-        remove the assumption
+        bars = DINOv2 cosine distance between "{CFG_SITUATIONS.find(s=>s.id===sitId)?.label}" and
+        the {CFG_COUNTRIES.find(c=>c.code===country)?.label}-qualified variant, n=50 seeds per CFG
+        level (evidence) · note the distance is set almost entirely by cfg=4, then barely moves
+        through cfg=15 — guidance strength sharpens the assumption, it does not add it
       </p>
     </div>
   );
@@ -199,9 +196,13 @@ const MATRIX_ROWS = [
   { id: "nigeria", label: "Nigeria" },
 ];
 
+type HoverInfo = { src: string; rowLabel: string; sitLabel: string; seed: number };
+
 function CulturalPriorMatrix({ onZoom }: { onZoom: (src: string) => void }) {
   const [sitId, setSitId] = useState("wedding");
+  const [hovered, setHovered] = useState<HoverInfo | null>(null);
   const mono = { fontFamily: "'JetBrains Mono', monospace" };
+  const sitLabel = MATRIX_SITUATIONS.find((s) => s.id === sitId)?.label ?? sitId;
 
   return (
     <div className="p-3 flex flex-col gap-3">
@@ -209,7 +210,7 @@ function CulturalPriorMatrix({ onZoom }: { onZoom: (src: string) => void }) {
         <span className="text-[9px] text-[#8a8374] shrink-0" style={mono}>event:</span>
         <select
           value={sitId}
-          onChange={(e) => setSitId(e.target.value)}
+          onChange={(e) => { setSitId(e.target.value); setHovered(null); }}
           className="text-[10px] border border-[#d8d4cb] rounded-[4px] px-[6px] py-[3px] bg-white"
           style={mono}
         >
@@ -217,40 +218,82 @@ function CulturalPriorMatrix({ onZoom }: { onZoom: (src: string) => void }) {
         </select>
       </div>
 
-      <div className="flex flex-col gap-[3px] overflow-x-auto">
-        {MATRIX_ROWS.map((row) => {
-          const seeds = DIVERSE_GRID[sitId]?.[row.id] ?? [];
-          return (
-            <div key={row.id} className="flex items-center gap-[3px]">
-              <span
-                className="text-[8px] text-[#867f6f] w-[64px] text-right shrink-0 pr-1"
+      <div className="flex gap-4 items-start">
+        <div
+          className="flex flex-col gap-[3px] overflow-x-auto"
+          onMouseLeave={() => setHovered(null)}
+        >
+          {MATRIX_ROWS.map((row) => {
+            const seeds = DIVERSE_GRID[sitId]?.[row.id] ?? [];
+            return (
+              <div key={row.id} className="flex items-center gap-[3px]">
+                <span
+                  className="text-[8px] text-[#867f6f] w-[64px] text-right shrink-0 pr-1"
+                  style={mono}
+                >
+                  {row.label}
+                </span>
+                {seeds.map((seed, k) => {
+                  const src = `/images/cultural/${sitId}_${row.id}_div${k}.webp`;
+                  const isHovered = hovered?.src === src;
+                  return (
+                    <img
+                      key={k}
+                      src={src}
+                      alt={`${sitId} ${row.label} sample ${k}`}
+                      loading="lazy"
+                      onMouseEnter={() => setHovered({ src, rowLabel: row.label, sitLabel, seed })}
+                      onClick={() => onZoom(src)}
+                      className="rounded-[2px] object-cover hover:opacity-80 transition-opacity shrink-0"
+                      style={{
+                        width: 40,
+                        height: 40,
+                        cursor: "zoom-in",
+                        outline: isHovered ? "2px solid #78350f" : "2px solid transparent",
+                        outlineOffset: "1px",
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Hover preview — enlarged image + info box, ~0.55x the matrix width */}
+        <div className="shrink-0 w-[240px] flex flex-col gap-2">
+          {hovered ? (
+            <>
+              <img
+                src={hovered.src}
+                alt="preview"
+                className="w-full rounded-[6px] object-cover shadow-md"
+                style={{ aspectRatio: "1 / 1" }}
+              />
+              <div
+                className="text-[10px] leading-[1.6] text-[#555] bg-white border border-[#e0ddd6] rounded-[6px] px-3 py-2"
                 style={mono}
               >
-                {row.label}
-              </span>
-              {seeds.map((seed, k) => {
-                const src = `/images/cultural/${sitId}_${row.id}_div${k}.webp`;
-                return (
-                  <img
-                    key={k}
-                    src={src}
-                    alt={`${sitId} ${row.label} sample ${k}`}
-                    title={`seed ${seed}`}
-                    loading="lazy"
-                    onClick={() => onZoom(src)}
-                    className="rounded-[2px] object-cover hover:opacity-80 transition-opacity shrink-0"
-                    style={{ width: 40, height: 40, cursor: "zoom-in" }}
-                  />
-                );
-              })}
+                <div><span className="text-[#867f6f]">event</span> · {hovered.sitLabel}</div>
+                <div><span className="text-[#867f6f]">variant</span> · {hovered.rowLabel}</div>
+                <div><span className="text-[#867f6f]">seed</span> · {String(hovered.seed).padStart(2, "0")}</div>
+                <div className="text-[#a39d8e] mt-1">click thumbnail for full screen</div>
+              </div>
+            </>
+          ) : (
+            <div
+              className="w-full flex items-center justify-center text-center text-[9px] text-[#a39d8e] border border-dashed border-[#d0cdc6] rounded-[6px] px-3"
+              style={{ ...mono, aspectRatio: "1 / 1" }}
+            >
+              hover any thumbnail to preview it larger here
             </div>
-          );
-        })}
+          )}
+        </div>
       </div>
 
       <p className="text-[8px] text-[#a39d8e]" style={mono}>
         each row's 9 images are the most mutually different of 50 generated seeds (DINOv2
-        farthest-point sampling, not cherry-picked) — click any image to enlarge
+        farthest-point sampling, not cherry-picked) — hover to preview, click to enlarge
       </p>
     </div>
   );
@@ -268,9 +311,9 @@ export function Layer2() {
     >
       <PlanNote
         purpose="Show the prior that fills the gap — and that the guidance knob can't tune it away."
-        computed={`prompt="" batch (30 seeds) for the raw prior. CFG stability: 4 occupations × 4 CFG levels × 30 seeds → FairFace per cell.`}
+        computed={`prompt="" batch (30 seeds) for the raw prior. CFG stability: DINOv2 distance from each situation's default to its country variant, recomputed at all 5 CFG levels the cultural run already swept (54 prompts × 5 CFG × 50 seeds — no new generation).`}
         useful="Kills the most common intuition: 'I'll just tweak the settings.' The assumption precedes the prompt."
-        interaction="Switch CFG levels — the bars barely move. Hover a bar for the 30 images behind it."
+        interaction="Pick an event and a country — the distance bars barely move past cfg=4."
       />
       <ToolsGrid cols={2}>
         <ToolCard
@@ -287,18 +330,9 @@ export function Layer2() {
           num="05"
           name="CFG stability — the knob that doesn't help"
           type="Interactive"
-          description="Select a guidance scale and watch the FairFace gender distribution per occupation barely move — 30 seeds per CFG level, so the bars are evidence, not anecdote."
-          explanation="A natural intuition says stronger guidance means the prompt 'wins' over the prior. The distributions show otherwise: from cfg=1 to cfg=15 the demographic skew stays essentially constant — if anything it sharpens slightly. The prompt never specified a demographic, so there is nothing for guidance to enforce; the gap is filled by the prior at every strength. You cannot parameter-tweak your way out of an assumption."
-        >
-          <CFGStability />
-        </ToolCard>
-
-        <ToolCard
-          num="05b"
-          name="CFG stability — cultural version"
-          type="Image strip"
-          description='"a wedding" generated at CFG 1 / 4 / 7 / 12 / 15 — same seed throughout. The cultural default is stable across the full guidance range. Click a CFG value to inspect.'
-          explanation="The Western wedding coding persists regardless of how strongly the model follows the prompt — because the prompt says nothing about culture, only about the event type. The assumption is pre-text: it lives in the denoising prior, not in guidance arithmetic."
+          description="Pick an event and a country. The image strip shows the default variant across five guidance scales; the bars show the real DINOv2 distance from that default to the country-qualified variant, at each CFG level, n=50 seeds."
+          explanation="A natural intuition says stronger guidance means the prompt 'wins' over the prior — more conditioning, more of what you asked for. The distance curve shows otherwise: the cultural gap opens almost entirely by cfg=4 and barely moves from there to cfg=15. Guidance strength is not adding cultural detail proportionally — most of the gap is already fixed at low guidance, which reads as the assumption being memorized into the prior rather than assembled fresh under stronger conditioning. This is the same CFG-independence argument as the demographic case, now made with the model's own cultural-default data instead of a placeholder."
+          fullWidth
         >
           <CFGCulturalStrip />
         </ToolCard>

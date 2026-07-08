@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Section, ToolCard, ToolsGrid, SubsectionLabel, PlanNote, Lightbox, PredictionReveal } from "./ToolCard";
 import distancesData from "../../data/cultural/distances.json";
 import intrasetData from "../../data/cultural/intraset_sim.json";
+import pairwiseData from "../../data/cultural/pairwise_distance.json";
 
 const MONO = { fontFamily: "'JetBrains Mono', monospace" };
 
@@ -133,43 +134,6 @@ function ImageBatch() {
   );
 }
 
-// ─── Tool 08 — Amplification delta (moved here from Layer 4) ───────────────
-
-function AmplificationDelta() {
-  const rows = [
-    { label: "bare", pct: 0.65, color: "#fbbf24", delta: "reference" },
-    { label: "contextual", pct: 0.91, color: "#f59e0b", delta: "+26 pp" },
-    { label: "override", pct: 0.22, color: "#fcd34d", delta: "−43 pp" },
-  ];
-  return (
-    <div className="p-3 flex flex-col gap-[10px] justify-center">
-      {rows.map((r) => (
-        <div key={r.label} className="flex items-center gap-2">
-          <span className="text-[9px] text-[#867f6f] w-[70px] text-right shrink-0" style={MONO}>
-            {r.label}
-          </span>
-          <div className="flex-1 h-[13px] bg-[#f0ede6] rounded-[3px] overflow-hidden">
-            <div className="h-full rounded-[3px]" style={{ width: `${r.pct * 100}%`, background: r.color }} />
-          </div>
-          <span className="text-[9px] text-[#867f6f] w-[44px] shrink-0" style={MONO}>
-            {Math.round(r.pct * 100)}% ♂
-          </span>
-          <span
-            className="text-[9px] w-[64px] shrink-0 font-semibold"
-            style={{ ...MONO, color: r.delta === "reference" ? "#a39d8e" : r.delta.startsWith("+") ? "#ef4444" : "#16a34a" }}
-          >
-            {r.delta}
-          </span>
-        </div>
-      ))}
-      <p className="text-[9px] text-[#8a8374] pl-[78px]" style={MONO}>
-        both deltas vs. the same bare prompt — context amplifies the default for free; undoing it
-        costs an explicit override
-      </p>
-    </div>
-  );
-}
-
 // ─── Tool 09 — Cultural grid (real images, SD 2.1 CFG=7, seeds 00-02) ───────
 // All 6 events x 9 variants (default + 8 countries) have real exported images.
 
@@ -194,10 +158,13 @@ function CulturalGrid({ sitId, onZoom }: { sitId: string; onZoom: (src: string) 
   const [compareB, setCompareB] = useState("japan");
   const seed = CULTURAL_SEEDS[seedIdx];
 
+  // key = fixed column role, id = country currently shown there — kept separate so
+  // picking the same country in both selects (or matching "default") can't collide
+  // React keys and leave a stale image node behind.
   const columns = [
-    { id: "default", label: "default" },
-    { id: compareA, label: countryById(compareA)?.label ?? compareA },
-    { id: compareB, label: countryById(compareB)?.label ?? compareB },
+    { key: "default", id: "default", label: "default" },
+    { key: "compareA", id: compareA, label: countryById(compareA)?.label ?? compareA },
+    { key: "compareB", id: compareB, label: countryById(compareB)?.label ?? compareB },
   ];
 
   return (
@@ -228,7 +195,7 @@ function CulturalGrid({ sitId, onZoom }: { sitId: string; onZoom: (src: string) 
         {columns.map((col) => {
           const src = `/images/cultural/${sitId}_${col.id}${seed.suffix}.webp`;
           return (
-            <div key={col.id} className="flex-1 flex flex-col gap-[4px]">
+            <div key={col.key} className="flex-1 flex flex-col gap-[4px]">
               <span className="text-[9px] text-[#555] text-center font-semibold bg-[#f0ede6] rounded-[3px] py-[2px]" style={MONO}>
                 {col.label}
               </span>
@@ -278,16 +245,23 @@ function countryById(id: string): CountryEntry | undefined {
 // Method: cosine distance between L2-normalised mean DINOv2 embeddings,
 //         n=50 seeds per variant, 10k bootstrap CIs (percentile method)
 
+// Fixed WEIRD-gradient row order (COUNTRIES) and a fixed global max across every
+// situation, so the chart's scale and row order never shift when switching
+// situations — only the bar lengths change, which is the thing worth comparing.
+const GLOBAL_MAX_DIST = Math.max(
+  ...Object.values(DISTANCES).flatMap((bySit) => Object.values(bySit).map((v) => v.mean)),
+);
+
 function distanceRows(sitId: string) {
   const bySit = DISTANCES[sitId] ?? {};
-  return Object.entries(bySit)
-    .map(([code, v]) => ({ country: COUNTRY_BY_CODE[code]?.label ?? code, dist: v.mean, ci_low: v.ci_low, ci_high: v.ci_high }))
-    .sort((a, b) => b.dist - a.dist);
+  return COUNTRIES
+    .map((c) => bySit[c.code] && { country: c.label, dist: bySit[c.code].mean, ci_low: bySit[c.code].ci_low, ci_high: bySit[c.code].ci_high })
+    .filter((r): r is { country: string; dist: number; ci_low: number; ci_high: number } => !!r);
 }
 
 function EmbeddingDistanceBars({ sitId }: { sitId: string }) {
   const rows = distanceRows(sitId);
-  const maxDist = Math.max(...rows.map((r) => r.dist));
+  const maxDist = GLOBAL_MAX_DIST;
 
   return (
     <div className="p-3 flex flex-col gap-2">
@@ -310,7 +284,8 @@ function EmbeddingDistanceBars({ sitId }: { sitId: string }) {
         })}
       </div>
       <p className="text-[8px] text-[#a39d8e] mt-1" style={MONO}>
-        DINOv2 ViT-B/14 · n=50 seeds · bars = mean, shading = 95% CI
+        DINOv2 ViT-B/14 · n=50 seeds · mean values · fixed row order + scale across situations —
+        only bar length changes when you switch
       </p>
     </div>
   );
@@ -534,6 +509,25 @@ const SCATTER_POINTS: ScatterPoint[] = ALL_SITUATIONS.flatMap((sit) => {
     .map((code) => ({ sit, cc: code, dist: dists[code].mean, sim: sims[code].mean }));
 });
 
+// Least-squares slope of sim (homogeneity) on dist (distance from default), per
+// situation — the trend line's slope is "how much does moving away from the
+// default predict collapsing to a stereotype" for that event.
+function linreg(points: { dist: number; sim: number }[]) {
+  const n = points.length;
+  const xBar = points.reduce((s, p) => s + p.dist, 0) / n;
+  const yBar = points.reduce((s, p) => s + p.sim, 0) / n;
+  const num = points.reduce((s, p) => s + (p.dist - xBar) * (p.sim - yBar), 0);
+  const den = points.reduce((s, p) => s + (p.dist - xBar) ** 2, 0);
+  const slope = den === 0 ? 0 : num / den;
+  const intercept = yBar - slope * xBar;
+  return { slope, intercept };
+}
+
+const SITUATION_SLOPES: Record<string, { slope: number; intercept: number }> = Object.fromEntries(
+  ALL_SITUATIONS.map((sit) => [sit, linreg(SCATTER_POINTS.filter((p) => p.sit === sit))]),
+);
+const SLOPE_RANKING = [...ALL_SITUATIONS].sort((a, b) => SITUATION_SLOPES[b].slope - SITUATION_SLOPES[a].slope);
+
 function IntrasetScatter({ sitId }: { sitId: string }) {
   const [hov, setHov] = useState<ScatterPoint | null>(null);
   const W = 280; const H = 190;
@@ -543,6 +537,9 @@ function IntrasetScatter({ sitId }: { sitId: string }) {
 
   const visiblePoints = SCATTER_POINTS.filter((pt) => pt.sit === sitId);
   const color = SIT_COLORS[sitId] ?? "#999";
+  const { slope, intercept } = SITUATION_SLOPES[sitId] ?? { slope: 0, intercept: 0 };
+  const clampY = (y: number) => Math.max(0, Math.min(1, y));
+  const rank = SLOPE_RANKING.indexOf(sitId) + 1;
 
   return (
     <div className="p-3 flex flex-col gap-2">
@@ -569,6 +566,12 @@ function IntrasetScatter({ sitId }: { sitId: string }) {
           {[0,0.25,0.5,0.75,1.0].map(v => (
             <text key={v} x={px(v)} y={H-PAD.b+9} fontSize="7" fill="#a39d8e" textAnchor="middle" fontFamily="JetBrains Mono,monospace">{v.toFixed(2)}</text>
           ))}
+          {/* Linear trend — dashed, semi-transparent; slope = how strongly distance predicts homogeneity */}
+          <line
+            x1={px(0)} y1={py(clampY(intercept))}
+            x2={px(1)} y2={py(clampY(slope + intercept))}
+            stroke={color} strokeWidth="1.5" strokeDasharray="4 3" opacity="0.45"
+          />
           {/* Points */}
           {visiblePoints.map((pt, i) => (
             <g key={i} onMouseEnter={() => setHov(pt)} onMouseLeave={() => setHov(null)} style={{ cursor: "default" }}>
@@ -583,6 +586,10 @@ function IntrasetScatter({ sitId }: { sitId: string }) {
             <b>x</b>: distance from default<br/>
             <b>y</b>: output homogeneity
           </div>
+          <div className="text-[8px] leading-[1.5]" style={{ ...MONO, color }}>
+            θ (slope) = {slope.toFixed(2)}<br/>
+            <span style={{ color: "#a39d8e" }}>rank {rank}/{ALL_SITUATIONS.length} steepest</span>
+          </div>
           {hov && (
             <div className="mt-1 p-2 rounded-[5px] border border-[#d0cdc6] bg-white text-[8px] leading-[1.6]" style={MONO}>
               <b>{hov.sit} · {hov.cc}</b><br/>
@@ -594,7 +601,16 @@ function IntrasetScatter({ sitId }: { sitId: string }) {
       </div>
       <p className="text-[8px] text-[#a39d8e] leading-[1.5]" style={MONO}>
         DINOv2 ViT-B/14 CLS token · n=50 seeds per country · CFG 7 · hover a bubble for exact
-        values · switch situations with the chips above
+        values · switch situations with the chips above · dashed line = least-squares trend,
+        steeper = distance from default more strongly predicts collapse to a stereotype
+      </p>
+      <p className="text-[9px] text-[#555] leading-[1.6] border-t border-dashed border-[#e8e5de] pt-2" style={MONO}>
+        steepest → flattest across all events: {SLOPE_RANKING.map((s, i) => (
+          <span key={s}>
+            <b style={{ color: s === sitId ? SIT_COLORS[s] : "#555" }}>{s}</b>
+            {" "}({SITUATION_SLOPES[s].slope.toFixed(2)}){i < SLOPE_RANKING.length - 1 ? " > " : ""}
+          </span>
+        ))}
       </p>
     </div>
   );
@@ -624,6 +640,95 @@ const FIDELITY = [
     ],
   },
 ];
+
+// ─── Tool 10d — Cluster gravity, 1 vs. all (real DINOv2 pairwise matrix) ────
+// Fixes a country, shows all 6 situations: distance to default, and which
+// other country's cluster it lands nearest to (excluding self/default).
+
+type PairwiseJson = { results: Record<string, Record<string, Record<string, number>>> };
+const PAIRWISE = (pairwiseData as PairwiseJson).results;
+
+function CountryClusterGravity() {
+  const [code, setCode] = useState("NG");
+
+  const rows = CULTURAL_SITUATIONS.map((sit) => {
+    const distMap = PAIRWISE[sit.id]?.[code] ?? {};
+    const toDefault = distMap["default"] ?? 0;
+    const others = Object.entries(distMap).filter(([c]) => c !== code && c !== "default");
+    const [nearestCode, nearestDist] = others.length
+      ? others.reduce((a, b) => (b[1] < a[1] ? b : a))
+      : ["—", 0];
+    const intraset = INTRASET[sit.id]?.[code]?.mean ?? 0;
+    return { sitLabel: sit.label, toDefault, nearestCode, nearestDist, intraset };
+  });
+
+  const freq: Record<string, number> = {};
+  rows.forEach((r) => { freq[r.nearestCode] = (freq[r.nearestCode] ?? 0) + 1; });
+  const [topNeighbor, topCount] = Object.entries(freq).sort((a, b) => b[1] - a[1])[0] ?? ["—", 0];
+  const maxDist = Math.max(...rows.map((r) => Math.max(r.toDefault, r.nearestDist)), 0.01);
+
+  return (
+    <div className="p-3 flex flex-col gap-3">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-[9px] text-[#8a8374] shrink-0" style={MONO}>country:</span>
+        {COUNTRIES.map((c) => (
+          <button
+            key={c.code}
+            onClick={() => setCode(c.code)}
+            className="text-[10px] px-[9px] py-[3px] rounded-[4px] border transition-colors"
+            style={{
+              ...MONO,
+              background: code === c.code ? "#064e3b" : "#f5f4f0",
+              color: code === c.code ? "#d1fae5" : "#555",
+              borderColor: code === c.code ? "#064e3b" : "#d0cdc6",
+            }}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-[7px]">
+        {rows.map((r) => (
+          <div key={r.sitLabel} className="flex items-center gap-2">
+            <span className="text-[9px] text-[#867f6f] w-[64px] text-right shrink-0" style={MONO}>
+              {r.sitLabel}
+            </span>
+            <div className="flex-1 h-[12px] bg-[#f0ede6] rounded-[3px] overflow-hidden relative">
+              <div
+                className="absolute top-0 bottom-0 rounded-[2px]"
+                style={{ left: 0, width: `${(r.toDefault / maxDist) * 100}%`, background: "#94a3b8" }}
+                title={`distance to default: ${r.toDefault.toFixed(3)}`}
+              />
+              <div
+                className="absolute top-0 bottom-0 rounded-[2px]"
+                style={{ left: 0, width: `${(r.nearestDist / maxDist) * 100}%`, background: "#f59e0b", opacity: 0.85 }}
+                title={`distance to nearest cluster (${COUNTRY_BY_CODE[r.nearestCode]?.label}): ${r.nearestDist.toFixed(3)}`}
+              />
+            </div>
+            <span className="text-[9px] text-[#867f6f] w-[130px] shrink-0" style={MONO}>
+              → {COUNTRY_BY_CODE[r.nearestCode]?.label ?? r.nearestCode} ({r.nearestDist.toFixed(2)})
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <p className="text-[9px] text-[#8a8374] leading-[1.5]" style={MONO}>
+        <span style={{ color: "#94a3b8" }}>■</span> distance to unqualified default &nbsp;
+        <span style={{ color: "#f59e0b" }}>■</span> distance to nearest other country's cluster (label at right)
+      </p>
+      <p className="text-[10px] text-[#555] leading-[1.6] border-t border-dashed border-[#e8e5de] pt-2">
+        Across the 6 situations, <b>{COUNTRY_BY_CODE[code]?.label}</b> lands nearest to{" "}
+        <b>{COUNTRY_BY_CODE[topNeighbor]?.label ?? topNeighbor}</b> in {topCount}/6 —{" "}
+        {topCount >= 4
+          ? "a recurring pull toward the same cluster, not just away from the default."
+          : topCount >= 2
+          ? "a partial pull toward one recurring cluster, mixed with situation-specific neighbors."
+          : "no single recurring attractor — its nearest cluster changes with the situation."}
+      </p>
+    </div>
+  );
+}
 
 function DirectionalFidelity() {
   return (
@@ -761,16 +866,6 @@ export function Layer3() {
         >
           <DistributionBars />
         </ToolCard>
-
-        <ToolCard
-          num="08"
-          name="Amplification vs. override — two deltas, one prompt"
-          type="Derived metric"
-          description="Both variants measured against the same bare prompt: realistic context pushes the skew up (+26 pp); an explicit gender term is needed to push it down (−43 pp)."
-          explanation="The bare prompt is the reference, so its own delta is zero — the comparison that matters is what each modification does to it. Adding realistic context amplifies the default without any demographic word. Undoing the default requires naming it explicitly. The asymmetry is the finding: bias comes free, correction costs intent."
-        >
-          <AmplificationDelta />
-        </ToolCard>
       </ToolsGrid>
 
       <SubsectionLabel
@@ -846,6 +941,19 @@ export function Layer3() {
           </ToolCard>
         </ToolsGrid>
       </PredictionReveal>
+
+      <ToolsGrid cols={1}>
+        <ToolCard
+          num="10d"
+          name="Cluster gravity — 1 vs. all countries"
+          type="Interactive"
+          description="Flip the axis: pick a country and see all 6 situations at once. Does adding this country to an event just push the output away from the default, or does it pull toward one specific other country's cluster?"
+          explanation="Tools 09–10c fix the situation and compare countries. This inverts it: fix the country and look across situations, using the same DINOv2 embeddings extended to the full pairwise (not just vs.-default) distance matrix. If a country's nearest neighbor is consistently the same other country rather than the default, the model doesn't hold a distinct representation for it — it's on loan from a shared 'non-Western' attractor."
+          fullWidth
+        >
+          <CountryClusterGravity />
+        </ToolCard>
+      </ToolsGrid>
 
       <SubsectionLabel
         explanation="Compositional failures occur when attributes specified for one object bleed into another through the cross-attention mechanism. This is a lower-level failure than demographic bias — not about who the model imagines people to be, but about how it binds adjectives to nouns during denoising."
