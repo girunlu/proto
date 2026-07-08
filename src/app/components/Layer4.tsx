@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import * as Slider from "@radix-ui/react-slider";
 import { Section, ToolCard, ToolsGrid, PlanNote, Lightbox } from "./ToolCard";
+import lockupCurveData from "../../data/cultural/lockup_curve.json";
 
 const MONO = { fontFamily: "'JetBrains Mono', monospace" };
 
@@ -8,88 +9,57 @@ const MONO = { fontFamily: "'JetBrains Mono', monospace" };
 // Start denoising with the bare prompt (A), at step k switch to the
 // attribute-override prompt (B). If the output still shows A's default,
 // the assumption was already locked in before step k.
+//
+// 12 country pairs × bidirectional = 24 directions, across all 6 events.
+// Source: src/materials/analysis/cultural/lockup_curve.json (DINOv2 centroid
+// proximity, 12 seeds/step) + real swap images in public/images/swaps/.
 
-// Only pairs with real generated swap images — demographic pairs removed pending Phase 2
-const SWAP_PAIRS = [
-  {
-    base: "a wedding in Nigeria",   override: "a wedding in USA",       kind: "culture",
-    // tokens: shared (grey) and changed (highlighted)
-    sharedTokens: ["a", "wedding", "in"],
-    fromToken: "Nigeria", toToken: "United States",
-  },
-  {
-    base: "a breakfast in Nigeria", override: "a breakfast in Germany", kind: "culture",
-    sharedTokens: ["a", "breakfast", "in"],
-    fromToken: "Nigeria", toToken: "Germany",
-  },
-  {
-    base: "a breakfast in Japan",   override: "a breakfast in Russia",  kind: "culture",
-    sharedTokens: ["a", "breakfast", "in"],
-    fromToken: "Japan", toToken: "Russia",
-  },
-];
-
-// Step keys used for swap images
 const STEP_NAMES = ["step_01", "step_05", "step_10", "step_15", "step_25"] as const;
+const SWAP_SEED_SUFFIXES = ["", "_s01", "_s02"] as const; // illustration seeds only
 
-// Per-pair curve data.
-// All 3 pairs are real data from lockup_curve.json; real swap images in public/images/swaps/.
-//   originImg: the prompt-A image (no swap, seed_00, CFG 7)
-//   swapImgs:  swap output at each step k (seed_00, illustration only)
-// Seeds available per swap: s00 (no suffix), s01, s02
-const SWAP_SEED_SUFFIXES = ["", "_s01", "_s02"] as const;
+const COUNTRY_LABEL: Record<string, string> = {
+  US: "USA", DE: "Germany", RU: "Russia", IN: "India",
+  ID: "Indonesia", JP: "Japan", EG: "Egypt", NG: "Nigeria",
+};
+const COUNTRY_IMG_ID: Record<string, string> = {
+  US: "usa", DE: "germany", RU: "russia", IN: "india",
+  ID: "indonesia", JP: "japan", EG: "egypt", NG: "nigeria",
+};
 
-const PAIR_CURVES = [
-  { // pair 0: wedding Nigeria→USA — REAL DATA
-    k: [1, 5, 10, 15, 25],
-    p:     [1.000, 1.000, 0.333, 0.000, 0.000],
-    ci_lo: [1.000, 1.000, 0.083, 0.000, 0.000],
-    ci_hi: [1.000, 1.000, 0.583, 0.000, 0.000],
-    lockInIdx: 1, lockInLabel: "lock-in k≈7–10",
-    originImgBase: "/images/cultural/wedding_nigeria",
-    swapImgBase:   (s: string) => STEP_NAMES.map(step => `/images/swaps/wedding_NG_to_US_${step}${s}.webp`),
-  },
-  { // pair 1: breakfast Nigeria→Germany — REAL DATA
-    k: [1, 5, 10, 15, 25],
-    p:     [1.000, 1.000, 0.917, 0.667, 0.167],
-    ci_lo: [1.000, 1.000, 0.750, 0.417, 0.000],
-    ci_hi: [1.000, 1.000, 1.000, 0.917, 0.417],
-    lockInIdx: 3, lockInLabel: "lock-in k≈18–22",
-    originImgBase: "/images/cultural/breakfast_nigeria",
-    swapImgBase:   (s: string) => STEP_NAMES.map(step => `/images/swaps/breakfast_NG_to_DE_${step}${s}.webp`),
-  },
-  { // pair 2: breakfast Japan→Russia — REAL DATA (weak pair)
-    k: [1, 5, 10, 15, 25],
-    p:     [1.000, 1.000, 0.333, 0.083, 0.000],
-    ci_lo: [1.000, 1.000, 0.083, 0.000, 0.000],
-    ci_hi: [1.000, 1.000, 0.583, 0.250, 0.000],
-    lockInIdx: 2, lockInLabel: "lock-in k≈7–10 (weak pair)",
-    originImgBase: "/images/cultural/breakfast_japan",
-    swapImgBase:   (s: string) => STEP_NAMES.map(step => `/images/swaps/breakfast_JP_to_RU_${step}${s}.webp`),
-  },
-];
+type CurveStep = { step_idx: number; n_seeds: number; p_closer_B: number; ci_low: number; ci_high: number };
+type LockupResult = { slug_A: string; slug_B: string; prompt_A: string; prompt_B: string; type: string; curve: Record<string, CurveStep> };
+const LOCKUP_RESULTS = (lockupCurveData as { results: Record<string, LockupResult> }).results;
 
-const BASE_SHADES: [number, number, number][] = [
-  [176, 192, 208],
-  [200, 182, 182],
-  [168, 178, 162],
-  [178, 176, 198],
-];
-// override variants tinted toward a visibly different hue
-const OVERRIDE_SHADES: [number, number, number][] = [
-  [214, 178, 196],
-  [172, 190, 210],
-  [206, 182, 158],
-  [206, 176, 188],
-];
+type SwapPair = {
+  id: string; event: string; fromCode: string; toCode: string;
+  k: number[]; p: number[]; ci_lo: number[]; ci_hi: number[];
+  lockInIdx: number; lockInLabel: string;
+};
 
-function blend(a: [number, number, number], b: [number, number, number], t: number) {
-  return `rgb(${Math.round(a[0] * (1 - t) + b[0] * t)},${Math.round(a[1] * (1 - t) + b[1] * t)},${Math.round(a[2] * (1 - t) + b[2] * t)})`;
+function computeLockIn(kVals: number[], probs: number[]) {
+  let idx = 0;
+  for (let i = 0; i < probs.length; i++) if (probs[i] > 0.5) idx = i;
+  const label = idx < kVals.length - 1
+    ? `lock-in k≈${kVals[idx]}–${kVals[idx + 1]}`
+    : `no lock-in by k=${kVals[idx]}`;
+  return { idx, label };
 }
 
-function LockInCurve({ pairIdx }: { pairIdx: number }) {
-  const curve = PAIR_CURVES[pairIdx];
-  const { k: kVals, p: probs, ci_lo, ci_hi, lockInIdx, lockInLabel } = curve;
+const SWAP_PAIRS: SwapPair[] = Object.entries(LOCKUP_RESULTS).map(([id, r]) => {
+  const m = id.match(/^([a-z]+)_([A-Z]{2})_to_([A-Z]{2})$/)!;
+  const [, event, fromCode, toCode] = m;
+  const k = STEP_NAMES.map((s) => r.curve[s]?.step_idx ?? 0);
+  const p = STEP_NAMES.map((s) => r.curve[s]?.p_closer_B ?? 0);
+  const ci_lo = STEP_NAMES.map((s) => r.curve[s]?.ci_low ?? 0);
+  const ci_hi = STEP_NAMES.map((s) => r.curve[s]?.ci_high ?? 0);
+  const { idx, label } = computeLockIn(k, p);
+  return { id, event, fromCode, toCode, k, p, ci_lo, ci_hi, lockInIdx: idx, lockInLabel: label };
+}).sort((a, b) => a.id.localeCompare(b.id));
+
+const EVENTS = Array.from(new Set(SWAP_PAIRS.map((p) => p.event))).sort();
+
+function LockInCurve({ pair }: { pair: SwapPair }) {
+  const { k: kVals, p: probs, ci_lo, ci_hi, lockInIdx, lockInLabel } = pair;
 
   const w = 240;
   const h = 110;
@@ -133,65 +103,72 @@ function LockInCurve({ pairIdx }: { pairIdx: number }) {
 }
 
 function TimestepSlider() {
-  const [pairIdx, setPairIdx] = useState(0);
+  const [event, setEvent] = useState("wedding");
+  const [pairId, setPairId] = useState("wedding_NG_to_US");
   const [kIdx, setKIdx] = useState(0);
   const [seedIdx, setSeedIdx] = useState(0);
   const [zoomedSrc, setZoomedSrc] = useState<string | null>(null);
 
-  const pair = SWAP_PAIRS[pairIdx];
-  const baseShade = BASE_SHADES[pairIdx];
-  const overrideShade = OVERRIDE_SHADES[pairIdx];
-  const activeCurve    = PAIR_CURVES[pairIdx];
-  const activeKValues  = activeCurve.k;
-  const activeLockInIdx = activeCurve.lockInIdx;
-  const seedSuffix     = SWAP_SEED_SUFFIXES[seedIdx];
-  const originImg      = `${activeCurve.originImgBase}${seedIdx === 0 ? "" : `_0${seedIdx}`}.webp`;
-  const swapImgs       = activeCurve.swapImgBase(seedSuffix);
+  const pairsForEvent = useMemo(() => SWAP_PAIRS.filter((p) => p.event === event), [event]);
+  const pair = pairsForEvent.find((p) => p.id === pairId) ?? pairsForEvent[0];
 
-  const getFrameColor = (i: number) => {
-    if (i >= activeLockInIdx) return `rgb(${baseShade[0]},${baseShade[1]},${baseShade[2]})`;
-    return blend(overrideShade, baseShade, i / activeLockInIdx);
+  const handleEvent = (ev: string) => {
+    setEvent(ev);
+    const first = SWAP_PAIRS.find((p) => p.event === ev);
+    if (first) setPairId(first.id);
+    setKIdx(0);
+    setSeedIdx(0);
   };
+
+  const seedSuffix = SWAP_SEED_SUFFIXES[seedIdx];
+  const fromLabel = COUNTRY_LABEL[pair.fromCode] ?? pair.fromCode;
+  const toLabel = COUNTRY_LABEL[pair.toCode] ?? pair.toCode;
+  const originImg = `/images/cultural/${event}_${COUNTRY_IMG_ID[pair.fromCode]}${seedIdx === 0 ? "" : `_0${seedIdx}`}.webp`;
+  const swapImgs = STEP_NAMES.map((step) => `/images/swaps/${pair.id}_${step}${seedSuffix}.webp`);
 
   return (
     <div className="p-4 flex flex-col gap-3">
-      {/* Pair selector */}
-      <div className="flex flex-wrap gap-[5px] items-center">
-        <span className="text-[9px] text-[#8a8374]" style={MONO}>
-          start with:
-        </span>
-        {SWAP_PAIRS.map((p, i) => (
-          <button
-            key={p.base}
-            onClick={() => { setPairIdx(i); setKIdx(0); setSeedIdx(0); }}
-            className="text-[10px] px-[8px] py-[3px] rounded-[4px] border transition-colors"
-            style={{
-              ...MONO,
-              background: pairIdx === i ? "#7c2d12" : "#f5f4f0",
-              color: pairIdx === i ? "#ffedd5" : "#666",
-              borderColor: pairIdx === i ? "#7c2d12" : "#e0ddd6",
-            }}
-          >
-            {p.base}
-          </button>
-        ))}
+      {/* Event / pair selectors */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="text-[9px] text-[#8a8374]" style={MONO}>event:</span>
+        <select
+          value={event}
+          onChange={(e) => handleEvent(e.target.value)}
+          className="text-[10px] border border-[#d8d4cb] rounded-[4px] px-[6px] py-[3px] bg-white"
+          style={MONO}
+        >
+          {EVENTS.map((ev) => <option key={ev} value={ev}>{ev}</option>)}
+        </select>
+        <span className="text-[9px] text-[#8a8374]" style={MONO}>pair:</span>
+        <select
+          value={pair.id}
+          onChange={(e) => { setPairId(e.target.value); setKIdx(0); setSeedIdx(0); }}
+          className="text-[10px] border border-[#d8d4cb] rounded-[4px] px-[6px] py-[3px] bg-white"
+          style={MONO}
+        >
+          {pairsForEvent.map((p) => (
+            <option key={p.id} value={p.id}>
+              {COUNTRY_LABEL[p.fromCode]} → {COUNTRY_LABEL[p.toCode]}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Tokenized prompt display */}
       <div className="flex flex-wrap gap-[4px] items-center">
         <span className="text-[9px] text-[#8a8374]" style={MONO}>start:</span>
-        {pair.sharedTokens.map((w, i) => (
-          <span key={i} className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#f0ede6] text-[#555] border border-[#d0cdc6]" style={MONO}>{w}</span>
-        ))}
-        <span className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#fef3c7] text-[#92400e] border border-[#fbbf24] font-semibold" style={MONO}>{pair.fromToken}</span>
+        <span className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#f0ede6] text-[#555] border border-[#d0cdc6]" style={MONO}>a</span>
+        <span className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#f0ede6] text-[#555] border border-[#d0cdc6]" style={MONO}>{event}</span>
+        <span className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#f0ede6] text-[#555] border border-[#d0cdc6]" style={MONO}>in</span>
+        <span className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#fef3c7] text-[#92400e] border border-[#fbbf24] font-semibold" style={MONO}>{fromLabel}</span>
         <span className="text-[9px] text-[#8a8374] mx-1" style={MONO}>→ at step k →</span>
-        {pair.sharedTokens.map((w, i) => (
-          <span key={i} className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#f0ede6] text-[#555] border border-[#d0cdc6]" style={MONO}>{w}</span>
-        ))}
-        <span className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#d1fae5] text-[#064e3b] border border-[#34d399] font-semibold" style={MONO}>{pair.toToken}</span>
+        <span className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#f0ede6] text-[#555] border border-[#d0cdc6]" style={MONO}>a</span>
+        <span className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#f0ede6] text-[#555] border border-[#d0cdc6]" style={MONO}>{event}</span>
+        <span className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#f0ede6] text-[#555] border border-[#d0cdc6]" style={MONO}>in</span>
+        <span className="text-[10px] px-[7px] py-[2px] rounded-[4px] bg-[#d1fae5] text-[#064e3b] border border-[#34d399] font-semibold" style={MONO}>{toLabel}</span>
       </div>
 
-      {/* Image viewer for cultural pairs; colour-swatch strip for others */}
+      {/* Image viewer */}
       {zoomedSrc && <Lightbox src={zoomedSrc} onClose={() => setZoomedSrc(null)} />}
 
       <div className="flex flex-col gap-3">
@@ -210,29 +187,29 @@ function TimestepSlider() {
                 onClick={() => setZoomedSrc(originImg)}
               />
               <span className="text-[9px] text-[#555] text-center truncate" style={MONO}>
-                "{pair.base}"
+                "a {event} in {fromLabel}"
               </span>
             </div>
 
             <div className="flex-1 flex flex-col gap-[5px]">
               <span className="text-[9px] text-[#8a8374] text-center" style={MONO}>
-                swapped at k={activeKValues[kIdx]} → prompt B
+                swapped at k={pair.k[kIdx]} → prompt B
               </span>
               <img
                 src={swapImgs[kIdx]}
-                alt={`swap at step ${activeKValues[kIdx]}`}
+                alt={`swap at step ${pair.k[kIdx]}`}
                 loading="lazy"
                 className="w-full rounded-[6px] object-cover transition-all duration-200 hover:opacity-90"
-                style={{ aspectRatio: "1 / 1", outline: kIdx <= activeLockInIdx ? "2px solid #34d399" : "2px solid #ef4444", outlineOffset: "2px", cursor: "zoom-in" }}
+                style={{ aspectRatio: "1 / 1", outline: kIdx <= pair.lockInIdx ? "2px solid #34d399" : "2px solid #ef4444", outlineOffset: "2px", cursor: "zoom-in" }}
                 onClick={() => setZoomedSrc(swapImgs[kIdx])}
               />
-              <span className="text-[9px] text-center truncate" style={{ ...MONO, color: kIdx <= activeLockInIdx ? "#059669" : "#dc2626" }}>
-                {kIdx <= activeLockInIdx ? "✓ B wins — swap worked" : "✗ A locked in — too late"}
+              <span className="text-[9px] text-center truncate" style={{ ...MONO, color: kIdx <= pair.lockInIdx ? "#059669" : "#dc2626" }}>
+                {kIdx <= pair.lockInIdx ? "✓ B wins — swap worked" : "✗ A locked in — too late"}
               </span>
             </div>
 
             <div className="flex-[1.2] pt-1">
-              <LockInCurve pairIdx={pairIdx} />
+              <LockInCurve pair={pair} />
             </div>
           </div>
 
@@ -240,7 +217,7 @@ function TimestepSlider() {
           <Slider.Root
             className="relative flex items-center select-none touch-none h-5"
             min={0}
-            max={activeKValues.length - 1}
+            max={pair.k.length - 1}
             step={1}
             value={[kIdx]}
             onValueChange={([v]) => setKIdx(v)}
@@ -504,7 +481,7 @@ export function Layer4() {
     >
       <PlanNote
         purpose="Measure how deep the assumptions go: when they lock in, where they live, how tight the output bubble is, and how every slot of the prompt steers them."
-        computed="Lock-in: 2 pairs × 7 swap steps × 12 seeds → flip-probability curve. Masking: face vs. random blur, residual shift. Similarity: DINOv2 over 50 face crops. Builder: n=50 per slot combination."
+        computed="Lock-in: 12 country pairs × bidirectional × 5 swap steps × 12 seeds → flip-probability curve, across all 6 cultural events. Masking: face vs. random blur, residual shift. Similarity: DINOv2 over 50 face crops. Builder: n=50 per slot combination."
         useful="Every effect has a control (random mask, multi-seed curve, matched objects) — findings, not anecdotes."
         interaction="Drag the swap slider; build prompts from slots; hover rows for the face crops behind each score."
       />
@@ -513,7 +490,7 @@ export function Layer4() {
           num="13"
           name="Timestep swap — when the assumption locks in"
           type="Interactive slider + curve"
-          description="Start denoising with a base prompt, switch to an override at step k — gender, culture, or color. The curve shows how often the override still wins (12 seeds per point); lock-in = the 50% crossing."
+          description="Pick an event and a country pair, either direction. Start denoising with one country's prompt, switch to the other at step k. The curve shows how often the override still wins (12 seeds per point); lock-in = the 50% crossing."
           explanation="The committed structure of the image — who is in it, whose culture frames it, what color things are — is decided in the first denoising steps, long before anything is recognizable. After the lock-in point, even an explicit override arrives too late. Lock-in is stochastic, so the result is a probability curve, not a single threshold; the strip shows one seed so the effect is visible."
           fullWidth
         >

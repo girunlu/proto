@@ -1,0 +1,1070 @@
+{
+  "method": "dinov2_centroid_proximity",
+  "cfg": 7,
+  "n_bootstrap": 10000,
+  "step_indices": {
+    "step_01": 1,
+    "step_05": 5,
+    "step_10": 10,
+    "step_15": 15,
+    "step_25": 25
+  },
+  "results": {
+    "breakfast_DE_to_NG": {
+      "slug_A": "a_breakfast_in_germany",
+      "slug_B": "a_breakfast_in_nigeria",
+      "prompt_A": "a breakfast in Germany",
+      "prompt_B": "a breakfast in Nigeria",
+      "type": "strong",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 0.9167,
+          "ci_low": 0.75,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 0.5833,
+          "ci_low": 0.3333,
+          "ci_high": 0.8333
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.3333,
+          "ci_low": 0.0833,
+          "ci_high": 0.5833
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.0833,
+          "ci_low": 0.0,
+          "ci_high": 0.25
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "breakfast_JP_to_RU": {
+      "slug_A": "a_breakfast_in_japan",
+      "slug_B": "a_breakfast_in_russia",
+      "prompt_A": "a breakfast in Japan",
+      "prompt_B": "a breakfast in Russia",
+      "type": "weak",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.3333,
+          "ci_low": 0.0833,
+          "ci_high": 0.5833
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.0833,
+          "ci_low": 0.0,
+          "ci_high": 0.25
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "breakfast_NG_to_DE": {
+      "slug_A": "a_breakfast_in_nigeria",
+      "slug_B": "a_breakfast_in_germany",
+      "prompt_A": "a breakfast in Nigeria",
+      "prompt_B": "a breakfast in Germany",
+      "type": "strong",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.9167,
+          "ci_low": 0.75,
+          "ci_high": 1.0
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.6667,
+          "ci_low": 0.4167,
+          "ci_high": 0.9167
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.1667,
+          "ci_low": 0.0,
+          "ci_high": 0.4167
+        }
+      }
+    },
+    "breakfast_RU_to_JP": {
+      "slug_A": "a_breakfast_in_russia",
+      "slug_B": "a_breakfast_in_japan",
+      "prompt_A": "a breakfast in Russia",
+      "prompt_B": "a breakfast in Japan",
+      "type": "weak",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.9167,
+          "ci_low": 0.75,
+          "ci_high": 1.0
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.4167,
+          "ci_low": 0.1667,
+          "ci_high": 0.6667
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "celebration_DE_to_US": {
+      "slug_A": "a_celebration_in_germany",
+      "slug_B": "a_celebration_in_united_states",
+      "prompt_A": "a celebration in Germany",
+      "prompt_B": "a celebration in United States",
+      "type": "weak",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.5833,
+          "ci_low": 0.3333,
+          "ci_high": 0.8333
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.1667,
+          "ci_low": 0.0,
+          "ci_high": 0.4167
+        }
+      }
+    },
+    "celebration_ID_to_JP": {
+      "slug_A": "a_celebration_in_indonesia",
+      "slug_B": "a_celebration_in_japan",
+      "prompt_A": "a celebration in Indonesia",
+      "prompt_B": "a celebration in Japan",
+      "type": "weak",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.9167,
+          "ci_low": 0.75,
+          "ci_high": 1.0
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.5,
+          "ci_low": 0.25,
+          "ci_high": 0.75
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "celebration_JP_to_ID": {
+      "slug_A": "a_celebration_in_japan",
+      "slug_B": "a_celebration_in_indonesia",
+      "prompt_A": "a celebration in Japan",
+      "prompt_B": "a celebration in Indonesia",
+      "type": "weak",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.8333,
+          "ci_low": 0.5833,
+          "ci_high": 1.0
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.25,
+          "ci_low": 0.0,
+          "ci_high": 0.5
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "celebration_US_to_DE": {
+      "slug_A": "a_celebration_in_united_states",
+      "slug_B": "a_celebration_in_germany",
+      "prompt_A": "a celebration in United States",
+      "prompt_B": "a celebration in Germany",
+      "type": "weak",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 0.8333,
+          "ci_low": 0.5833,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.4167,
+          "ci_low": 0.1667,
+          "ci_high": 0.6667
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "family_EG_to_RU": {
+      "slug_A": "a_family_in_egypt",
+      "slug_B": "a_family_in_russia",
+      "prompt_A": "a family in Egypt",
+      "prompt_B": "a family in Russia",
+      "type": "strong",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.8333,
+          "ci_low": 0.5833,
+          "ci_high": 1.0
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.1667,
+          "ci_low": 0.0,
+          "ci_high": 0.4167
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "family_JP_to_US": {
+      "slug_A": "a_family_in_japan",
+      "slug_B": "a_family_in_united_states",
+      "prompt_A": "a family in Japan",
+      "prompt_B": "a family in United States",
+      "type": "strong",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.5833,
+          "ci_low": 0.3333,
+          "ci_high": 0.8333
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.1667,
+          "ci_low": 0.0,
+          "ci_high": 0.4167
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "family_RU_to_EG": {
+      "slug_A": "a_family_in_russia",
+      "slug_B": "a_family_in_egypt",
+      "prompt_A": "a family in Russia",
+      "prompt_B": "a family in Egypt",
+      "type": "strong",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 0.9167,
+          "ci_low": 0.75,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.8333,
+          "ci_low": 0.5833,
+          "ci_high": 1.0
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.6667,
+          "ci_low": 0.4167,
+          "ci_high": 0.9167
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "family_US_to_JP": {
+      "slug_A": "a_family_in_united_states",
+      "slug_B": "a_family_in_japan",
+      "prompt_A": "a family in United States",
+      "prompt_B": "a family in Japan",
+      "type": "strong",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.9167,
+          "ci_low": 0.75,
+          "ci_high": 1.0
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.4167,
+          "ci_low": 0.1667,
+          "ci_high": 0.6667
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "funeral_IN_to_RU": {
+      "slug_A": "a_funeral_in_india",
+      "slug_B": "a_funeral_in_russia",
+      "prompt_A": "a funeral in India",
+      "prompt_B": "a funeral in Russia",
+      "type": "strong",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.9167,
+          "ci_low": 0.75,
+          "ci_high": 1.0
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.75,
+          "ci_low": 0.5,
+          "ci_high": 1.0
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "funeral_NG_to_US": {
+      "slug_A": "a_funeral_in_nigeria",
+      "slug_B": "a_funeral_in_united_states",
+      "prompt_A": "a funeral in Nigeria",
+      "prompt_B": "a funeral in United States",
+      "type": "strong",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 0.9167,
+          "ci_low": 0.75,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.75,
+          "ci_low": 0.5,
+          "ci_high": 1.0
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.4167,
+          "ci_low": 0.1667,
+          "ci_high": 0.6667
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.1667,
+          "ci_low": 0.0,
+          "ci_high": 0.4167
+        }
+      }
+    },
+    "funeral_RU_to_IN": {
+      "slug_A": "a_funeral_in_russia",
+      "slug_B": "a_funeral_in_india",
+      "prompt_A": "a funeral in Russia",
+      "prompt_B": "a funeral in India",
+      "type": "strong",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 0.9167,
+          "ci_low": 0.75,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.9167,
+          "ci_low": 0.75,
+          "ci_high": 1.0
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.25,
+          "ci_low": 0.0,
+          "ci_high": 0.5
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "funeral_US_to_NG": {
+      "slug_A": "a_funeral_in_united_states",
+      "slug_B": "a_funeral_in_nigeria",
+      "prompt_A": "a funeral in United States",
+      "prompt_B": "a funeral in Nigeria",
+      "type": "strong",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 0.5833,
+          "ci_low": 0.3333,
+          "ci_high": 0.8333
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.5,
+          "ci_low": 0.25,
+          "ci_high": 0.75
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.0833,
+          "ci_low": 0.0,
+          "ci_high": 0.25
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "school_EG_to_US": {
+      "slug_A": "a_school_in_egypt",
+      "slug_B": "a_school_in_united_states",
+      "prompt_A": "a school in Egypt",
+      "prompt_B": "a school in United States",
+      "type": "weak",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 0.75,
+          "ci_low": 0.5,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 0.0833,
+          "ci_low": 0.0,
+          "ci_high": 0.25
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.0833,
+          "ci_low": 0.0,
+          "ci_high": 0.25
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0833,
+          "ci_low": 0.0,
+          "ci_high": 0.25
+        }
+      }
+    },
+    "school_JP_to_RU": {
+      "slug_A": "a_school_in_japan",
+      "slug_B": "a_school_in_russia",
+      "prompt_A": "a school in Japan",
+      "prompt_B": "a school in Russia",
+      "type": "weak",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 0.9167,
+          "ci_low": 0.75,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 0.5,
+          "ci_low": 0.25,
+          "ci_high": 0.75
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.3333,
+          "ci_low": 0.0833,
+          "ci_high": 0.5833
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.3333,
+          "ci_low": 0.0833,
+          "ci_high": 0.5833
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.25,
+          "ci_low": 0.0,
+          "ci_high": 0.5
+        }
+      }
+    },
+    "school_RU_to_JP": {
+      "slug_A": "a_school_in_russia",
+      "slug_B": "a_school_in_japan",
+      "prompt_A": "a school in Russia",
+      "prompt_B": "a school in Japan",
+      "type": "weak",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 0.5833,
+          "ci_low": 0.3333,
+          "ci_high": 0.8333
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 0.25,
+          "ci_low": 0.0,
+          "ci_high": 0.5
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.1667,
+          "ci_low": 0.0,
+          "ci_high": 0.4167
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.1667,
+          "ci_low": 0.0,
+          "ci_high": 0.4167
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.1667,
+          "ci_low": 0.0,
+          "ci_high": 0.4167
+        }
+      }
+    },
+    "school_US_to_EG": {
+      "slug_A": "a_school_in_united_states",
+      "slug_B": "a_school_in_egypt",
+      "prompt_A": "a school in United States",
+      "prompt_B": "a school in Egypt",
+      "type": "weak",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 0.9167,
+          "ci_low": 0.75,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 0.3333,
+          "ci_low": 0.0833,
+          "ci_high": 0.5833
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.1667,
+          "ci_low": 0.0,
+          "ci_high": 0.4167
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.1667,
+          "ci_low": 0.0,
+          "ci_high": 0.4167
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.1667,
+          "ci_low": 0.0,
+          "ci_high": 0.4167
+        }
+      }
+    },
+    "wedding_DE_to_IN": {
+      "slug_A": "a_wedding_in_germany",
+      "slug_B": "a_wedding_in_india",
+      "prompt_A": "a wedding in Germany",
+      "prompt_B": "a wedding in India",
+      "type": "strong",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.6667,
+          "ci_low": 0.4167,
+          "ci_high": 0.9167
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.1667,
+          "ci_low": 0.0,
+          "ci_high": 0.4167
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "wedding_IN_to_DE": {
+      "slug_A": "a_wedding_in_india",
+      "slug_B": "a_wedding_in_germany",
+      "prompt_A": "a wedding in India",
+      "prompt_B": "a wedding in Germany",
+      "type": "strong",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.75,
+          "ci_low": 0.5,
+          "ci_high": 1.0
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.25,
+          "ci_low": 0.0,
+          "ci_high": 0.5
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "wedding_NG_to_US": {
+      "slug_A": "a_wedding_in_nigeria",
+      "slug_B": "a_wedding_in_united_states",
+      "prompt_A": "a wedding in Nigeria",
+      "prompt_B": "a wedding in United States",
+      "type": "strong",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.3333,
+          "ci_low": 0.0833,
+          "ci_high": 0.5833
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    },
+    "wedding_US_to_NG": {
+      "slug_A": "a_wedding_in_united_states",
+      "slug_B": "a_wedding_in_nigeria",
+      "prompt_A": "a wedding in United States",
+      "prompt_B": "a wedding in Nigeria",
+      "type": "strong",
+      "curve": {
+        "step_01": {
+          "step_idx": 1,
+          "n_seeds": 12,
+          "p_closer_B": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0
+        },
+        "step_05": {
+          "step_idx": 5,
+          "n_seeds": 12,
+          "p_closer_B": 0.8333,
+          "ci_low": 0.5833,
+          "ci_high": 1.0
+        },
+        "step_10": {
+          "step_idx": 10,
+          "n_seeds": 12,
+          "p_closer_B": 0.25,
+          "ci_low": 0.0,
+          "ci_high": 0.5
+        },
+        "step_15": {
+          "step_idx": 15,
+          "n_seeds": 12,
+          "p_closer_B": 0.0833,
+          "ci_low": 0.0,
+          "ci_high": 0.25
+        },
+        "step_25": {
+          "step_idx": 25,
+          "n_seeds": 12,
+          "p_closer_B": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0
+        }
+      }
+    }
+  }
+}
