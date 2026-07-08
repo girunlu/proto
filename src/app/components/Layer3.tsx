@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Section, ToolCard, ToolsGrid, SubsectionLabel, PlanNote, Lightbox, PredictionReveal } from "./ToolCard";
 import distancesData from "../../data/cultural/distances.json";
 import intrasetData from "../../data/cultural/intraset_sim.json";
@@ -920,9 +920,17 @@ const ID_COLOR: Record<string, string> = Object.fromEntries([
   ...COUNTRIES.map((c) => [c.id, NEIGHBOR_COLOR[c.code]]),
 ]);
 
+// Snap-to-nearest-point radius. Median nearest-neighbor spacing between points
+// is ~4px (as low as ~2px in the densest clusters) — much bigger than that and
+// "nearest point" stops meaning anything (cursor roughly equidistant from
+// several dots). 8px is a real improvement over the 3.5px dot radius without
+// drifting into that territory.
+const MAGNET_RADIUS_PX = 8;
+
 function UMAPScatter({ onZoom }: { onZoom: (src: string) => void }) {
   const [sitId, setSitId] = useState("wedding");
   const [hovPt, setHovPt] = useState<UmapPoint | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   const data = UMAP[sitId] ?? { points: [], centroids: {}, clusters: [] };
   const allX = [...data.points.map((p) => p.x), ...Object.values(data.centroids).map((c) => c.x)];
@@ -938,6 +946,22 @@ function UMAPScatter({ onZoom }: { onZoom: (src: string) => void }) {
   const py = (y: number) => H - PAD - ((y - yMin) / (yMax - yMin || 1)) * (H - 2 * PAD);
 
   const dist2D = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(a.x - b.x, a.y - b.y);
+
+  // Magnet: snap hover to the nearest point under the cursor within a radius,
+  // instead of requiring the mouse to land exactly on a 3.5px dot.
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const cursor = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    let nearest: UmapPoint | null = null;
+    let nearestDist = Infinity;
+    for (const p of data.points) {
+      const d = dist2D(cursor, { x: px(p.x), y: py(p.y) });
+      if (d < nearestDist) { nearestDist = d; nearest = p; }
+    }
+    setHovPt(nearestDist <= MAGNET_RADIUS_PX ? nearest : null);
+  };
+
   const hovInfo = hovPt && (() => {
     const ownCentroid = data.centroids[hovPt.country];
     const others = Object.entries(data.centroids).filter(([id]) => id !== hovPt.country);
@@ -966,7 +990,13 @@ function UMAPScatter({ onZoom }: { onZoom: (src: string) => void }) {
       </div>
 
       <div className="flex gap-4 items-start">
-        <svg width={W} height={H} style={{ flexShrink: 0, background: "#fbfaf6", borderRadius: 6 }}>
+        <svg
+          ref={svgRef}
+          width={W} height={H}
+          style={{ flexShrink: 0, background: "#fbfaf6", borderRadius: 6 }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={() => setHovPt(null)}
+        >
           {/* DBSCAN-found groups — density-based, no fixed cluster count, drawn
               as a filled region behind the points so multi-country groupings
               (not just single-country clusters) are visible at a glance.
@@ -1011,9 +1041,7 @@ function UMAPScatter({ onZoom }: { onZoom: (src: string) => void }) {
                 fill={ID_COLOR[p.country] ?? "#999"}
                 opacity={hovPt && !isHov ? 0.35 : 0.85}
                 stroke={isHov ? "#1a1a1a" : "none"} strokeWidth="1"
-                style={{ cursor: "pointer" }}
-                onMouseEnter={() => setHovPt(p)}
-                onMouseLeave={() => setHovPt(null)}
+                style={{ pointerEvents: "none" }}
               />
             );
           })}
@@ -1080,7 +1108,8 @@ function UMAPScatter({ onZoom }: { onZoom: (src: string) => void }) {
         triangles = true centroid (mean of all 50 seeds, projected into this space) · shaded
         regions = DBSCAN clusters found directly on these points (density-based, no fixed cluster
         count set — it can merge several countries into one region or leave one standing alone) ·
-        hover a dot for its actual image and projected distances · distances here are 2D-projection
+        hover near a dot (magnet snaps to the nearest one within ~8px, no need for pixel-perfect
+        aim) for its actual image and projected distances · distances here are 2D-projection
         distances, an approximation of the real cosine distances used elsewhere, useful for reading
         relative layout not exact magnitude
       </p>
