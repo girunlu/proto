@@ -648,83 +648,122 @@ const FIDELITY = [
 type PairwiseJson = { results: Record<string, Record<string, Record<string, number>>> };
 const PAIRWISE = (pairwiseData as PairwiseJson).results;
 
-function CountryClusterGravity() {
-  const [code, setCode] = useState("NG");
+// Small-multiples heatmap instead of one-country-at-a-time bars: every country
+// x every situation in one compact grid, cell = which cluster it lands nearest
+// to. Repeating cell colors across a row (or column) is the attractor, visible
+// at a glance instead of clicking through 8 buttons.
 
-  const rows = CULTURAL_SITUATIONS.map((sit) => {
-    const distMap = PAIRWISE[sit.id]?.[code] ?? {};
-    const toDefault = distMap["default"] ?? 0;
-    const others = Object.entries(distMap).filter(([c]) => c !== code && c !== "default");
-    const [nearestCode, nearestDist] = others.length
-      ? others.reduce((a, b) => (b[1] < a[1] ? b : a))
-      : ["—", 0];
-    const intraset = INTRASET[sit.id]?.[code]?.mean ?? 0;
-    return { sitLabel: sit.label, toDefault, nearestCode, nearestDist, intraset };
-  });
+const SIT_SHORT: Record<string, string> = {
+  wedding: "wed", funeral: "fun", breakfast: "brk", family: "fam", celebration: "cel", school: "sch",
+};
+const NEIGHBOR_COLOR: Record<string, string> = {
+  US: "#60a5fa", DE: "#34d399", RU: "#a78bfa", IN: "#f472b6",
+  ID: "#fb923c", JP: "#38bdf8", EG: "#fbbf24", NG: "#f87171",
+  default: "#cbd5e1",
+};
+
+type GravityCell = { nearest: string; nearestDist: number; toDefault: number };
+
+function nearestFor(sitId: string, code: string): GravityCell {
+  const distMap = PAIRWISE[sitId]?.[code] ?? {};
+  const toDefault = distMap["default"] ?? 0;
+  const others = Object.entries(distMap).filter(([c]) => c !== code && c !== "default");
+  const [nearest, nearestDist] = others.length
+    ? others.reduce((a, b) => (b[1] < a[1] ? b : a))
+    : ["default", toDefault];
+  return { nearest, nearestDist, toDefault };
+}
+
+function CountryClusterGravity() {
+  const [hov, setHov] = useState<{ code: string; sitId: string } | null>(null);
 
   const freq: Record<string, number> = {};
-  rows.forEach((r) => { freq[r.nearestCode] = (freq[r.nearestCode] ?? 0) + 1; });
+  COUNTRIES.forEach((c) => ALL_SITUATIONS.forEach((sit) => {
+    const { nearest } = nearestFor(sit, c.code);
+    freq[nearest] = (freq[nearest] ?? 0) + 1;
+  }));
   const [topNeighbor, topCount] = Object.entries(freq).sort((a, b) => b[1] - a[1])[0] ?? ["—", 0];
-  const maxDist = Math.max(...rows.map((r) => Math.max(r.toDefault, r.nearestDist)), 0.01);
+  const total = COUNTRIES.length * ALL_SITUATIONS.length;
 
   return (
     <div className="p-3 flex flex-col gap-3">
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-[9px] text-[#8a8374] shrink-0" style={MONO}>country:</span>
+      <div className="inline-flex flex-col gap-[3px] w-fit">
+        {/* header row */}
+        <div className="flex gap-[3px]">
+          <span className="w-[76px] shrink-0" />
+          {ALL_SITUATIONS.map((sit) => (
+            <span key={sit} className="w-[42px] text-center text-[8px] text-[#8a8374] shrink-0" style={MONO}>
+              {SIT_SHORT[sit]}
+            </span>
+          ))}
+        </div>
         {COUNTRIES.map((c) => (
-          <button
-            key={c.code}
-            onClick={() => setCode(c.code)}
-            className="text-[10px] px-[9px] py-[3px] rounded-[4px] border transition-colors"
-            style={{
-              ...MONO,
-              background: code === c.code ? "#064e3b" : "#f5f4f0",
-              color: code === c.code ? "#d1fae5" : "#555",
-              borderColor: code === c.code ? "#064e3b" : "#d0cdc6",
-            }}
-          >
-            {c.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex flex-col gap-[7px]">
-        {rows.map((r) => (
-          <div key={r.sitLabel} className="flex items-center gap-2">
-            <span className="text-[9px] text-[#867f6f] w-[64px] text-right shrink-0" style={MONO}>
-              {r.sitLabel}
+          <div key={c.code} className="flex items-center gap-[3px]">
+            <span className="w-[76px] text-right text-[9px] text-[#867f6f] shrink-0 pr-1" style={MONO}>
+              {c.label}
             </span>
-            <div className="flex-1 h-[12px] bg-[#f0ede6] rounded-[3px] overflow-hidden relative">
-              <div
-                className="absolute top-0 bottom-0 rounded-[2px]"
-                style={{ left: 0, width: `${(r.toDefault / maxDist) * 100}%`, background: "#94a3b8" }}
-                title={`distance to default: ${r.toDefault.toFixed(3)}`}
-              />
-              <div
-                className="absolute top-0 bottom-0 rounded-[2px]"
-                style={{ left: 0, width: `${(r.nearestDist / maxDist) * 100}%`, background: "#f59e0b", opacity: 0.85 }}
-                title={`distance to nearest cluster (${COUNTRY_BY_CODE[r.nearestCode]?.label}): ${r.nearestDist.toFixed(3)}`}
-              />
-            </div>
-            <span className="text-[9px] text-[#867f6f] w-[130px] shrink-0" style={MONO}>
-              → {COUNTRY_BY_CODE[r.nearestCode]?.label ?? r.nearestCode} ({r.nearestDist.toFixed(2)})
-            </span>
+            {ALL_SITUATIONS.map((sit) => {
+              const cell = nearestFor(sit, c.code);
+              const isHov = hov?.code === c.code && hov?.sitId === sit;
+              return (
+                <div
+                  key={sit}
+                  onMouseEnter={() => setHov({ code: c.code, sitId: sit })}
+                  onMouseLeave={() => setHov(null)}
+                  className="w-[42px] h-[22px] rounded-[3px] flex items-center justify-center shrink-0 transition-transform"
+                  style={{
+                    background: NEIGHBOR_COLOR[cell.nearest] ?? "#e5e5e5",
+                    outline: isHov ? "2px solid #1a1a1a" : "none",
+                    outlineOffset: "1px",
+                    transform: isHov ? "scale(1.08)" : "scale(1)",
+                  }}
+                >
+                  <span className="text-[8px] font-semibold" style={{ ...MONO, color: "#1a1a1a" }}>
+                    {cell.nearest === "default" ? "def" : cell.nearest}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         ))}
       </div>
 
+      {hov && (() => {
+        const cell = nearestFor(hov.sitId, hov.code);
+        return (
+          <div className="text-[9px] leading-[1.6] text-[#555] bg-white border border-[#e0ddd6] rounded-[6px] px-3 py-2 w-fit" style={MONO}>
+            <b>{COUNTRY_BY_CODE[hov.code]?.label}</b> · {hov.sitId}: nearest to{" "}
+            <b>{cell.nearest === "default" ? "the default" : COUNTRY_BY_CODE[cell.nearest]?.label}</b>
+            {" "}(dist {cell.nearestDist.toFixed(3)}) · distance to default: {cell.toDefault.toFixed(3)}
+          </div>
+        );
+      })()}
+
+      <div className="flex items-center gap-[10px] flex-wrap text-[8px] text-[#8a8374]" style={MONO}>
+        {COUNTRIES.map((c) => (
+          <span key={c.code} className="flex items-center gap-1">
+            <span className="w-[9px] h-[9px] rounded-[2px] inline-block" style={{ background: NEIGHBOR_COLOR[c.code] }} />
+            {c.code}
+          </span>
+        ))}
+        <span className="flex items-center gap-1">
+          <span className="w-[9px] h-[9px] rounded-[2px] inline-block" style={{ background: NEIGHBOR_COLOR.default }} />
+          default
+        </span>
+      </div>
+
       <p className="text-[9px] text-[#8a8374] leading-[1.5]" style={MONO}>
-        <span style={{ color: "#94a3b8" }}>■</span> distance to unqualified default &nbsp;
-        <span style={{ color: "#f59e0b" }}>■</span> distance to nearest other country's cluster (label at right)
+        each cell = which cluster that country's variant lands nearest to for that event (color =
+        the neighbor's identity, "def" = the unqualified default itself) · hover a cell for exact
+        distances
       </p>
       <p className="text-[10px] text-[#555] leading-[1.6] border-t border-dashed border-[#e8e5de] pt-2">
-        Across the 6 situations, <b>{COUNTRY_BY_CODE[code]?.label}</b> lands nearest to{" "}
-        <b>{COUNTRY_BY_CODE[topNeighbor]?.label ?? topNeighbor}</b> in {topCount}/6 —{" "}
-        {topCount >= 4
-          ? "a recurring pull toward the same cluster, not just away from the default."
-          : topCount >= 2
-          ? "a partial pull toward one recurring cluster, mixed with situation-specific neighbors."
-          : "no single recurring attractor — its nearest cluster changes with the situation."}
+        <b>{COUNTRY_BY_CODE[topNeighbor]?.label ?? "the default"}</b> is the single most common
+        nearest-cluster across the whole grid — {topCount}/{total} country×event cells land there,
+        not on the country's own qualifier or the default. Repeating colors across a row (same
+        country, different events) or down a column (different countries, same event) are the
+        same signal: several distinct country prompts collapsing toward one shared non-Western
+        region of the prior, rather than each holding its own distinct cluster.
       </p>
     </div>
   );
@@ -945,10 +984,10 @@ export function Layer3() {
       <ToolsGrid cols={1}>
         <ToolCard
           num="10d"
-          name="Cluster gravity — 1 vs. all countries"
-          type="Interactive"
-          description="Flip the axis: pick a country and see all 6 situations at once. Does adding this country to an event just push the output away from the default, or does it pull toward one specific other country's cluster?"
-          explanation="Tools 09–10c fix the situation and compare countries. This inverts it: fix the country and look across situations, using the same DINOv2 embeddings extended to the full pairwise (not just vs.-default) distance matrix. If a country's nearest neighbor is consistently the same other country rather than the default, the model doesn't hold a distinct representation for it — it's on loan from a shared 'non-Western' attractor."
+          name="Cluster gravity — every country x every event"
+          type="Heatmap"
+          description="8 countries x 6 events, all at once. Each cell = which cluster that country-event combination lands nearest to — its own default, or a specific other country. Repeating colors reveal a shared attractor."
+          explanation="Tools 09–10c fix the situation and compare countries. This flips it: using the same DINOv2 embeddings extended to the full pairwise (not just vs.-default) distance matrix, every country x event pair is plotted at once so the pattern doesn't require clicking through 8 buttons to see. If a color repeats across a row (one country, many events) or down a column (many countries, one event), the model doesn't hold a distinct representation for each — several countries are on loan from the same shared 'non-Western' attractor."
           fullWidth
         >
           <CountryClusterGravity />

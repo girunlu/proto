@@ -67,6 +67,15 @@ const CFG_COUNTRIES = [
 type CfgDistanceJson = { results: Record<string, Record<string, Record<string, { mean: number; ci_low: number; ci_high: number }>>> };
 const CFG_DISTANCE = (cfgDistanceData as CfgDistanceJson).results;
 
+// Fixed y-scale across every event/country pair, so switching the selectors
+// changes the curve's shape, not the axis.
+const GLOBAL_MAX_CFG_DIST = Math.max(
+  0.01,
+  ...Object.values(CFG_DISTANCE).flatMap((byCountry) =>
+    Object.values(byCountry).flatMap((byCfg) => Object.values(byCfg).map((v) => v.mean)),
+  ),
+);
+
 function CFGCulturalStrip() {
   const [sitId, setSitId] = useState("wedding");
   const [country, setCountry] = useState("NG");
@@ -74,7 +83,18 @@ function CFGCulturalStrip() {
   const mono = { fontFamily: "'JetBrains Mono', monospace" };
 
   const rows = CFG_VALUES.map((cfg) => CFG_DISTANCE[sitId]?.[country]?.[String(cfg)]);
-  const maxDist = Math.max(...rows.map((r) => r?.mean ?? 0), 0.01);
+  const maxDist = GLOBAL_MAX_CFG_DIST;
+
+  // Line chart: x = actual CFG value (so the 1→4 jump vs. the 4→15 plateau is
+  // spatially honest, not evenly spaced), y = DINOv2 distance from default.
+  const W = 320, H = 130;
+  const PAD = { l: 34, r: 14, t: 12, b: 22 };
+  const cfgMin = CFG_VALUES[0], cfgMax = CFG_VALUES[CFG_VALUES.length - 1];
+  const px = (cfg: number) => PAD.l + ((cfg - cfgMin) / (cfgMax - cfgMin)) * (W - PAD.l - PAD.r);
+  const py = (dist: number) => H - PAD.b - (dist / maxDist) * (H - PAD.t - PAD.b);
+  const linePath = CFG_VALUES
+    .map((cfg, i) => `${i === 0 ? "M" : "L"} ${px(cfg)} ${py(rows[i]?.mean ?? 0)}`)
+    .join(" ");
 
   return (
     <div className="p-3 flex flex-col gap-3">
@@ -130,38 +150,39 @@ function CFGCulturalStrip() {
         default variant · seed 00 · illustration only — the bars below are the evidence
       </p>
 
-      {/* Evidence: DINOv2 distance from default, per CFG level */}
-      <div className="flex flex-col gap-[6px] mt-1">
+      {/* Evidence: DINOv2 distance from default, per CFG level — line chart, not
+          bars, so the shape (steep rise then plateau) reads as a trend */}
+      <svg width={W} height={H}>
+        <line x1={PAD.l} y1={PAD.t} x2={PAD.l} y2={H - PAD.b} stroke="#e0ddd6" strokeWidth="1" />
+        <line x1={PAD.l} y1={H - PAD.b} x2={W - PAD.r} y2={H - PAD.b} stroke="#e0ddd6" strokeWidth="1" />
+        {[0.25, 0.5, 0.75, 1].map((f) => (
+          <line key={f} x1={PAD.l} y1={py(f * maxDist)} x2={W - PAD.r} y2={py(f * maxDist)} stroke="#f0ede6" strokeWidth="1" />
+        ))}
+        <text x={PAD.l - 4} y={py(maxDist)} fontSize="7" fill="#a39d8e" textAnchor="end" fontFamily="JetBrains Mono,monospace" dominantBaseline="middle">{maxDist.toFixed(2)}</text>
+        <text x={PAD.l - 4} y={py(0)} fontSize="7" fill="#a39d8e" textAnchor="end" fontFamily="JetBrains Mono,monospace" dominantBaseline="middle">0</text>
+        <path d={linePath} fill="none" stroke="#34d399" strokeWidth="2" />
         {CFG_VALUES.map((cfg, i) => {
           const r = rows[i];
-          const pct = r ? r.mean / maxDist : 0;
+          const active = cfgIdx === i;
           return (
-            <div key={cfg} className="flex items-center gap-2">
-              <span
-                className="text-[9px] w-[46px] text-right shrink-0 cursor-pointer"
-                style={{ ...mono, color: cfgIdx === i ? "#92400e" : "#867f6f", fontWeight: cfgIdx === i ? 600 : 400 }}
-                onClick={() => setCfgIdx(i)}
-              >
-                cfg={cfg}
-              </span>
-              <div className="flex-1 h-[12px] bg-[#f0ede6] rounded-[3px] overflow-hidden">
-                <div
-                  className="h-full rounded-[3px] transition-all duration-500"
-                  style={{ width: `${pct * 100}%`, background: "#34d399" }}
-                />
-              </div>
-              <span className="text-[9px] text-[#867f6f] w-[36px] shrink-0" style={mono}>
+            <g key={cfg} onClick={() => setCfgIdx(i)} style={{ cursor: "pointer" }}>
+              <circle cx={px(cfg)} cy={py(r?.mean ?? 0)} r={active ? 5 : 3.5} fill={active ? "#92400e" : "#34d399"} />
+              <text x={px(cfg)} y={py(r?.mean ?? 0) - 9} fontSize="7.5" fill={active ? "#92400e" : "#8a8374"} textAnchor="middle" fontFamily="JetBrains Mono,monospace" fontWeight={active ? 700 : 400}>
                 {r ? r.mean.toFixed(2) : "—"}
-              </span>
-            </div>
+              </text>
+              <text x={px(cfg)} y={H - PAD.b + 11} fontSize="7.5" fill={active ? "#92400e" : "#8a8374"} textAnchor="middle" fontFamily="JetBrains Mono,monospace">
+                {cfg}
+              </text>
+            </g>
           );
         })}
-      </div>
+      </svg>
       <p className="text-[9px] text-[#8a8374] leading-[1.5]" style={mono}>
-        bars = DINOv2 cosine distance between "{CFG_SITUATIONS.find(s=>s.id===sitId)?.label}" and
+        line = DINOv2 cosine distance between "{CFG_SITUATIONS.find(s=>s.id===sitId)?.label}" and
         the {CFG_COUNTRIES.find(c=>c.code===country)?.label}-qualified variant, n=50 seeds per CFG
-        level (evidence) · note the distance is set almost entirely by cfg=4, then barely moves
-        through cfg=15 — guidance strength sharpens the assumption, it does not add it
+        level (evidence), x-axis at true CFG spacing · click a point to jump the image strip above
+        · note how steep the rise is from cfg=1→4, then how flat it is all the way to cfg=15 —
+        guidance strength sharpens the assumption, it does not add it
       </p>
     </div>
   );
