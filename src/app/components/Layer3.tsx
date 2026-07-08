@@ -949,18 +949,27 @@ function UMAPScatter({ onZoom }: { onZoom: (src: string) => void }) {
         <svg width={W} height={H} style={{ flexShrink: 0, background: "#fbfaf6", borderRadius: 6 }}>
           {/* DBSCAN-found groups — density-based, no fixed cluster count, drawn
               as a filled region behind the points so multi-country groupings
-              (not just single-country clusters) are visible at a glance */}
-          {data.clusters.map((hull, i) => (
-            <polygon
-              key={i}
-              points={hull.map(([x, y]) => `${px(x)},${py(y)}`).join(" ")}
-              fill={CLUSTER_FILL[i % CLUSTER_FILL.length]}
-              opacity="0.2"
-              stroke={CLUSTER_FILL[i % CLUSTER_FILL.length]}
-              strokeWidth="1"
-              strokeOpacity="0.4"
-            />
-          ))}
+              (not just single-country clusters) are visible at a glance.
+              Padded outward from its own centroid (in screen pixels) so the
+              fill reads as a generous region, not a tight shrink-wrap. */}
+          {data.clusters.map((hull, i) => {
+            const screenPts = hull.map(([x, y]) => [px(x), py(y)] as [number, number]);
+            const cx = screenPts.reduce((s, p) => s + p[0], 0) / screenPts.length;
+            const cy = screenPts.reduce((s, p) => s + p[1], 0) / screenPts.length;
+            const PAD_FACTOR = 1.4;
+            const padded = screenPts.map(([x, y]) => [cx + (x - cx) * PAD_FACTOR, cy + (y - cy) * PAD_FACTOR]);
+            return (
+              <polygon
+                key={i}
+                points={padded.map(([x, y]) => `${x},${y}`).join(" ")}
+                fill={CLUSTER_FILL[i % CLUSTER_FILL.length]}
+                opacity="0.2"
+                stroke={CLUSTER_FILL[i % CLUSTER_FILL.length]}
+                strokeWidth="1"
+                strokeOpacity="0.4"
+              />
+            );
+          })}
           {/* dashed line from hovered point to its own centroid + nearest other centroid */}
           {hovPt && hovInfo && (
             <>
