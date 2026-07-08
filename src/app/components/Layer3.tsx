@@ -534,30 +534,24 @@ const SCATTER_POINTS: ScatterPoint[] = ALL_SITUATIONS.flatMap((sit) => {
     .map((code) => ({ sit, cc: code, dist: dists[code].mean, sim: sims[code].mean }));
 });
 
-function IntrasetScatter() {
+function IntrasetScatter({ sitId }: { sitId: string }) {
   const [hov, setHov] = useState<ScatterPoint | null>(null);
-  const [activeSits, setActiveSits] = useState<Set<string>>(new Set(ALL_SITUATIONS));
   const W = 280; const H = 190;
   const PAD = { l: 32, r: 10, t: 10, b: 28 };
   const px = (d: number) => PAD.l + d * (W - PAD.l - PAD.r);
   const py = (s: number) => H - PAD.b - s * (H - PAD.t - PAD.b);
 
-  const toggleSit = (sit: string) => {
-    setActiveSits((prev) => {
-      const next = new Set(prev);
-      if (next.has(sit)) next.delete(sit); else next.add(sit);
-      return next;
-    });
-  };
-
-  const visiblePoints = SCATTER_POINTS.filter((pt) => activeSits.has(pt.sit));
+  const visiblePoints = SCATTER_POINTS.filter((pt) => pt.sit === sitId);
+  const color = SIT_COLORS[sitId] ?? "#999";
 
   return (
     <div className="p-3 flex flex-col gap-2">
       <p className="text-[10px] text-[#555] leading-[1.5]">
-        Each bubble = one (situation, country) pair. Countries far from SD's default
-        (right) tend to produce more uniform, stereotyped outputs (up). Click a legend
-        entry to toggle a situation.
+        <b>X = how far</b> a country-qualified prompt sits from SD's unqualified default
+        (DINOv2 cosine distance between mean embeddings). <b>Y = how uniform</b> that
+        country's own 50 images look to each other (mean pairwise cosine similarity).
+        The correlation is the finding: countries far from the default don't get richer,
+        more varied representation — they collapse to a single stereotype.
       </p>
       <div className="flex gap-3 items-start">
         <svg width={W} height={H} style={{ flexShrink: 0 }}>
@@ -578,26 +572,19 @@ function IntrasetScatter() {
           {/* Points */}
           {visiblePoints.map((pt, i) => (
             <g key={i} onMouseEnter={() => setHov(pt)} onMouseLeave={() => setHov(null)} style={{ cursor: "default" }}>
-              <circle cx={px(pt.dist)} cy={py(pt.sim)} r="5" fill={SIT_COLORS[pt.sit] ?? "#999"} opacity="0.75"/>
+              <circle cx={px(pt.dist)} cy={py(pt.sim)} r="5" fill={color} opacity="0.75"/>
               <text x={px(pt.dist)+6} y={py(pt.sim)} fontSize="6.5" fill="#555" fontFamily="JetBrains Mono,monospace" dominantBaseline="middle">{pt.cc}</text>
             </g>
           ))}
         </svg>
-        {/* Legend (clickable toggles) + tooltip */}
-        <div className="flex flex-col gap-2 pt-1">
-          {ALL_SITUATIONS.map((sit) => (
-            <button
-              key={sit}
-              onClick={() => toggleSit(sit)}
-              className="flex items-center gap-1 bg-transparent border-0 p-0 cursor-pointer"
-              style={{ opacity: activeSits.has(sit) ? 1 : 0.35 }}
-            >
-              <div className="w-[8px] h-[8px] rounded-full" style={{ background: SIT_COLORS[sit] }}/>
-              <span className="text-[8px] text-[#555]" style={MONO}>{sit}</span>
-            </button>
-          ))}
+        {/* Axis legend + tooltip */}
+        <div className="flex flex-col gap-2 pt-1 w-[110px]">
+          <div className="text-[8px] text-[#555] leading-[1.5]" style={MONO}>
+            <b>x</b>: distance from default<br/>
+            <b>y</b>: output homogeneity
+          </div>
           {hov && (
-            <div className="mt-2 p-2 rounded-[5px] border border-[#d0cdc6] bg-white text-[8px] leading-[1.6]" style={MONO}>
+            <div className="mt-1 p-2 rounded-[5px] border border-[#d0cdc6] bg-white text-[8px] leading-[1.6]" style={MONO}>
               <b>{hov.sit} · {hov.cc}</b><br/>
               dist: {hov.dist.toFixed(3)}<br/>
               sim: {hov.sim.toFixed(3)}
@@ -605,8 +592,9 @@ function IntrasetScatter() {
           )}
         </div>
       </div>
-      <p className="text-[8px] text-[#a39d8e]" style={MONO}>
-        X = DINOv2 distance from default · Y = intraset similarity · hover for values
+      <p className="text-[8px] text-[#a39d8e] leading-[1.5]" style={MONO}>
+        DINOv2 ViT-B/14 CLS token · n=50 seeds per country · CFG 7 · hover a bubble for exact
+        values · switch situations with the chips above
       </p>
     </div>
   );
@@ -851,10 +839,10 @@ export function Layer3() {
             num="10c"
             name="Distance vs homogeneity — the stereotype gap"
             type="Scatter"
-            description="Each bubble is one (situation, country) pair. Countries far from SD's cultural default (right) tend to produce more stereotyped output (up). Hover any bubble for values."
+            description="One bubble per country, for the situation selected above. Countries far from SD's cultural default (right) tend to produce more stereotyped output (up). Hover any bubble for values."
             explanation="The scatter makes the mechanism visible: distance from default and output homogeneity are correlated. The model doesn't have rich knowledge of underrepresented cultures — it has one narrow image. Specifying those cultures doesn't unlock diversity; it collapses to a stereotype."
           >
-            <IntrasetScatter />
+            <IntrasetScatter sitId={sitId} />
           </ToolCard>
         </ToolsGrid>
       </PredictionReveal>
