@@ -111,57 +111,76 @@ function CFGCulturalStrip() {
 
   // Line chart: x = actual CFG value (so the 1→4 jump vs. the 4→15 plateau is
   // spatially honest, not evenly spaced), y = DINOv2 distance from default,
-  // one line per country so all 8 are directly comparable at once.
-  const W = 340, H = 160;
-  const PAD = { l: 34, r: 14, t: 12, b: 22 };
+  // one line per country so all 8 are directly comparable at once. Wider now
+  // that the image strip moved to a 2x2 block instead of a 5-wide row.
+  const W = 420, H = 200;
+  const PAD = { l: 36, r: 14, t: 12, b: 22 };
   const cfgMin = CFG_VALUES[0], cfgMax = CFG_VALUES[CFG_VALUES.length - 1];
   const px = (cfg: number) => PAD.l + ((cfg - cfgMin) / (cfgMax - cfgMin)) * (W - PAD.l - PAD.r);
   const py = (dist: number) => H - PAD.b - (dist / maxDist) * (H - PAD.t - PAD.b);
+
+  // cfg=7 stays in the plot (it's the standard-generation data point) but is
+  // dropped from the illustration strip — 4 images fit a clean 2x2 instead of 5.
+  const STRIP_CFGS = CFG_VALUES.filter((c) => c !== 7);
 
   return (
     <div className="p-3 flex flex-col gap-3">
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-[9px] text-[#8a8374] shrink-0" style={mono}>event:</span>
-        <select
-          value={sitId}
-          onChange={(e) => setSitId(e.target.value)}
-          className="text-[10px] border border-[#d8d4cb] rounded-[4px] px-[6px] py-[3px] bg-white"
-          style={mono}
-        >
-          {CFG_SITUATIONS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-        </select>
-      </div>
-
-      {/* Illustration: default-variant image strip across CFG (single seed) */}
-      <div className="flex gap-[5px]">
-        {CFG_VALUES.map((cfg, i) => (
+        {CFG_SITUATIONS.map((s) => (
           <button
-            key={cfg}
-            onClick={() => setCfgIdx(i)}
-            className="flex-1 flex flex-col gap-[4px] cursor-pointer bg-transparent border-0 p-0"
+            key={s.id}
+            onClick={() => setSitId(s.id)}
+            className="text-[10px] px-[9px] py-[3px] rounded-[4px] border transition-colors"
+            style={{
+              ...mono,
+              background: sitId === s.id ? "#78350f" : "#f5f4f0",
+              color: sitId === s.id ? "#fef3c7" : "#555",
+              borderColor: sitId === s.id ? "#78350f" : "#d0cdc6",
+            }}
           >
-            <img
-              src={`/images/cfg/${sitId}_cfg${cfg}.webp`}
-              loading="lazy"
-              alt={`cfg=${cfg}`}
-              className="w-full rounded-[5px] object-cover transition-all duration-200"
-              style={{
-                aspectRatio: "1 / 1",
-                outline: cfgIdx === i ? "2px solid #92400e" : "2px solid transparent",
-                outlineOffset: "2px",
-                opacity: cfgIdx === i ? 1 : 0.6,
-              }}
-            />
-            <span className="text-[9px] text-center transition-colors"
-              style={{ ...mono, color: cfgIdx === i ? "#92400e" : "#8a8374" }}>
-              cfg={cfg}
-            </span>
+            {s.label}
           </button>
         ))}
       </div>
-      <p className="text-[8px] text-[#a39d8e]" style={mono}>
-        default variant · seed 00 · illustration only — the chart below is the evidence
-      </p>
+
+      <div className="flex gap-4 items-start">
+        {/* Illustration: default-variant image strip across CFG (single seed),
+            2x2 so the chart gets the freed-up horizontal space */}
+        <div className="shrink-0 flex flex-col gap-2">
+          <div className="grid grid-cols-2 gap-[5px] w-[160px]">
+            {STRIP_CFGS.map((cfg) => {
+              const i = CFG_VALUES.indexOf(cfg);
+              return (
+                <button
+                  key={cfg}
+                  onClick={() => setCfgIdx(i)}
+                  className="flex flex-col gap-[3px] cursor-pointer bg-transparent border-0 p-0"
+                >
+                  <img
+                    src={`/images/cfg/${sitId}_cfg${cfg}.webp`}
+                    loading="lazy"
+                    alt={`cfg=${cfg}`}
+                    className="w-full rounded-[5px] object-cover transition-all duration-200"
+                    style={{
+                      aspectRatio: "1 / 1",
+                      outline: cfgIdx === i ? "2px solid #92400e" : "2px solid transparent",
+                      outlineOffset: "2px",
+                      opacity: cfgIdx === i ? 1 : 0.6,
+                    }}
+                  />
+                  <span className="text-[9px] text-center transition-colors"
+                    style={{ ...mono, color: cfgIdx === i ? "#92400e" : "#8a8374" }}>
+                    cfg={cfg}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[8px] text-[#a39d8e] w-[160px]" style={mono}>
+            default variant · seed 00 · illustration only (cfg=7 omitted here, still in the chart)
+          </p>
+        </div>
 
       {/* Evidence: DINOv2 distance from default, per CFG level, one line per
           country so all 8 are compared directly instead of one at a time.
@@ -206,6 +225,7 @@ function CFGCulturalStrip() {
           );
         })}
       </svg>
+      </div>
 
       {/* Legend, doubles as hover trigger + near/far group tag */}
       <div className="flex items-center gap-[10px] flex-wrap" style={mono}>

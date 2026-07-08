@@ -591,6 +591,11 @@ function IntrasetScatter({ sitId }: { sitId: string }) {
             θ (slope) = {slope.toFixed(2)}<br/>
             <span style={{ color: "#a39d8e" }}>rank {rank}/{ALL_SITUATIONS.length} steepest</span>
           </div>
+          <div className="text-[7.5px] text-[#a39d8e] leading-[1.5]" style={MONO}>
+            flat (θ≈0) = distance doesn't predict homogeneity — far countries can stay diverse.
+            steep/near-vertical = a small step from the default is enough to collapse to one
+            look.
+          </div>
           {hov && (
             <div className="mt-1 p-2 rounded-[5px] border border-[#d0cdc6] bg-white text-[8px] leading-[1.6]" style={MONO}>
               <b>{hov.sit} · {hov.cc}</b><br/>
@@ -870,7 +875,7 @@ function PairwiseHeatmap() {
 // see cultural_umap.py) — the cluster-gravity finding as an actual picture:
 // points, centroids, and the real thumbnail on hover, not just numbers.
 
-type UmapPoint = { country: string; k: number; seed: number; x: number; y: number };
+type UmapPoint = { country: string; seed: number; x: number; y: number };
 type UmapJson = {
   results: Record<string, { points: UmapPoint[]; centroids: Record<string, { x: number; y: number }> }>;
 };
@@ -936,7 +941,7 @@ function UMAPScatter({ onZoom }: { onZoom: (src: string) => void }) {
           )}
           {/* points */}
           {data.points.map((p, i) => {
-            const isHov = hovPt?.country === p.country && hovPt?.k === p.k;
+            const isHov = hovPt?.country === p.country && hovPt?.seed === p.seed;
             return (
               <circle
                 key={i}
@@ -950,22 +955,28 @@ function UMAPScatter({ onZoom }: { onZoom: (src: string) => void }) {
               />
             );
           })}
-          {/* centroids — larger, white-ringed */}
-          {Object.entries(data.centroids).map(([id, c]) => (
-            <g key={id}>
-              <circle cx={px(c.x)} cy={py(c.y)} r="7" fill={ID_COLOR[id] ?? "#999"} stroke="#fff" strokeWidth="2" />
-              <circle cx={px(c.x)} cy={py(c.y)} r="7" fill="none" stroke="#1a1a1a" strokeWidth="0.75" opacity="0.3" />
-            </g>
-          ))}
+          {/* centroids — triangles (distinct from the round points), faded so
+              they don't overpower the actual data */}
+          {Object.entries(data.centroids).map(([id, c]) => {
+            const cx = px(c.x), cy = py(c.y), r = 8;
+            const points = [
+              [cx, cy - r],
+              [cx - r * 0.87, cy + r * 0.5],
+              [cx + r * 0.87, cy + r * 0.5],
+            ].map(([x, y]) => `${x},${y}`).join(" ");
+            return (
+              <polygon key={id} points={points} fill={ID_COLOR[id] ?? "#999"} stroke="#fff" strokeWidth="1.5" opacity="0.35" />
+            );
+          })}
         </svg>
 
         <div className="flex flex-col gap-2 w-[190px]">
           {hovPt && hovInfo ? (
             <>
               <img
-                src={`/images/cultural/${sitId}_${hovPt.country}_div${hovPt.k}.webp`}
+                src={`/images/cultural/${sitId}_${hovPt.country}_s${String(hovPt.seed).padStart(2, "0")}.webp`}
                 alt="preview"
-                onClick={() => onZoom(`/images/cultural/${sitId}_${hovPt.country}_div${hovPt.k}.webp`)}
+                onClick={() => onZoom(`/images/cultural/${sitId}_${hovPt.country}_s${String(hovPt.seed).padStart(2, "0")}.webp`)}
                 className="w-full rounded-[6px] object-cover shadow-md"
                 style={{ aspectRatio: "1/1", cursor: "zoom-in" }}
               />
@@ -1002,9 +1013,10 @@ function UMAPScatter({ onZoom }: { onZoom: (src: string) => void }) {
       </div>
 
       <p className="text-[8px] text-[#a39d8e] leading-[1.5]" style={MONO}>
-        UMAP (cosine metric) on DINOv2 embeddings · small dots = 9 most-diverse seeds per variant
-        (same images as Tool 05c) · large ringed dots = true centroid (mean of all 50 seeds,
-        projected into this space) · hover a dot for its actual image and projected distances ·
+        UMAP (cosine metric) on DINOv2 embeddings · small dots = 30 seeds per variant (a plain
+        sequential sample, not diversity-forced — an honest read of the real spread) · large faded
+        ringed dots = true centroid (mean of all 50 seeds, projected into this space) · hover a dot
+        for its actual image and projected distances ·
         distances here are 2D-projection distances, an approximation of the real cosine distances
         used elsewhere, useful for reading relative layout not exact magnitude
       </p>
@@ -1224,14 +1236,13 @@ export function Layer3() {
         </ToolsGrid>
       </PredictionReveal>
 
-      <ToolsGrid cols={1}>
+      <ToolsGrid cols={2}>
         <ToolCard
           num="10d"
           name="Cluster gravity — every country x every event"
           type="Heatmap"
           description="8 countries x 6 events, all at once. Each cell = which cluster that country-event combination lands nearest to — its own default, or a specific other country. Repeating colors reveal a shared attractor."
           explanation="Tools 09–10c fix the situation and compare countries. This flips it: using the same DINOv2 embeddings extended to the full pairwise (not just vs.-default) distance matrix, every country x event pair is plotted at once so the pattern doesn't require clicking through 8 buttons to see. If a color repeats across a row (one country, many events) or down a column (many countries, one event), the model doesn't hold a distinct representation for each — several countries are on loan from the same shared 'non-Western' attractor."
-          fullWidth
         >
           <CountryClusterGravity />
         </ToolCard>
@@ -1242,11 +1253,12 @@ export function Layer3() {
           type="Heatmap"
           description="10d only shows each country's single nearest neighbor, which is one-directional (A's nearest can be B without B's nearest being A). This is the whole 9x9 matrix of real distances for one event — every pair, both directions, actual numbers."
           explanation="Same pairwise DINOv2 matrix as 10d, but shown whole instead of collapsed to an argmin. Color intensity is the real distance value, so you can see not just which cluster is nearest but how much nearer it is than everything else, and whether a whole block of countries sits close together (light square) or one country is far from all others (a uniformly dark row)."
-          fullWidth
         >
           <PairwiseHeatmap />
         </ToolCard>
+      </ToolsGrid>
 
+      <ToolsGrid cols={1}>
         <ToolCard
           num="10f"
           name="UMAP — the clusters as an actual picture"
