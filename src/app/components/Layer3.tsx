@@ -776,7 +776,7 @@ function CountryClusterGravity() {
 // matrix of real distances at once, so the underlying numbers actually mean
 // something (color = magnitude) instead of two numbers on hover.
 
-const HEATMAP_ROWS = [{ code: "default", label: "default" }, ...CFG_COUNTRIES];
+const HEATMAP_ROWS = [{ code: "default", label: "default" }, ...COUNTRIES.map((c) => ({ code: c.code, label: c.label }))];
 
 function heatColor(v: number, max: number): string {
   const t = Math.max(0, Math.min(1, v / max));
