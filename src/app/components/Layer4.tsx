@@ -33,8 +33,7 @@ const SWAP_PAIRS = [
 const STEP_NAMES = ["step_01", "step_05", "step_10", "step_15", "step_25"] as const;
 
 // Per-pair curve data.
-// Pairs 0, 1, 3 — placeholder (demographic images not yet generated).
-// Pairs 2, 4, 5 — real data from lockup_curve.json; real swap images in public/images/swaps/.
+// All 3 pairs are real data from lockup_curve.json; real swap images in public/images/swaps/.
 //   originImg: the prompt-A image (no swap, seed_00, CFG 7)
 //   swapImgs:  swap output at each step k (seed_00, illustration only)
 // Seeds available per swap: s00 (no suffix), s01, s02
@@ -70,9 +69,6 @@ const PAIR_CURVES = [
   },
 ];
 
-const K_VALUES = PAIR_CURVES[0].k;       // ponytail: used only by colour-swatch path (now dead)
-const LOCK_IN_IDX = PAIR_CURVES[0].lockInIdx;
-
 const BASE_SHADES: [number, number, number][] = [
   [176, 192, 208],
   [200, 182, 182],
@@ -107,8 +103,6 @@ function LockInCurve({ pairIdx }: { pairIdx: number }) {
     ...[...probs].reverse().map((_, i) => `${px(n - 1 - i)},${py(Math.max(0, ci_lo[n - 1 - i]))}`),
   ].join(" ");
 
-  const isReal = pairIdx === 2;
-
   return (
     <div className="flex flex-col items-center">
       <svg width={w} height={h}>
@@ -132,7 +126,7 @@ function LockInCurve({ pairIdx }: { pairIdx: number }) {
         </text>
       </svg>
       <span className="text-[8px] text-[#8a8374]" style={MONO}>
-        P(override wins) vs swap step · 12 seeds per point{isReal ? " · real data" : " · placeholder"}
+        P(override wins) vs swap step · 12 seeds per point · real data
       </span>
     </div>
   );

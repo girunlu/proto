@@ -1,7 +1,30 @@
 import { useState } from "react";
 import { Section, ToolCard, ToolsGrid, SubsectionLabel, PlanNote, Lightbox, PredictionReveal } from "./ToolCard";
+import distancesData from "../../data/cultural/distances.json";
+import intrasetData from "../../data/cultural/intraset_sim.json";
 
 const MONO = { fontFamily: "'JetBrains Mono', monospace" };
+
+// ─── Shared cultural country/event vocab (real data: 6 events x 9 variants) ─
+// Source: src/materials/analysis/cultural/{distances,intraset_sim}.json (DINOv2, n=50, cfg=7)
+
+type CountryEntry = { id: string; code: string; label: string };
+const COUNTRIES: CountryEntry[] = [
+  { id: "usa",       code: "US", label: "USA" },
+  { id: "germany",   code: "DE", label: "Germany" },
+  { id: "russia",    code: "RU", label: "Russia" },
+  { id: "india",     code: "IN", label: "India" },
+  { id: "indonesia", code: "ID", label: "Indonesia" },
+  { id: "japan",     code: "JP", label: "Japan" },
+  { id: "egypt",     code: "EG", label: "Egypt" },
+  { id: "nigeria",   code: "NG", label: "Nigeria" },
+];
+const COUNTRY_BY_CODE: Record<string, CountryEntry> = Object.fromEntries(COUNTRIES.map(c => [c.code, c]));
+
+type DistancesJson = { results: Record<string, Record<string, { mean: number; ci_low: number; ci_high: number }>> };
+type IntrasetJson = { results: Record<string, Record<string, { mean: number; ci_low: number; ci_high: number }>> };
+const DISTANCES = (distancesData as DistancesJson).results;
+const INTRASET = (intrasetData as IntrasetJson).results;
 
 // ─── Tool 07 — Distribution bars ────────────────────────────────────────────
 
@@ -147,17 +170,16 @@ function AmplificationDelta() {
   );
 }
 
-// ─── Tool 09 — Cultural grid (real images, SD 2.1 CFG=7 seed_00) ────────────
+// ─── Tool 09 — Cultural grid (real images, SD 2.1 CFG=7, seeds 00-02) ───────
+// All 6 events x 9 variants (default + 8 countries) have real exported images.
 
 const CULTURAL_SITUATIONS = [
-  { id: "wedding",   label: "a wedding" },
-  { id: "breakfast", label: "a breakfast" },
-  { id: "funeral",   label: "a funeral" },
-];
-const CULTURAL_LOCATIONS = [
-  { id: "default", label: "default" },
-  { id: "nigeria", label: "in Nigeria" },
-  { id: "japan",   label: "in Japan" },
+  { id: "breakfast",   label: "a breakfast" },
+  { id: "celebration", label: "a celebration" },
+  { id: "family",      label: "a family" },
+  { id: "funeral",     label: "a funeral" },
+  { id: "school",      label: "a school" },
+  { id: "wedding",     label: "a wedding" },
 ];
 
 const CULTURAL_SEEDS = [
@@ -168,21 +190,51 @@ const CULTURAL_SEEDS = [
 
 function CulturalGrid({ sitId, onZoom }: { sitId: string; onZoom: (src: string) => void }) {
   const [seedIdx, setSeedIdx] = useState(0);
+  const [compareA, setCompareA] = useState("nigeria");
+  const [compareB, setCompareB] = useState("japan");
   const seed = CULTURAL_SEEDS[seedIdx];
+
+  const columns = [
+    { id: "default", label: "default" },
+    { id: compareA, label: countryById(compareA)?.label ?? compareA },
+    { id: compareB, label: countryById(compareB)?.label ?? compareB },
+  ];
 
   return (
     <div className="p-3 flex flex-col gap-3">
+      {/* Compare-country selectors — default is always the reference column */}
+      <div className="flex gap-[10px] items-center flex-wrap">
+        <span className="text-[9px] text-[#8a8374]" style={MONO}>compare:</span>
+        <select
+          value={compareA}
+          onChange={(e) => setCompareA(e.target.value)}
+          className="text-[10px] border border-[#d8d4cb] rounded-[4px] px-[6px] py-[3px] bg-white"
+          style={MONO}
+        >
+          {COUNTRIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+        </select>
+        <span className="text-[9px] text-[#a39d8e]" style={MONO}>vs</span>
+        <select
+          value={compareB}
+          onChange={(e) => setCompareB(e.target.value)}
+          className="text-[10px] border border-[#d8d4cb] rounded-[4px] px-[6px] py-[3px] bg-white"
+          style={MONO}
+        >
+          {COUNTRIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+        </select>
+      </div>
+
       <div className="flex gap-[6px]">
-        {CULTURAL_LOCATIONS.map((loc) => {
-          const src = `/images/cultural/${sitId}_${loc.id}${seed.suffix}.webp`;
+        {columns.map((col) => {
+          const src = `/images/cultural/${sitId}_${col.id}${seed.suffix}.webp`;
           return (
-            <div key={loc.id} className="flex-1 flex flex-col gap-[4px]">
+            <div key={col.id} className="flex-1 flex flex-col gap-[4px]">
               <span className="text-[9px] text-[#555] text-center font-semibold bg-[#f0ede6] rounded-[3px] py-[2px]" style={MONO}>
-                {loc.label}
+                {col.label}
               </span>
               <img
                 src={src}
-                alt={`${sitId} ${loc.label}`}
+                alt={`${sitId} ${col.label}`}
                 loading="lazy"
                 className="w-full rounded-[4px] object-cover hover:opacity-90 transition-opacity"
                 style={{ aspectRatio: "1 / 1", cursor: "zoom-in" }}
@@ -217,46 +269,24 @@ function CulturalGrid({ sitId, onZoom }: { sitId: string; onZoom: (src: string) 
   );
 }
 
+function countryById(id: string): CountryEntry | undefined {
+  return COUNTRIES.find(c => c.id === id);
+}
+
 // ─── Tool 10 — Embedding distance bars (real DINOv2 data) ───────────────────
 // Source: src/materials/analysis/cultural/distances.json
 // Method: cosine distance between L2-normalised mean DINOv2 embeddings,
 //         n=50 seeds per variant, 10k bootstrap CIs (percentile method)
 
-const CULTURAL_DISTANCES: Record<string, { country: string; dist: number; ci_low: number; ci_high: number }[]> = {
-  wedding: [
-    { country: "India",     dist: 0.807, ci_low: 0.778, ci_high: 0.840 },
-    { country: "Nigeria",   dist: 0.698, ci_low: 0.658, ci_high: 0.750 },
-    { country: "Japan",     dist: 0.660, ci_low: 0.613, ci_high: 0.713 },
-    { country: "Egypt",     dist: 0.634, ci_low: 0.577, ci_high: 0.707 },
-    { country: "Indonesia", dist: 0.443, ci_low: 0.397, ci_high: 0.516 },
-    { country: "Russia",    dist: 0.202, ci_low: 0.166, ci_high: 0.296 },
-    { country: "Germany",   dist: 0.184, ci_low: 0.154, ci_high: 0.257 },
-    { country: "USA",       dist: 0.105, ci_low: 0.096, ci_high: 0.167 },
-  ],
-  breakfast: [
-    { country: "Japan",     dist: 0.696, ci_low: 0.660, ci_high: 0.737 },
-    { country: "India",     dist: 0.631, ci_low: 0.600, ci_high: 0.674 },
-    { country: "Indonesia", dist: 0.501, ci_low: 0.459, ci_high: 0.559 },
-    { country: "Nigeria",   dist: 0.498, ci_low: 0.467, ci_high: 0.548 },
-    { country: "Egypt",     dist: 0.386, ci_low: 0.355, ci_high: 0.450 },
-    { country: "USA",       dist: 0.322, ci_low: 0.278, ci_high: 0.386 },
-    { country: "Russia",    dist: 0.287, ci_low: 0.256, ci_high: 0.347 },
-    { country: "Germany",   dist: 0.279, ci_low: 0.246, ci_high: 0.341 },
-  ],
-  funeral: [
-    { country: "Nigeria",   dist: 0.620, ci_low: 0.545, ci_high: 0.703 },
-    { country: "India",     dist: 0.502, ci_low: 0.451, ci_high: 0.572 },
-    { country: "Egypt",     dist: 0.357, ci_low: 0.299, ci_high: 0.448 },
-    { country: "Indonesia", dist: 0.315, ci_low: 0.285, ci_high: 0.371 },
-    { country: "Japan",     dist: 0.254, ci_low: 0.210, ci_high: 0.339 },
-    { country: "Germany",   dist: 0.153, ci_low: 0.121, ci_high: 0.232 },
-    { country: "Russia",    dist: 0.127, ci_low: 0.115, ci_high: 0.175 },
-    { country: "USA",       dist: 0.094, ci_low: 0.075, ci_high: 0.169 },
-  ],
-};
+function distanceRows(sitId: string) {
+  const bySit = DISTANCES[sitId] ?? {};
+  return Object.entries(bySit)
+    .map(([code, v]) => ({ country: COUNTRY_BY_CODE[code]?.label ?? code, dist: v.mean, ci_low: v.ci_low, ci_high: v.ci_high }))
+    .sort((a, b) => b.dist - a.dist);
+}
 
 function EmbeddingDistanceBars({ sitId }: { sitId: string }) {
-  const rows = CULTURAL_DISTANCES[sitId] ?? [];
+  const rows = distanceRows(sitId);
   const maxDist = Math.max(...rows.map((r) => r.dist));
 
   return (
@@ -291,49 +321,13 @@ function EmbeddingDistanceBars({ sitId }: { sitId: string }) {
 // Finding: country-qualified prompts produce more homogeneous (more stereotyped)
 // output than the unqualified default — the model narrows its concept of a culture.
 
-const CULTURAL_INTRASET: Record<string, { label: string; sim: number; isDefault: boolean }[]> = {
-  wedding: [
-    { label: "default",   sim: 0.444, isDefault: true  },
-    { label: "Russia",    sim: 0.368, isDefault: false },
-    { label: "USA",       sim: 0.418, isDefault: false },
-    { label: "Egypt",     sim: 0.398, isDefault: false },
-    { label: "Indonesia", sim: 0.435, isDefault: false },
-    { label: "Germany",   sim: 0.440, isDefault: false },
-    { label: "India",     sim: 0.632, isDefault: false },
-    { label: "Japan",     sim: 0.670, isDefault: false },
-    { label: "Nigeria",   sim: 0.687, isDefault: false },
-  ],
-  breakfast: [
-    { label: "Egypt",     sim: 0.415, isDefault: false },
-    { label: "Nigeria",   sim: 0.483, isDefault: false },
-    { label: "default",   sim: 0.491, isDefault: true  },
-    { label: "Germany",   sim: 0.527, isDefault: false },
-    { label: "Russia",    sim: 0.562, isDefault: false },
-    { label: "India",     sim: 0.572, isDefault: false },
-    { label: "Indonesia", sim: 0.596, isDefault: false },
-    { label: "USA",       sim: 0.648, isDefault: false },
-    { label: "Japan",     sim: 0.738, isDefault: false },
-  ],
-  funeral: [
-    { label: "USA",       sim: 0.421, isDefault: false },
-    { label: "default",   sim: 0.474, isDefault: true  },
-    { label: "Japan",     sim: 0.481, isDefault: false },
-    { label: "Egypt",     sim: 0.507, isDefault: false },
-    { label: "Germany",   sim: 0.508, isDefault: false },
-    { label: "Indonesia", sim: 0.522, isDefault: false },
-    { label: "Russia",    sim: 0.530, isDefault: false },
-    { label: "Nigeria",   sim: 0.577, isDefault: false },
-    { label: "India",     sim: 0.605, isDefault: false },
-  ],
-};
-
 function IntrasetBars({ sitId }: { sitId: string }) {
-  const all = CULTURAL_INTRASET[sitId] ?? [];
-  const defaultSim = all.find(r => r.isDefault)?.sim ?? 0;
+  const bySit = INTRASET[sitId] ?? {};
+  const defaultSim = bySit["default"]?.mean ?? 0;
   // compute relative change vs default, sort descending
-  const rows = all
-    .filter(r => !r.isDefault)
-    .map(r => ({ ...r, rate: (r.sim - defaultSim) / defaultSim }))
+  const rows = Object.entries(bySit)
+    .filter(([code]) => code !== "default")
+    .map(([code, v]) => ({ label: COUNTRY_BY_CODE[code]?.label ?? code, sim: v.mean, rate: (v.mean - defaultSim) / defaultSim }))
     .sort((a, b) => b.rate - a.rate);
 
   const maxAbs = Math.max(...rows.map(r => Math.abs(r.rate)), 0.01);
@@ -390,118 +384,98 @@ function IntrasetBars({ sitId }: { sitId: string }) {
 }
 
 // ─── Tool 11 — DAAM overlay (real cultural heatmaps) ────────────────────────
-// Each prompt has 1–2 token heatmaps saved under public/images/daam/
-// Format: daam_{situation}_{location}_{token}.png
+// All 6 events x 9 variants have exported token heatmaps under public/images/daam/
+// Format: {event}_{countryId}_{word}.webp — word = event name, or the country's
+// first prompt-word ("United" for USA, since SD 2.1 tokenises "United States" in two).
 
-const DAAM_PROMPTS: { sitId: string; locId: string; label: string; tokens: string[]; notes: Record<string, string> }[] = [
-  {
-    sitId: "wedding", locId: "default", label: "a wedding",
-    tokens: ["wedding"],
-    notes: { wedding: '"wedding" activates the full scene — Western-coded by default' },
-  },
-  {
-    sitId: "wedding", locId: "nigeria", label: "a wedding in Nigeria",
-    tokens: ["wedding", "Nigeria"],
-    notes: {
-      wedding: '"wedding" still activates the event structure — shared with the default',
-      Nigeria: '"Nigeria" pulls attention to cultural markers: attire, colour, setting',
-    },
-  },
-  {
-    sitId: "breakfast", locId: "default", label: "a breakfast",
-    tokens: ["breakfast"],
-    notes: { breakfast: '"breakfast" activates the food/table scene — Western-coded by default' },
-  },
-  {
-    sitId: "breakfast", locId: "nigeria", label: "a breakfast in Nigeria",
-    tokens: ["breakfast", "Nigeria"],
-    notes: {
-      breakfast: '"breakfast" still drives the table structure',
-      Nigeria: '"Nigeria" pulls cultural specifics into the food and setting',
-    },
-  },
-  {
-    sitId: "breakfast", locId: "japan", label: "a breakfast in Japan",
-    tokens: ["breakfast", "Japan"],
-    notes: {
-      breakfast: '"breakfast" activates the scene structure',
-      Japan: '"Japan" redirects attention toward the aesthetic and food specifics',
-    },
-  },
-];
-
-const DAAM_COLORS: Record<string, string> = {
-  wedding: "239,68,68",
-  breakfast: "245,158,11",
-  Nigeria: "16,185,129",
-  Japan: "59,130,246",
-  Japan2: "99,102,241",
+const DAAM_EVENTS = CULTURAL_SITUATIONS; // { id, label: "a ___" }
+// first prompt-word per country, as it appears in the DAAM token filename
+const DAAM_COUNTRY_WORD: Record<string, string> = {
+  usa: "United", germany: "Germany", russia: "Russia", india: "India",
+  indonesia: "Indonesia", japan: "Japan", egypt: "Egypt", nigeria: "Nigeria",
 };
 
+const SITUATION_COLOR = "239,68,68";   // event token — red
+const COUNTRY_COLOR = "16,185,129";    // country token — green
+
 function DAAMOverlay({ onZoom }: { onZoom: (src: string) => void }) {
-  const [promptIdx, setPromptIdx] = useState(0);
-  const [token, setToken] = useState(DAAM_PROMPTS[0].tokens[0]);
-  const p = DAAM_PROMPTS[promptIdx];
+  const [eventId, setEventId] = useState("wedding");
+  const [countryId, setCountryId] = useState("nigeria");
+  const [tokenKind, setTokenKind] = useState<"event" | "country">("event");
 
-  const handlePrompt = (i: number) => {
-    setPromptIdx(i);
-    setToken(DAAM_PROMPTS[i].tokens[0]);
+  const countryWord = countryId === "default" ? null : DAAM_COUNTRY_WORD[countryId];
+  const activeKind = tokenKind === "country" && countryWord ? "country" : "event";
+  const token = activeKind === "country" ? countryWord! : eventId;
+  const rgb = activeKind === "country" ? COUNTRY_COLOR : SITUATION_COLOR;
+
+  const promptLabel = countryId === "default"
+    ? `a ${eventId}`
+    : `a ${eventId} in ${countryById(countryId)?.label ?? countryId}`;
+
+  const imgSrc  = `/images/cultural/${eventId}_${countryId}.webp`;
+  const daamSrc = `/images/daam/${eventId}_${countryId}_${token}.webp`;
+
+  const notes: Record<string, string> = {
+    event: `"${eventId}" activates the event/scene structure — shared across every country variant`,
+    country: `"${countryWord}" pulls attention toward cultural markers: attire, colour, setting`,
   };
-
-  const imgSrc  = `/images/cultural/${p.sitId}_${p.locId}.webp`;
-  const daamSrc = `/images/daam/${p.sitId}_${p.locId}_${token}.webp`;
-  const rgb     = DAAM_COLORS[token] ?? "156,163,175";
-
-  // Build tokenised prompt chips
-  const words = p.label.split(" ");
 
   return (
     <div className="p-3 flex flex-col gap-3">
-      {/* Prompt selector */}
-      <div className="flex gap-[5px] flex-wrap">
-        {DAAM_PROMPTS.map((dp, i) => (
-          <button
-            key={dp.label}
-            onClick={() => handlePrompt(i)}
-            className="text-[10px] px-[8px] py-[3px] rounded-[4px] border transition-colors"
-            style={{
-              ...MONO,
-              background: promptIdx === i ? "#1e3a5f" : "#f5f4f0",
-              color:      promptIdx === i ? "#dbeafe" : "#555",
-              borderColor:promptIdx === i ? "#1e3a5f" : "#d0cdc6",
-            }}
-          >
-            {dp.label}
-          </button>
-        ))}
+      {/* Event / country selectors */}
+      <div className="flex gap-2 items-center flex-wrap">
+        <span className="text-[9px] text-[#8a8374]" style={MONO}>a</span>
+        <select
+          value={eventId}
+          onChange={(e) => setEventId(e.target.value)}
+          className="text-[10px] border border-[#d8d4cb] rounded-[4px] px-[6px] py-[3px] bg-white"
+          style={MONO}
+        >
+          {DAAM_EVENTS.map((ev) => <option key={ev.id} value={ev.id}>{ev.id}</option>)}
+        </select>
+        <span className="text-[9px] text-[#8a8374]" style={MONO}>in</span>
+        <select
+          value={countryId}
+          onChange={(e) => { setCountryId(e.target.value); setTokenKind("event"); }}
+          className="text-[10px] border border-[#d8d4cb] rounded-[4px] px-[6px] py-[3px] bg-white"
+          style={MONO}
+        >
+          <option value="default">default</option>
+          {COUNTRIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+        </select>
       </div>
 
       {/* Tokenised prompt — clickable tokens */}
       <div className="flex flex-wrap gap-[4px] items-center">
         <span className="text-[9px] text-[#8a8374] mr-1" style={MONO}>tokens:</span>
-        {words.map((w, i) => {
-          const clickable = p.tokens.includes(w);
-          const active    = clickable && token === w;
-          const c         = DAAM_COLORS[w] ?? "156,163,175";
-          return (
-            <button
-              key={i}
-              onClick={() => clickable && setToken(w)}
-              disabled={!clickable}
-              className="text-[11px] px-[8px] py-[3px] rounded-[4px] border transition-all"
-              style={{
-                ...MONO,
-                background:  active    ? `rgb(${c})` : clickable ? "#f0ede6" : "transparent",
-                color:       active    ? "#fff"       : clickable ? "#444"    : "#a39d8e",
-                borderColor: active    ? `rgb(${c})` : clickable ? "#d0cdc6" : "transparent",
-                cursor:      clickable ? "pointer"   : "default",
-                fontWeight:  clickable ? 600          : 400,
-              }}
-            >
-              {w}
-            </button>
-          );
-        })}
+        <button
+          onClick={() => setTokenKind("event")}
+          className="text-[11px] px-[8px] py-[3px] rounded-[4px] border transition-all"
+          style={{
+            ...MONO,
+            background: activeKind === "event" ? `rgb(${SITUATION_COLOR})` : "#f0ede6",
+            color: activeKind === "event" ? "#fff" : "#444",
+            borderColor: activeKind === "event" ? `rgb(${SITUATION_COLOR})` : "#d0cdc6",
+            fontWeight: 600,
+          }}
+        >
+          {eventId}
+        </button>
+        {countryWord && (
+          <button
+            onClick={() => setTokenKind("country")}
+            className="text-[11px] px-[8px] py-[3px] rounded-[4px] border transition-all"
+            style={{
+              ...MONO,
+              background: activeKind === "country" ? `rgb(${COUNTRY_COLOR})` : "#f0ede6",
+              color: activeKind === "country" ? "#fff" : "#444",
+              borderColor: activeKind === "country" ? `rgb(${COUNTRY_COLOR})` : "#d0cdc6",
+              fontWeight: 600,
+            }}
+          >
+            {countryWord}
+          </button>
+        )}
       </div>
 
       {/* Generated image + DAAM heatmap side by side */}
@@ -510,7 +484,7 @@ function DAAMOverlay({ onZoom }: { onZoom: (src: string) => void }) {
           <span className="text-[8px] text-[#8a8374] text-center" style={MONO}>generated image</span>
           <img
             src={imgSrc}
-            alt={p.label}
+            alt={promptLabel}
             loading="lazy"
             className="w-full rounded-[5px] object-cover hover:opacity-90 transition-opacity"
             style={{ aspectRatio: "1/1", cursor: "zoom-in" }}
@@ -533,7 +507,7 @@ function DAAMOverlay({ onZoom }: { onZoom: (src: string) => void }) {
       </div>
 
       <p className="text-[9px] leading-[1.4]" style={{ ...MONO, color: `rgb(${rgb})` }}>
-        {p.notes[token] ?? ""}
+        "{promptLabel}" — {notes[activeKind]}
       </p>
       <p className="text-[8px] text-[#a39d8e]" style={MONO}>
         DAAM · SD 2.1 · CFG 7 · seed 00 · click images to enlarge
@@ -543,42 +517,47 @@ function DAAMOverlay({ onZoom }: { onZoom: (src: string) => void }) {
 }
 
 // ─── Intraset Scatter — distance vs homogeneity bubble chart ────────────────
+// Built directly from distances.json + intraset_sim.json — all 6 situations x 8 countries.
 
+const ALL_SITUATIONS = ["breakfast", "celebration", "family", "funeral", "school", "wedding"];
 const SIT_COLORS: Record<string, string> = {
   wedding: "#f472b6", breakfast: "#34d399", funeral: "#94a3b8",
+  celebration: "#fbbf24", family: "#818cf8", school: "#38bdf8",
 };
 
-// Pre-joined (distance, intraset) per (situation, country)
-const SCATTER_POINTS = [
-  // wedding
-  { sit:"wedding", cc:"US", dist:0.105, sim:0.418 }, { sit:"wedding", cc:"DE", dist:0.184, sim:0.440 },
-  { sit:"wedding", cc:"RU", dist:0.202, sim:0.368 }, { sit:"wedding", cc:"IN", dist:0.807, sim:0.632 },
-  { sit:"wedding", cc:"ID", dist:0.443, sim:0.435 }, { sit:"wedding", cc:"JP", dist:0.660, sim:0.670 },
-  { sit:"wedding", cc:"EG", dist:0.634, sim:0.398 }, { sit:"wedding", cc:"NG", dist:0.698, sim:0.687 },
-  // breakfast
-  { sit:"breakfast", cc:"US", dist:0.322, sim:0.648 }, { sit:"breakfast", cc:"DE", dist:0.279, sim:0.527 },
-  { sit:"breakfast", cc:"RU", dist:0.287, sim:0.562 }, { sit:"breakfast", cc:"IN", dist:0.631, sim:0.572 },
-  { sit:"breakfast", cc:"ID", dist:0.501, sim:0.596 }, { sit:"breakfast", cc:"JP", dist:0.696, sim:0.738 },
-  { sit:"breakfast", cc:"EG", dist:0.386, sim:0.415 }, { sit:"breakfast", cc:"NG", dist:0.498, sim:0.483 },
-  // funeral
-  { sit:"funeral", cc:"US", dist:0.094, sim:0.421 }, { sit:"funeral", cc:"DE", dist:0.153, sim:0.508 },
-  { sit:"funeral", cc:"RU", dist:0.127, sim:0.530 }, { sit:"funeral", cc:"IN", dist:0.502, sim:0.605 },
-  { sit:"funeral", cc:"ID", dist:0.315, sim:0.522 }, { sit:"funeral", cc:"JP", dist:0.254, sim:0.481 },
-  { sit:"funeral", cc:"EG", dist:0.357, sim:0.507 }, { sit:"funeral", cc:"NG", dist:0.620, sim:0.577 },
-];
+type ScatterPoint = { sit: string; cc: string; dist: number; sim: number };
+const SCATTER_POINTS: ScatterPoint[] = ALL_SITUATIONS.flatMap((sit) => {
+  const dists = DISTANCES[sit] ?? {};
+  const sims = INTRASET[sit] ?? {};
+  return Object.keys(dists)
+    .filter((code) => sims[code])
+    .map((code) => ({ sit, cc: code, dist: dists[code].mean, sim: sims[code].mean }));
+});
 
 function IntrasetScatter() {
-  const [hov, setHov] = useState<typeof SCATTER_POINTS[0] | null>(null);
+  const [hov, setHov] = useState<ScatterPoint | null>(null);
+  const [activeSits, setActiveSits] = useState<Set<string>>(new Set(ALL_SITUATIONS));
   const W = 280; const H = 190;
   const PAD = { l: 32, r: 10, t: 10, b: 28 };
   const px = (d: number) => PAD.l + d * (W - PAD.l - PAD.r);
   const py = (s: number) => H - PAD.b - s * (H - PAD.t - PAD.b);
 
+  const toggleSit = (sit: string) => {
+    setActiveSits((prev) => {
+      const next = new Set(prev);
+      if (next.has(sit)) next.delete(sit); else next.add(sit);
+      return next;
+    });
+  };
+
+  const visiblePoints = SCATTER_POINTS.filter((pt) => activeSits.has(pt.sit));
+
   return (
     <div className="p-3 flex flex-col gap-2">
       <p className="text-[10px] text-[#555] leading-[1.5]">
         Each bubble = one (situation, country) pair. Countries far from SD's default
-        (right) tend to produce more uniform, stereotyped outputs (up).
+        (right) tend to produce more uniform, stereotyped outputs (up). Click a legend
+        entry to toggle a situation.
       </p>
       <div className="flex gap-3 items-start">
         <svg width={W} height={H} style={{ flexShrink: 0 }}>
@@ -597,20 +576,25 @@ function IntrasetScatter() {
             <text key={v} x={px(v)} y={H-PAD.b+9} fontSize="7" fill="#a39d8e" textAnchor="middle" fontFamily="JetBrains Mono,monospace">{v.toFixed(2)}</text>
           ))}
           {/* Points */}
-          {SCATTER_POINTS.map((pt, i) => (
+          {visiblePoints.map((pt, i) => (
             <g key={i} onMouseEnter={() => setHov(pt)} onMouseLeave={() => setHov(null)} style={{ cursor: "default" }}>
               <circle cx={px(pt.dist)} cy={py(pt.sim)} r="5" fill={SIT_COLORS[pt.sit] ?? "#999"} opacity="0.75"/>
               <text x={px(pt.dist)+6} y={py(pt.sim)} fontSize="6.5" fill="#555" fontFamily="JetBrains Mono,monospace" dominantBaseline="middle">{pt.cc}</text>
             </g>
           ))}
         </svg>
-        {/* Legend + tooltip */}
+        {/* Legend (clickable toggles) + tooltip */}
         <div className="flex flex-col gap-2 pt-1">
-          {Object.entries(SIT_COLORS).map(([sit, col]) => (
-            <div key={sit} className="flex items-center gap-1">
-              <div className="w-[8px] h-[8px] rounded-full" style={{ background: col }}/>
+          {ALL_SITUATIONS.map((sit) => (
+            <button
+              key={sit}
+              onClick={() => toggleSit(sit)}
+              className="flex items-center gap-1 bg-transparent border-0 p-0 cursor-pointer"
+              style={{ opacity: activeSits.has(sit) ? 1 : 0.35 }}
+            >
+              <div className="w-[8px] h-[8px] rounded-full" style={{ background: SIT_COLORS[sit] }}/>
               <span className="text-[8px] text-[#555]" style={MONO}>{sit}</span>
-            </div>
+            </button>
           ))}
           {hov && (
             <div className="mt-2 p-2 rounded-[5px] border border-[#d0cdc6] bg-white text-[8px] leading-[1.6]" style={MONO}>

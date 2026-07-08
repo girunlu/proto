@@ -98,14 +98,27 @@ function SimilarityHeatmap() {
 // Real Diffusion Lens outputs — SD 2.1 text encoder (OpenCLIP ViT-H/14, 24 layers)
 // cumavg(k) = mean(hidden_states[1..k]) decoded through the SD 2.1 UNet
 // Layers 13/18/23 show early→late cultural representation forming
+// All 6 events x 9 country variants have real exported layer images.
 
-const LENS_PROMPTS = [
-  { id: "wedding_default",   label: "a wedding",              slug: "wedding_default"   },
-  { id: "wedding_nigeria",   label: "a wedding in Nigeria",   slug: "wedding_nigeria"   },
-  { id: "wedding_japan",     label: "a wedding in Japan",     slug: "wedding_japan"     },
-  { id: "breakfast_default", label: "a breakfast",            slug: "breakfast_default" },
-  { id: "breakfast_nigeria", label: "a breakfast in Nigeria", slug: "breakfast_nigeria" },
-  { id: "breakfast_japan",   label: "a breakfast in Japan",   slug: "breakfast_japan"   },
+const LENS_EVENTS = [
+  { id: "breakfast",   label: "breakfast" },
+  { id: "celebration", label: "celebration" },
+  { id: "family",      label: "family" },
+  { id: "funeral",     label: "funeral" },
+  { id: "school",      label: "school" },
+  { id: "wedding",     label: "wedding" },
+];
+
+const LENS_COUNTRIES = [
+  { id: "default",   label: "default" },
+  { id: "usa",       label: "USA" },
+  { id: "germany",   label: "Germany" },
+  { id: "russia",    label: "Russia" },
+  { id: "india",     label: "India" },
+  { id: "indonesia", label: "Indonesia" },
+  { id: "japan",     label: "Japan" },
+  { id: "egypt",     label: "Egypt" },
+  { id: "nigeria",   label: "Nigeria" },
 ];
 
 const LENS_LAYERS = [13, 18, 23];
@@ -116,28 +129,40 @@ const LENS_LAYER_NOTES = [
 ];
 
 function DiffusionLens() {
-  const [promptId, setPromptId] = useState(LENS_PROMPTS[0].id);
+  const [eventId, setEventId] = useState("wedding");
+  const [countryId, setCountryId] = useState("nigeria");
   const [layerIdx, setLayerIdx] = useState(2);
 
-  const current = LENS_PROMPTS.find(p => p.id === promptId) ?? LENS_PROMPTS[0];
+  const eventLabel = LENS_EVENTS.find(e => e.id === eventId)?.label ?? eventId;
+  const countryLabel = LENS_COUNTRIES.find(c => c.id === countryId)?.label ?? countryId;
+  const promptLabel = countryId === "default" ? `a ${eventLabel}` : `a ${eventLabel} in ${countryLabel}`;
 
   return (
     <div className="p-3 flex flex-col gap-3">
-      <div className="flex gap-2 items-center">
-        <span className="text-[9px] text-[#8a8374] shrink-0" style={MONO}>prompt:</span>
+      <div className="flex gap-2 items-center flex-wrap">
+        <span className="text-[9px] text-[#8a8374] shrink-0" style={MONO}>a</span>
         <select
-          value={promptId}
-          onChange={(e) => { setPromptId(e.target.value); setLayerIdx(2); }}
-          className="flex-1 text-[11px] border border-[#d8d4cb] rounded-[4px] px-2 py-[5px] bg-white focus:outline-none focus:border-[#818cf8] transition-colors"
+          value={eventId}
+          onChange={(e) => setEventId(e.target.value)}
+          className="text-[11px] border border-[#d8d4cb] rounded-[4px] px-2 py-[5px] bg-white focus:outline-none focus:border-[#818cf8] transition-colors"
           style={MONO}
         >
-          {LENS_PROMPTS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+          {LENS_EVENTS.map((ev) => <option key={ev.id} value={ev.id}>{ev.label}</option>)}
+        </select>
+        <span className="text-[9px] text-[#8a8374] shrink-0" style={MONO}>in</span>
+        <select
+          value={countryId}
+          onChange={(e) => setCountryId(e.target.value)}
+          className="text-[11px] border border-[#d8d4cb] rounded-[4px] px-2 py-[5px] bg-white focus:outline-none focus:border-[#818cf8] transition-colors"
+          style={MONO}
+        >
+          {LENS_COUNTRIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
         </select>
       </div>
 
       <p className="text-[11px] text-[#666] leading-[1.5]">
-        The full prompt's representation pulled from the text encoder at three depths and decoded
-        into an image — one prompt, three snapshots of it being understood. Click a layer.
+        "{promptLabel}" — the full prompt's representation pulled from the text encoder at three
+        depths and decoded into an image. Click a layer.
       </p>
 
       {/* Layer strip — real images */}
@@ -149,7 +174,7 @@ function DiffusionLens() {
             className="flex-1 flex flex-col gap-[4px] cursor-pointer bg-transparent border-0 p-0"
           >
             <img
-              src={`/images/difflens/${current.slug}_layer${layer}.webp`}
+              src={`/images/difflens/${eventId}_${countryId}_layer${layer}.webp`}
               loading="lazy"
               alt={`layer ${layer}`}
               className="w-full rounded-[5px] object-cover transition-all duration-200"

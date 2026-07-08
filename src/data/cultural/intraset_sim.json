@@ -1,0 +1,344 @@
+{
+  "method": "dinov2_mean_pairwise_cosine",
+  "cfg": 7,
+  "n_seeds": 50,
+  "n_bootstrap": 10000,
+  "results": {
+    "breakfast": {
+      "default": {
+        "mean": 0.490917,
+        "ci_low": 0.45918,
+        "ci_high": 0.542346,
+        "n_seeds": 50
+      },
+      "US": {
+        "mean": 0.647507,
+        "ci_low": 0.627873,
+        "ci_high": 0.680235,
+        "n_seeds": 50
+      },
+      "DE": {
+        "mean": 0.527384,
+        "ci_low": 0.484748,
+        "ci_high": 0.585464,
+        "n_seeds": 50
+      },
+      "RU": {
+        "mean": 0.562498,
+        "ci_low": 0.538481,
+        "ci_high": 0.602881,
+        "n_seeds": 50
+      },
+      "IN": {
+        "mean": 0.572339,
+        "ci_low": 0.536857,
+        "ci_high": 0.630297,
+        "n_seeds": 50
+      },
+      "ID": {
+        "mean": 0.595558,
+        "ci_low": 0.579272,
+        "ci_high": 0.629511,
+        "n_seeds": 50
+      },
+      "JP": {
+        "mean": 0.738497,
+        "ci_low": 0.717022,
+        "ci_high": 0.768161,
+        "n_seeds": 50
+      },
+      "EG": {
+        "mean": 0.41529,
+        "ci_low": 0.388298,
+        "ci_high": 0.468653,
+        "n_seeds": 50
+      },
+      "NG": {
+        "mean": 0.482748,
+        "ci_low": 0.466471,
+        "ci_high": 0.522233,
+        "n_seeds": 50
+      }
+    },
+    "celebration": {
+      "default": {
+        "mean": 0.130282,
+        "ci_low": 0.12379,
+        "ci_high": 0.17715,
+        "n_seeds": 50
+      },
+      "US": {
+        "mean": 0.523998,
+        "ci_low": 0.489174,
+        "ci_high": 0.581965,
+        "n_seeds": 50
+      },
+      "DE": {
+        "mean": 0.370173,
+        "ci_low": 0.329544,
+        "ci_high": 0.442923,
+        "n_seeds": 50
+      },
+      "RU": {
+        "mean": 0.429081,
+        "ci_low": 0.379449,
+        "ci_high": 0.51726,
+        "n_seeds": 50
+      },
+      "IN": {
+        "mean": 0.726254,
+        "ci_low": 0.68754,
+        "ci_high": 0.771386,
+        "n_seeds": 50
+      },
+      "ID": {
+        "mean": 0.560739,
+        "ci_low": 0.546899,
+        "ci_high": 0.5936,
+        "n_seeds": 50
+      },
+      "JP": {
+        "mean": 0.691434,
+        "ci_low": 0.651758,
+        "ci_high": 0.74283,
+        "n_seeds": 50
+      },
+      "EG": {
+        "mean": 0.426967,
+        "ci_low": 0.404332,
+        "ci_high": 0.476685,
+        "n_seeds": 50
+      },
+      "NG": {
+        "mean": 0.75032,
+        "ci_low": 0.733802,
+        "ci_high": 0.777388,
+        "n_seeds": 50
+      }
+    },
+    "family": {
+      "default": {
+        "mean": 0.232778,
+        "ci_low": 0.203794,
+        "ci_high": 0.303272,
+        "n_seeds": 50
+      },
+      "US": {
+        "mean": 0.416279,
+        "ci_low": 0.392615,
+        "ci_high": 0.466148,
+        "n_seeds": 50
+      },
+      "DE": {
+        "mean": 0.438409,
+        "ci_low": 0.406247,
+        "ci_high": 0.497297,
+        "n_seeds": 50
+      },
+      "RU": {
+        "mean": 0.369344,
+        "ci_low": 0.343274,
+        "ci_high": 0.426327,
+        "n_seeds": 50
+      },
+      "IN": {
+        "mean": 0.726548,
+        "ci_low": 0.704929,
+        "ci_high": 0.758128,
+        "n_seeds": 50
+      },
+      "ID": {
+        "mean": 0.642787,
+        "ci_low": 0.623253,
+        "ci_high": 0.677186,
+        "n_seeds": 50
+      },
+      "JP": {
+        "mean": 0.650354,
+        "ci_low": 0.6066,
+        "ci_high": 0.70451,
+        "n_seeds": 50
+      },
+      "EG": {
+        "mean": 0.501583,
+        "ci_low": 0.467857,
+        "ci_high": 0.560085,
+        "n_seeds": 50
+      },
+      "NG": {
+        "mean": 0.757532,
+        "ci_low": 0.739181,
+        "ci_high": 0.784515,
+        "n_seeds": 50
+      }
+    },
+    "funeral": {
+      "default": {
+        "mean": 0.473702,
+        "ci_low": 0.421841,
+        "ci_high": 0.551322,
+        "n_seeds": 50
+      },
+      "US": {
+        "mean": 0.421018,
+        "ci_low": 0.380299,
+        "ci_high": 0.492278,
+        "n_seeds": 50
+      },
+      "DE": {
+        "mean": 0.508357,
+        "ci_low": 0.470759,
+        "ci_high": 0.570124,
+        "n_seeds": 50
+      },
+      "RU": {
+        "mean": 0.529767,
+        "ci_low": 0.480386,
+        "ci_high": 0.603548,
+        "n_seeds": 50
+      },
+      "IN": {
+        "mean": 0.604558,
+        "ci_low": 0.579804,
+        "ci_high": 0.647661,
+        "n_seeds": 50
+      },
+      "ID": {
+        "mean": 0.52197,
+        "ci_low": 0.486978,
+        "ci_high": 0.57854,
+        "n_seeds": 50
+      },
+      "JP": {
+        "mean": 0.480768,
+        "ci_low": 0.445974,
+        "ci_high": 0.542156,
+        "n_seeds": 50
+      },
+      "EG": {
+        "mean": 0.50668,
+        "ci_low": 0.469863,
+        "ci_high": 0.567233,
+        "n_seeds": 50
+      },
+      "NG": {
+        "mean": 0.576615,
+        "ci_low": 0.542224,
+        "ci_high": 0.630578,
+        "n_seeds": 50
+      }
+    },
+    "school": {
+      "default": {
+        "mean": 0.204545,
+        "ci_low": 0.194694,
+        "ci_high": 0.251917,
+        "n_seeds": 50
+      },
+      "US": {
+        "mean": 0.496199,
+        "ci_low": 0.427053,
+        "ci_high": 0.591306,
+        "n_seeds": 50
+      },
+      "DE": {
+        "mean": 0.54459,
+        "ci_low": 0.451366,
+        "ci_high": 0.658098,
+        "n_seeds": 50
+      },
+      "RU": {
+        "mean": 0.603495,
+        "ci_low": 0.505735,
+        "ci_high": 0.716078,
+        "n_seeds": 50
+      },
+      "IN": {
+        "mean": 0.699118,
+        "ci_low": 0.652341,
+        "ci_high": 0.75609,
+        "n_seeds": 50
+      },
+      "ID": {
+        "mean": 0.67537,
+        "ci_low": 0.6041,
+        "ci_high": 0.757642,
+        "n_seeds": 50
+      },
+      "JP": {
+        "mean": 0.367099,
+        "ci_low": 0.341784,
+        "ci_high": 0.433348,
+        "n_seeds": 50
+      },
+      "EG": {
+        "mean": 0.48411,
+        "ci_low": 0.423323,
+        "ci_high": 0.578126,
+        "n_seeds": 50
+      },
+      "NG": {
+        "mean": 0.710172,
+        "ci_low": 0.672025,
+        "ci_high": 0.761834,
+        "n_seeds": 50
+      }
+    },
+    "wedding": {
+      "default": {
+        "mean": 0.444218,
+        "ci_low": 0.40516,
+        "ci_high": 0.506793,
+        "n_seeds": 50
+      },
+      "US": {
+        "mean": 0.41757,
+        "ci_low": 0.382641,
+        "ci_high": 0.479698,
+        "n_seeds": 50
+      },
+      "DE": {
+        "mean": 0.44029,
+        "ci_low": 0.4058,
+        "ci_high": 0.49907,
+        "n_seeds": 50
+      },
+      "RU": {
+        "mean": 0.368126,
+        "ci_low": 0.343434,
+        "ci_high": 0.424579,
+        "n_seeds": 50
+      },
+      "IN": {
+        "mean": 0.631659,
+        "ci_low": 0.593273,
+        "ci_high": 0.683531,
+        "n_seeds": 50
+      },
+      "ID": {
+        "mean": 0.434781,
+        "ci_low": 0.412508,
+        "ci_high": 0.483028,
+        "n_seeds": 50
+      },
+      "JP": {
+        "mean": 0.669513,
+        "ci_low": 0.63729,
+        "ci_high": 0.714424,
+        "n_seeds": 50
+      },
+      "EG": {
+        "mean": 0.397608,
+        "ci_low": 0.381887,
+        "ci_high": 0.441288,
+        "n_seeds": 50
+      },
+      "NG": {
+        "mean": 0.686624,
+        "ci_low": 0.669736,
+        "ci_high": 0.715736,
+        "n_seeds": 50
+      }
+    }
+  }
+}
