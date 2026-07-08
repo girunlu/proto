@@ -113,8 +113,8 @@ function CFGCulturalStrip() {
   // spatially honest, not evenly spaced), y = DINOv2 distance from default,
   // one line per country so all 8 are directly comparable at once. Wider now
   // that the image strip moved to a 2x2 block instead of a 5-wide row.
-  const W = 420, H = 200;
-  const PAD = { l: 36, r: 14, t: 12, b: 22 };
+  const W = 420, H = 220;
+  const PAD = { l: 42, r: 14, t: 20, b: 34 };
   const cfgMin = CFG_VALUES[0], cfgMax = CFG_VALUES[CFG_VALUES.length - 1];
   const px = (cfg: number) => PAD.l + ((cfg - cfgMin) / (cfgMax - cfgMin)) * (W - PAD.l - PAD.r);
   const py = (dist: number) => H - PAD.b - (dist / maxDist) * (H - PAD.t - PAD.b);
@@ -148,14 +148,14 @@ function CFGCulturalStrip() {
         {/* Illustration: default-variant image strip across CFG (single seed),
             2x2 so the chart gets the freed-up horizontal space */}
         <div className="shrink-0 flex flex-col gap-2">
-          <div className="grid grid-cols-2 gap-[6px] w-[260px]">
+          <div className="grid grid-cols-2 gap-[8px] w-[390px]">
             {STRIP_CFGS.map((cfg) => {
               const i = CFG_VALUES.indexOf(cfg);
               return (
                 <button
                   key={cfg}
                   onClick={() => setCfgIdx(i)}
-                  className="flex flex-col gap-[3px] cursor-pointer bg-transparent border-0 p-0"
+                  className="flex flex-col gap-[4px] cursor-pointer bg-transparent border-0 p-0"
                 >
                   <img
                     src={`/images/cfg/${sitId}_cfg${cfg}.webp`}
@@ -164,12 +164,11 @@ function CFGCulturalStrip() {
                     className="w-full rounded-[5px] object-cover transition-all duration-200"
                     style={{
                       aspectRatio: "1 / 1",
-                      outline: cfgIdx === i ? "2px solid #92400e" : "2px solid transparent",
+                      outline: cfgIdx === i ? "3px solid #92400e" : "2px solid transparent",
                       outlineOffset: "2px",
-                      opacity: cfgIdx === i ? 1 : 0.6,
                     }}
                   />
-                  <span className="text-[9px] text-center transition-colors"
+                  <span className="text-[10px] text-center transition-colors"
                     style={{ ...mono, color: cfgIdx === i ? "#92400e" : "#8a8374" }}>
                     cfg={cfg}
                   </span>
@@ -177,7 +176,7 @@ function CFGCulturalStrip() {
               );
             })}
           </div>
-          <p className="text-[8px] text-[#a39d8e] w-[260px]" style={mono}>
+          <p className="text-[8px] text-[#a39d8e] w-[390px]" style={mono}>
             default variant · seed 00 · illustration only (cfg=7 omitted here, still in the chart)
           </p>
         </div>
@@ -191,8 +190,25 @@ function CFGCulturalStrip() {
         {[0.25, 0.5, 0.75, 1].map((f) => (
           <line key={f} x1={PAD.l} y1={py(f * maxDist)} x2={W - PAD.r} y2={py(f * maxDist)} stroke="#f0ede6" strokeWidth="1" />
         ))}
-        <text x={PAD.l - 4} y={py(maxDist)} fontSize="7" fill="#a39d8e" textAnchor="end" fontFamily="JetBrains Mono,monospace" dominantBaseline="middle">{maxDist.toFixed(2)}</text>
-        <text x={PAD.l - 4} y={py(0)} fontSize="7" fill="#a39d8e" textAnchor="end" fontFamily="JetBrains Mono,monospace" dominantBaseline="middle">0</text>
+        {/* y-axis value labels at every gridline, not just top/bottom */}
+        {[0, 0.25, 0.5, 0.75, 1].map((f) => (
+          <text key={f} x={PAD.l - 5} y={py(f * maxDist)} fontSize="7" fill="#a39d8e" textAnchor="end" fontFamily="JetBrains Mono,monospace" dominantBaseline="middle">
+            {(f * maxDist).toFixed(2)}
+          </text>
+        ))}
+        {/* y-axis title */}
+        <text x={4} y={PAD.t - 6} fontSize="7.5" fill="#8a8374" fontFamily="JetBrains Mono,monospace">
+          DINOv2 distance from default
+        </text>
+        {/* x-axis tick labels + title */}
+        {CFG_VALUES.map((cfg) => (
+          <text key={cfg} x={px(cfg)} y={H - PAD.b + 12} fontSize="7.5" fill="#8a8374" textAnchor="middle" fontFamily="JetBrains Mono,monospace">
+            {cfg}
+          </text>
+        ))}
+        <text x={(PAD.l + W - PAD.r) / 2} y={H - 4} fontSize="7.5" fill="#8a8374" textAnchor="middle" fontFamily="JetBrains Mono,monospace">
+          guidance scale (cfg)
+        </text>
         {/* selected-cfg guide line, synced with the image strip above */}
         <line x1={px(CFG_VALUES[cfgIdx])} y1={PAD.t} x2={px(CFG_VALUES[cfgIdx])} y2={H - PAD.b} stroke="#92400e" strokeWidth="1" strokeDasharray="2 2" opacity="0.4" />
 
@@ -316,13 +332,13 @@ function CulturalPriorMatrix({ onZoom }: { onZoom: (src: string) => void }) {
 
       <div className="flex gap-4 items-start">
         <div
-          className="flex flex-col gap-[3px] overflow-x-auto"
+          className="flex flex-col gap-[4px] overflow-x-auto"
           onMouseLeave={() => setHovered(null)}
         >
           {MATRIX_ROWS.map((row) => {
             const seeds = DIVERSE_GRID[sitId]?.[row.id] ?? [];
             return (
-              <div key={row.id} className="flex items-center gap-[3px]">
+              <div key={row.id} className="flex items-center gap-[4px]">
                 <span
                   className="text-[8px] text-[#867f6f] w-[64px] text-right shrink-0 pr-1"
                   style={mono}
@@ -342,8 +358,8 @@ function CulturalPriorMatrix({ onZoom }: { onZoom: (src: string) => void }) {
                       onClick={() => onZoom(src)}
                       className="rounded-[2px] object-cover hover:opacity-80 transition-opacity shrink-0"
                       style={{
-                        width: 40,
-                        height: 40,
+                        width: 60,
+                        height: 60,
                         cursor: "zoom-in",
                         outline: isHovered ? "2px solid #78350f" : "2px solid transparent",
                         outlineOffset: "1px",

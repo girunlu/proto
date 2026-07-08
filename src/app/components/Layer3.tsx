@@ -529,7 +529,7 @@ const SITUATION_SLOPES: Record<string, { slope: number; intercept: number }> = O
 );
 const SLOPE_RANKING = [...ALL_SITUATIONS].sort((a, b) => SITUATION_SLOPES[b].slope - SITUATION_SLOPES[a].slope);
 
-function IntrasetScatter({ sitId }: { sitId: string }) {
+function IntrasetScatter({ sitId, onSitChange }: { sitId: string; onSitChange: (id: string) => void }) {
   const [hov, setHov] = useState<ScatterPoint | null>(null);
   const W = 280; const H = 190;
   const PAD = { l: 32, r: 10, t: 10, b: 28 };
@@ -544,6 +544,26 @@ function IntrasetScatter({ sitId }: { sitId: string }) {
 
   return (
     <div className="p-3 flex flex-col gap-2">
+      {/* Local event buttons — this tool sits far below the shared selector
+          at the top of the section, so switching shouldn't require scrolling up */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-[9px] text-[#8a8374] shrink-0" style={MONO}>event:</span>
+        {CULTURAL_SITUATIONS.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => onSitChange(s.id)}
+            className="text-[10px] px-[9px] py-[3px] rounded-[4px] border transition-colors"
+            style={{
+              ...MONO,
+              background: sitId === s.id ? "#064e3b" : "#f5f4f0",
+              color: sitId === s.id ? "#d1fae5" : "#555",
+              borderColor: sitId === s.id ? "#064e3b" : "#d0cdc6",
+            }}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
       <p className="text-[10px] text-[#555] leading-[1.5]">
         <b>X = how far</b> a country-qualified prompt sits from SD's unqualified default
         (DINOv2 cosine distance between mean embeddings). <b>Y = how uniform</b> that
@@ -1275,7 +1295,7 @@ export function Layer3() {
             description="One bubble per country, for the situation selected above. Countries far from SD's cultural default (right) tend to produce more stereotyped output (up). Hover any bubble for values."
             explanation="The scatter makes the mechanism visible: distance from default and output homogeneity are correlated. The model doesn't have rich knowledge of underrepresented cultures — it has one narrow image. Specifying those cultures doesn't unlock diversity; it collapses to a stereotype."
           >
-            <IntrasetScatter sitId={sitId} />
+            <IntrasetScatter sitId={sitId} onSitChange={setSitId} />
           </ToolCard>
         </ToolsGrid>
       </PredictionReveal>
