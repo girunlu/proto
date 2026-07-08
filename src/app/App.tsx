@@ -56,40 +56,48 @@ function Nav() {
 
 function Hero() {
   return (
-    <div className="bg-white border-b border-[#e0ddd6] px-12 pt-20 pb-16 max-w-[860px]">
-      <div
-        className="text-[11px] font-medium tracking-[0.08em] uppercase text-[#888] mb-5"
-        style={{ fontFamily: "'JetBrains Mono', monospace" }}
-      >
-        Interactive Explorable · SD 2.1 · XAI
+    <div className="bg-white border-b border-[#e0ddd6] px-12 pt-20 pb-16 flex gap-12 flex-wrap items-start">
+      <div className="max-w-[640px]">
+        <div
+          className="text-[11px] font-medium tracking-[0.08em] uppercase text-[#888] mb-5"
+          style={{ fontFamily: "'JetBrains Mono', monospace" }}
+        >
+          Interactive Explorable · SD 2.1 · XAI
+        </div>
+        <h1
+          className="text-[42px] font-normal leading-[1.15] text-[#1a1a1a] mb-5"
+          style={{ fontFamily: "'Libre Baskerville', Georgia, serif" }}
+        >
+          What does Stable Diffusion
+          <br />
+          <em className="italic text-[#555]">assume</em> before you say anything?
+        </h1>
+        <div
+          className="flex flex-col gap-[6px] mb-6 text-[14px]"
+          style={{ fontFamily: "'JetBrains Mono', monospace" }}
+        >
+          <span className="text-[#a39d8e]">
+            what you think happens:&nbsp;&nbsp;
+            <span className="line-through decoration-[#ef4444]/60">image = f( prompt )</span>
+          </span>
+          <span className="text-[#1a1a1a]">
+            what actually happens:&nbsp;&nbsp;&nbsp;image ~ P( · | prompt, <b className="text-[#4f46e5]">the model's worldview</b> )
+          </span>
+        </div>
+        <p className="text-[16px] leading-[1.7] text-[#555]">
+          Your prompt is never the whole input. It is read inside a worldview the model learned
+          before you arrived — decisions about who a person looks like, which culture is the
+          default, and what "realistic" means. You can't see that second condition, and you can't
+          opt out of it. This explorable makes it visible: where it lives, when it locks in, and
+          what it costs to override.
+        </p>
       </div>
-      <h1
-        className="text-[42px] font-normal leading-[1.15] text-[#1a1a1a] mb-5"
-        style={{ fontFamily: "'Libre Baskerville', Georgia, serif" }}
-      >
-        What does Stable Diffusion
-        <br />
-        <em className="italic text-[#555]">assume</em> before you say anything?
-      </h1>
-      <div
-        className="flex flex-col gap-[6px] mb-6 text-[14px]"
-        style={{ fontFamily: "'JetBrains Mono', monospace" }}
-      >
-        <span className="text-[#a39d8e]">
-          what you think happens:&nbsp;&nbsp;
-          <span className="line-through decoration-[#ef4444]/60">image = f( prompt )</span>
-        </span>
-        <span className="text-[#1a1a1a]">
-          what actually happens:&nbsp;&nbsp;&nbsp;image ~ P( · | prompt, <b className="text-[#4f46e5]">the model's worldview</b> )
-        </span>
-      </div>
-      <p className="text-[16px] leading-[1.7] text-[#555] max-w-[640px]">
-        Your prompt is never the whole input. It is read inside a worldview the model learned
-        before you arrived — decisions about who a person looks like, which culture is the
-        default, and what "realistic" means. You can't see that second condition, and you can't
-        opt out of it. This explorable makes it visible: where it lives, when it locks in, and
-        what it costs to override.
-      </p>
+      <img
+        src="/images/hero/cover.webp"
+        alt=""
+        className="flex-1 min-w-[320px] max-w-[460px] rounded-[8px] object-cover"
+        style={{ aspectRatio: "1200 / 799" }}
+      />
     </div>
   );
 }
