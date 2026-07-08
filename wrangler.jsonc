@@ -11,5 +11,8 @@
   },
   "compatibility_flags": [
     "nodejs_compat"
+  ],
+  "routes": [
+    { "pattern": "promptswontsaveyou.dev", "custom_domain": true }
   ]
 }
