@@ -95,8 +95,8 @@ function Hero() {
       <img
         src="/images/hero/cover.webp"
         alt=""
-        className="flex-1 min-w-[320px] max-w-[460px] rounded-[8px] object-cover"
-        style={{ aspectRatio: "1200 / 799" }}
+        className="flex-1 min-w-[420px] max-w-[680px] rounded-[8px] object-cover self-stretch"
+        style={{ aspectRatio: "3 / 2" }}
       />
     </div>
   );
