@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Section, ToolCard, ToolsGrid, PlanNote } from "./ToolCard";
+import { Section, ToolCard, ToolsGrid, PlanNote, Lightbox } from "./ToolCard";
+import diverseGridData from "../../data/cultural/diverse_grid.json";
 
 // ─── Tool 04 — Empty-prompt prior ───────────────────────────────────────────
 
@@ -169,7 +170,94 @@ function CFGStability() {
   );
 }
 
+// ─── Tool 05c — Cultural prior matrix (real images, most-diverse seeds) ─────
+// Rows = default + 8 countries, columns = the N seeds farthest apart from each
+// other (DINOv2 farthest-point sampling, see cultural_diverse_grid.py) — the
+// point is to show the *spread* of the prior per variant, not near-duplicates.
+
+type DiverseGridJson = { results: Record<string, Record<string, number[]>> };
+const DIVERSE_GRID = (diverseGridData as DiverseGridJson).results;
+
+const MATRIX_SITUATIONS = [
+  { id: "wedding", label: "a wedding" },
+  { id: "funeral", label: "a funeral" },
+  { id: "breakfast", label: "a breakfast" },
+  { id: "family", label: "a family" },
+  { id: "celebration", label: "a celebration" },
+  { id: "school", label: "a school" },
+];
+
+const MATRIX_ROWS = [
+  { id: "default", label: "default" },
+  { id: "usa", label: "USA" },
+  { id: "germany", label: "Germany" },
+  { id: "russia", label: "Russia" },
+  { id: "india", label: "India" },
+  { id: "indonesia", label: "Indonesia" },
+  { id: "japan", label: "Japan" },
+  { id: "egypt", label: "Egypt" },
+  { id: "nigeria", label: "Nigeria" },
+];
+
+function CulturalPriorMatrix({ onZoom }: { onZoom: (src: string) => void }) {
+  const [sitId, setSitId] = useState("wedding");
+  const mono = { fontFamily: "'JetBrains Mono', monospace" };
+
+  return (
+    <div className="p-3 flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <span className="text-[9px] text-[#8a8374] shrink-0" style={mono}>event:</span>
+        <select
+          value={sitId}
+          onChange={(e) => setSitId(e.target.value)}
+          className="text-[10px] border border-[#d8d4cb] rounded-[4px] px-[6px] py-[3px] bg-white"
+          style={mono}
+        >
+          {MATRIX_SITUATIONS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+        </select>
+      </div>
+
+      <div className="flex flex-col gap-[3px] overflow-x-auto">
+        {MATRIX_ROWS.map((row) => {
+          const seeds = DIVERSE_GRID[sitId]?.[row.id] ?? [];
+          return (
+            <div key={row.id} className="flex items-center gap-[3px]">
+              <span
+                className="text-[8px] text-[#867f6f] w-[64px] text-right shrink-0 pr-1"
+                style={mono}
+              >
+                {row.label}
+              </span>
+              {seeds.map((seed, k) => {
+                const src = `/images/cultural/${sitId}_${row.id}_div${k}.webp`;
+                return (
+                  <img
+                    key={k}
+                    src={src}
+                    alt={`${sitId} ${row.label} sample ${k}`}
+                    title={`seed ${seed}`}
+                    loading="lazy"
+                    onClick={() => onZoom(src)}
+                    className="rounded-[2px] object-cover hover:opacity-80 transition-opacity shrink-0"
+                    style={{ width: 40, height: 40, cursor: "zoom-in" }}
+                  />
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+
+      <p className="text-[8px] text-[#a39d8e]" style={mono}>
+        each row's 9 images are the most mutually different of 50 generated seeds (DINOv2
+        farthest-point sampling, not cherry-picked) — click any image to enlarge
+      </p>
+    </div>
+  );
+}
+
 export function Layer2() {
+  const [zoomedSrc, setZoomedSrc] = useState<string | null>(null);
   return (
     <Section
       id="l2"
@@ -214,7 +302,19 @@ export function Layer2() {
         >
           <CFGCulturalStrip />
         </ToolCard>
+
+        <ToolCard
+          num="05c"
+          name="Cultural prior matrix — the default has a country too"
+          type="Interactive"
+          description="Pick an event. Each row (default + 8 countries) shows its 9 most mutually different generations — the spread of that variant's prior, not a cherry-picked pair."
+          explanation="Same logic as the empty-prompt prior, applied to the cultural axis: even before any country is named, 'a wedding' already samples from a narrow, Western-coded region of the prior. Farthest-point sampling on DINOv2 embeddings picks the seeds least like each other within a variant, so the row shows genuine variation, not near-duplicates — if a row still looks visually uniform despite being the most-diverse subset available, that itself is evidence of a tight prior."
+          fullWidth
+        >
+          <CulturalPriorMatrix onZoom={setZoomedSrc} />
+        </ToolCard>
       </ToolsGrid>
+      {zoomedSrc && <Lightbox src={zoomedSrc} onClose={() => setZoomedSrc(null)} />}
     </Section>
   );
 }
