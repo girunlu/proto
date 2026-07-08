@@ -148,7 +148,7 @@ function CFGCulturalStrip() {
         {/* Illustration: default-variant image strip across CFG (single seed),
             2x2 so the chart gets the freed-up horizontal space */}
         <div className="shrink-0 flex flex-col gap-2">
-          <div className="grid grid-cols-2 gap-[5px] w-[160px]">
+          <div className="grid grid-cols-2 gap-[6px] w-[260px]">
             {STRIP_CFGS.map((cfg) => {
               const i = CFG_VALUES.indexOf(cfg);
               return (
@@ -177,7 +177,7 @@ function CFGCulturalStrip() {
               );
             })}
           </div>
-          <p className="text-[8px] text-[#a39d8e] w-[160px]" style={mono}>
+          <p className="text-[8px] text-[#a39d8e] w-[260px]" style={mono}>
             default variant · seed 00 · illustration only (cfg=7 omitted here, still in the chart)
           </p>
         </div>

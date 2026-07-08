@@ -801,16 +801,23 @@ function PairwiseHeatmap() {
 
   return (
     <div className="p-3 flex flex-col gap-3">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <span className="text-[9px] text-[#8a8374] shrink-0" style={MONO}>event:</span>
-        <select
-          value={sitId}
-          onChange={(e) => setSitId(e.target.value)}
-          className="text-[10px] border border-[#d8d4cb] rounded-[4px] px-[6px] py-[3px] bg-white"
-          style={MONO}
-        >
-          {CULTURAL_SITUATIONS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-        </select>
+        {CULTURAL_SITUATIONS.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => setSitId(s.id)}
+            className="text-[10px] px-[9px] py-[3px] rounded-[4px] border transition-colors"
+            style={{
+              ...MONO,
+              background: sitId === s.id ? "#78350f" : "#f5f4f0",
+              color: sitId === s.id ? "#fef3c7" : "#555",
+              borderColor: sitId === s.id ? "#78350f" : "#d0cdc6",
+            }}
+          >
+            {s.label}
+          </button>
+        ))}
       </div>
 
       <div className="inline-flex flex-col gap-[2px] w-fit">
@@ -877,9 +884,17 @@ function PairwiseHeatmap() {
 
 type UmapPoint = { country: string; seed: number; x: number; y: number };
 type UmapJson = {
-  results: Record<string, { points: UmapPoint[]; centroids: Record<string, { x: number; y: number }> }>;
+  results: Record<string, {
+    points: UmapPoint[];
+    centroids: Record<string, { x: number; y: number }>;
+    clusters: number[][][];
+  }>;
 };
 const UMAP = (umapData as UmapJson).results;
+// Cluster-fill palette — deliberately not tied to country colors, so a shaded
+// region reads as "a group DBSCAN found" and never gets mistaken for one
+// specific country's color.
+const CLUSTER_FILL = ["#94a3b8", "#facc15", "#4ade80", "#f472b6", "#60a5fa", "#fb923c"];
 const ID_COLOR: Record<string, string> = Object.fromEntries([
   ["default", NEIGHBOR_COLOR.default],
   ...COUNTRIES.map((c) => [c.id, NEIGHBOR_COLOR[c.code]]),
@@ -889,12 +904,16 @@ function UMAPScatter({ onZoom }: { onZoom: (src: string) => void }) {
   const [sitId, setSitId] = useState("wedding");
   const [hovPt, setHovPt] = useState<UmapPoint | null>(null);
 
-  const data = UMAP[sitId] ?? { points: [], centroids: {} };
+  const data = UMAP[sitId] ?? { points: [], centroids: {}, clusters: [] };
   const allX = [...data.points.map((p) => p.x), ...Object.values(data.centroids).map((c) => c.x)];
   const allY = [...data.points.map((p) => p.y), ...Object.values(data.centroids).map((c) => c.y)];
   const xMin = Math.min(...allX), xMax = Math.max(...allX);
   const yMin = Math.min(...allY), yMax = Math.max(...allY);
-  const W = 320, H = 260, PAD = 20;
+  // Bigger canvas than the axis-based charts elsewhere — purely a rendering
+  // scale-up (same UMAP fit, same relative distances), so the points that
+  // were nearly touching at 320x260 get real pixel space between them
+  // without touching the projection itself.
+  const W = 520, H = 440, PAD = 24;
   const px = (x: number) => PAD + ((x - xMin) / (xMax - xMin || 1)) * (W - 2 * PAD);
   const py = (y: number) => H - PAD - ((y - yMin) / (yMax - yMin || 1)) * (H - 2 * PAD);
 
@@ -928,6 +947,20 @@ function UMAPScatter({ onZoom }: { onZoom: (src: string) => void }) {
 
       <div className="flex gap-4 items-start">
         <svg width={W} height={H} style={{ flexShrink: 0, background: "#fbfaf6", borderRadius: 6 }}>
+          {/* DBSCAN-found groups — density-based, no fixed cluster count, drawn
+              as a filled region behind the points so multi-country groupings
+              (not just single-country clusters) are visible at a glance */}
+          {data.clusters.map((hull, i) => (
+            <polygon
+              key={i}
+              points={hull.map(([x, y]) => `${px(x)},${py(y)}`).join(" ")}
+              fill={CLUSTER_FILL[i % CLUSTER_FILL.length]}
+              opacity="0.2"
+              stroke={CLUSTER_FILL[i % CLUSTER_FILL.length]}
+              strokeWidth="1"
+              strokeOpacity="0.4"
+            />
+          ))}
           {/* dashed line from hovered point to its own centroid + nearest other centroid */}
           {hovPt && hovInfo && (
             <>
@@ -945,7 +978,7 @@ function UMAPScatter({ onZoom }: { onZoom: (src: string) => void }) {
             return (
               <circle
                 key={i}
-                cx={px(p.x)} cy={py(p.y)} r={isHov ? 5 : 3.5}
+                cx={px(p.x)} cy={py(p.y)} r={isHov ? 6 : 3.5}
                 fill={ID_COLOR[p.country] ?? "#999"}
                 opacity={hovPt && !isHov ? 0.35 : 0.85}
                 stroke={isHov ? "#1a1a1a" : "none"} strokeWidth="1"
@@ -1014,11 +1047,13 @@ function UMAPScatter({ onZoom }: { onZoom: (src: string) => void }) {
 
       <p className="text-[8px] text-[#a39d8e] leading-[1.5]" style={MONO}>
         UMAP (cosine metric) on DINOv2 embeddings · small dots = 30 seeds per variant (a plain
-        sequential sample, not diversity-forced — an honest read of the real spread) · large faded
-        ringed dots = true centroid (mean of all 50 seeds, projected into this space) · hover a dot
-        for its actual image and projected distances ·
-        distances here are 2D-projection distances, an approximation of the real cosine distances
-        used elsewhere, useful for reading relative layout not exact magnitude
+        sequential sample, not diversity-forced — an honest read of the real spread) · faded
+        triangles = true centroid (mean of all 50 seeds, projected into this space) · shaded
+        regions = DBSCAN clusters found directly on these points (density-based, no fixed cluster
+        count set — it can merge several countries into one region or leave one standing alone) ·
+        hover a dot for its actual image and projected distances · distances here are 2D-projection
+        distances, an approximation of the real cosine distances used elsewhere, useful for reading
+        relative layout not exact magnitude
       </p>
     </div>
   );
