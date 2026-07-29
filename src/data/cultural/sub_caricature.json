@@ -1,0 +1,7782 @@
+{
+  "method": "D15_sub_caricature_structure_steps_1_2",
+  "note": "Step 1: KMeans clustering of each variant's 50 DINOv3 seeds, k in {2,3,4} chosen by silhouette score (minimum 0.05 to accept any split; below that, k=1 = no real substructure). Step 2: existing per-seed VQA answers (qwen3_vl) regrouped by cluster, closed battery questions only, majority answer per cluster -- scene-level terms, no ethnicity naming (battery rules 5-6; the battery has no such questions). Steps 3 (blind joint VLM description) and 4 (mirror on reality-anchor photos) are OUT OF SCOPE for this pass. Stability: 200-rep bootstrap-over-seeds, Adjusted Rand Index between the original clustering and each resample's re-clustering. citable=true only when mean ARI >= 0.5 -- per v5's explicit instruction, no per-cluster number should be treated as citable below that bar, even though the cluster assignment and VQA profile are still recorded for every cell.",
+  "params": {
+    "k_candidates": [
+      2,
+      3,
+      4
+    ],
+    "min_silhouette": 0.05,
+    "n_bootstrap": 200,
+    "stability_ari_min": 0.5
+  },
+  "summary": {
+    "n_variants_total": 54,
+    "n_with_k_gte_2": 52,
+    "n_citable": 36
+  },
+  "results": {
+    "breakfast": {
+      "default": {
+        "best_k": 2,
+        "silhouette": 0.0686,
+        "stability_ari": 0.3939,
+        "citable": false,
+        "cluster_sizes": {
+          "0": 31,
+          "1": 19
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.9677
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 0.9677
+            },
+            "U03": {
+              "majority": "no",
+              "share": 0.9032
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.9032
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.9032
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 0.7419
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.9032
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.7097
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9677
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.9032
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9677
+            },
+            "U12": {
+              "majority": "unclear",
+              "share": 0.5161
+            },
+            "B2": {
+              "majority": "table",
+              "share": 0.9677
+            },
+            "B3": {
+              "majority": "coffee",
+              "share": 0.4194
+            },
+            "B4": {
+              "majority": "1",
+              "share": 0.4194
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "indoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 1.0
+            },
+            "U03": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "0",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 1.0
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 1.0
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.9474
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.7895
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.9474
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.6316
+            },
+            "B2": {
+              "majority": "table",
+              "share": 1.0
+            },
+            "B3": {
+              "majority": "coffee",
+              "share": 0.3684
+            },
+            "B4": {
+              "majority": "1",
+              "share": 0.5263
+            }
+          }
+        }
+      },
+      "US": {
+        "best_k": 2,
+        "silhouette": 0.0602,
+        "stability_ari": 0.3777,
+        "citable": false,
+        "cluster_sizes": {
+          "1": 34,
+          "0": 16
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.9375
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 1.0
+            },
+            "U03": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "0",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 1.0
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 1.0
+            },
+            "U07": {
+              "majority": "none",
+              "share": 1.0
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.8125
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "unclear",
+              "share": 0.375
+            },
+            "B2": {
+              "majority": "table",
+              "share": 1.0
+            },
+            "B3": {
+              "majority": "coffee",
+              "share": 0.5
+            },
+            "B4": {
+              "majority": "3+",
+              "share": 0.5625
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.8235
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 0.8824
+            },
+            "U03": {
+              "majority": "no",
+              "share": 0.6765
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.6765
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.6765
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 0.6471
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.9706
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.8235
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "North America",
+              "share": 0.3235
+            },
+            "B2": {
+              "majority": "table",
+              "share": 1.0
+            },
+            "B3": {
+              "majority": "coffee",
+              "share": 0.6765
+            },
+            "B4": {
+              "majority": "3+",
+              "share": 0.7353
+            }
+          }
+        }
+      },
+      "DE": {
+        "best_k": 4,
+        "silhouette": 0.063,
+        "stability_ari": 0.3861,
+        "citable": false,
+        "cluster_sizes": {
+          "1": 35,
+          "0": 5,
+          "3": 9,
+          "2": 1
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.8
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 0.6
+            },
+            "U03": {
+              "majority": "no",
+              "share": 0.8
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.8
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.8
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 0.8
+            },
+            "U07": {
+              "majority": "none",
+              "share": 1.0
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.8
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.4
+            },
+            "B2": {
+              "majority": "table",
+              "share": 1.0
+            },
+            "B3": {
+              "majority": "juice",
+              "share": 0.4
+            },
+            "B4": {
+              "majority": "3+",
+              "share": 0.6
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.6
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 0.8286
+            },
+            "U03": {
+              "majority": "no",
+              "share": 0.6857
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.6857
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.6857
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 0.6857
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.8
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.8286
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.8571
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.7714
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8286
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.4857
+            },
+            "B2": {
+              "majority": "table",
+              "share": 0.8571
+            },
+            "B3": {
+              "majority": "coffee",
+              "share": 0.4
+            },
+            "B4": {
+              "majority": "3+",
+              "share": 0.6571
+            }
+          },
+          "2": {
+            "U01": {
+              "majority": "indoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 1.0
+            },
+            "U03": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "0",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 1.0
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 1.0
+            },
+            "U07": {
+              "majority": "none",
+              "share": 1.0
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 1.0
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 1.0
+            },
+            "B2": {
+              "majority": "table",
+              "share": 1.0
+            },
+            "B3": {
+              "majority": "tea",
+              "share": 1.0
+            },
+            "B4": {
+              "majority": "2",
+              "share": 1.0
+            }
+          },
+          "3": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.7778
+            },
+            "U03": {
+              "majority": "no",
+              "share": 0.5556
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.5556
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.5556
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 0.5556
+            },
+            "U07": {
+              "majority": "house",
+              "share": 0.5556
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.5556
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.6667
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8889
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 1.0
+            },
+            "B2": {
+              "majority": "table",
+              "share": 1.0
+            },
+            "B3": {
+              "majority": "juice",
+              "share": 0.4444
+            },
+            "B4": {
+              "majority": "1",
+              "share": 0.5556
+            }
+          }
+        }
+      },
+      "RU": {
+        "best_k": 2,
+        "silhouette": 0.0658,
+        "stability_ari": 0.2035,
+        "citable": false,
+        "cluster_sizes": {
+          "1": 18,
+          "0": 32
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.6875
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 0.8438
+            },
+            "U03": {
+              "majority": "no",
+              "share": 0.5
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.5
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.4688
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 0.5
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.6875
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.5
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.8125
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.875
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8125
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.375
+            },
+            "B2": {
+              "majority": "table",
+              "share": 0.8125
+            },
+            "B3": {
+              "majority": "coffee",
+              "share": 0.3125
+            },
+            "B4": {
+              "majority": "3+",
+              "share": 0.5312
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.6667
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 1.0
+            },
+            "U03": {
+              "majority": "no",
+              "share": 0.9444
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.9444
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.9444
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 0.9444
+            },
+            "U07": {
+              "majority": "none",
+              "share": 1.0
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.8333
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.8333
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.5556
+            },
+            "B2": {
+              "majority": "table",
+              "share": 1.0
+            },
+            "B3": {
+              "majority": "tea",
+              "share": 0.3889
+            },
+            "B4": {
+              "majority": "3+",
+              "share": 0.8333
+            }
+          }
+        }
+      },
+      "IN": {
+        "best_k": 2,
+        "silhouette": 0.1606,
+        "stability_ari": 0.8177,
+        "citable": true,
+        "cluster_sizes": {
+          "1": 40,
+          "0": 10
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.6
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.8
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9
+            },
+            "U04": {
+              "majority": "1",
+              "share": 0.5
+            },
+            "U05b": {
+              "majority": "traditional",
+              "share": 0.5
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.6
+            },
+            "U07": {
+              "majority": "house",
+              "share": 0.4
+            },
+            "U08": {
+              "majority": "unclear",
+              "share": 0.8
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.6
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.6
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.9
+            },
+            "B2": {
+              "majority": "floor",
+              "share": 0.5
+            },
+            "B3": {
+              "majority": "none",
+              "share": 0.8
+            },
+            "B4": {
+              "majority": "1",
+              "share": 0.6
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.775
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 0.775
+            },
+            "U03": {
+              "majority": "no",
+              "share": 0.525
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.525
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.55
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 0.7
+            },
+            "U07": {
+              "majority": "none",
+              "share": 1.0
+            },
+            "U08": {
+              "majority": "unclear",
+              "share": 0.9
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.8
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 1.0
+            },
+            "B2": {
+              "majority": "table",
+              "share": 0.85
+            },
+            "B3": {
+              "majority": "none",
+              "share": 0.75
+            },
+            "B4": {
+              "majority": "1",
+              "share": 0.575
+            }
+          }
+        }
+      },
+      "ID": {
+        "best_k": 2,
+        "silhouette": 0.1005,
+        "stability_ari": 0.4376,
+        "citable": false,
+        "cluster_sizes": {
+          "1": 38,
+          "0": 12
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.75
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 1.0
+            },
+            "U03": {
+              "majority": "no",
+              "share": 0.8333
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.8333
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.8333
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 0.8333
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.9167
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.75
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9167
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 1.0
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9167
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.75
+            },
+            "B2": {
+              "majority": "table",
+              "share": 0.9167
+            },
+            "B3": {
+              "majority": "tea",
+              "share": 0.3333
+            },
+            "B4": {
+              "majority": "3+",
+              "share": 0.75
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.5526
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 0.9474
+            },
+            "U03": {
+              "majority": "no",
+              "share": 0.7105
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.7105
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.7368
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 0.6842
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.9474
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.5789
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9737
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.7632
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9737
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.9211
+            },
+            "B2": {
+              "majority": "table",
+              "share": 0.9474
+            },
+            "B3": {
+              "majority": "none",
+              "share": 0.5
+            },
+            "B4": {
+              "majority": "3+",
+              "share": 0.6842
+            }
+          }
+        }
+      },
+      "JP": {
+        "best_k": 1,
+        "silhouette": 0.0404,
+        "citable": false,
+        "reason": "no k>=2 cleared the minimum silhouette -- no real substructure detected"
+      },
+      "EG": {
+        "best_k": 2,
+        "silhouette": 0.155,
+        "stability_ari": 0.9407,
+        "citable": true,
+        "cluster_sizes": {
+          "1": 15,
+          "0": 35
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.7143
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.6286
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.6571
+            },
+            "U04": {
+              "majority": "2",
+              "share": 0.3429
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.4
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.5714
+            },
+            "U07": {
+              "majority": "unclear",
+              "share": 0.2286
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.6286
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.7714
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.6857
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.7714
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 0.4571
+            },
+            "B2": {
+              "majority": "table",
+              "share": 0.6857
+            },
+            "B3": {
+              "majority": "juice",
+              "share": 0.4571
+            },
+            "B4": {
+              "majority": "3+",
+              "share": 0.3714
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.5333
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 0.9333
+            },
+            "U03": {
+              "majority": "no",
+              "share": 0.6
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.6
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.6
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 0.6667
+            },
+            "U07": {
+              "majority": "none",
+              "share": 1.0
+            },
+            "U08": {
+              "majority": "unclear",
+              "share": 0.6667
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.6667
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9333
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.6667
+            },
+            "B2": {
+              "majority": "table",
+              "share": 0.8667
+            },
+            "B3": {
+              "majority": "tea",
+              "share": 0.3333
+            },
+            "B4": {
+              "majority": "3+",
+              "share": 0.8667
+            }
+          }
+        }
+      },
+      "NG": {
+        "best_k": 2,
+        "silhouette": 0.1158,
+        "stability_ari": 0.5988,
+        "citable": true,
+        "cluster_sizes": {
+          "1": 15,
+          "0": 35
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.7429
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.8571
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9429
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.3714
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.6857
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.4857
+            },
+            "U07": {
+              "majority": "hut",
+              "share": 0.5143
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.5714
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9429
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.6
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 0.9429
+            },
+            "B2": {
+              "majority": "table",
+              "share": 0.6857
+            },
+            "B3": {
+              "majority": "none",
+              "share": 0.6571
+            },
+            "B4": {
+              "majority": "3+",
+              "share": 0.4571
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.4667
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 0.8
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.4667
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.4
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.4667
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.4667
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.8667
+            },
+            "U08": {
+              "majority": "unclear",
+              "share": 0.6
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.8667
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.7333
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 0.6
+            },
+            "B2": {
+              "majority": "table",
+              "share": 0.8
+            },
+            "B3": {
+              "majority": "none",
+              "share": 0.6
+            },
+            "B4": {
+              "majority": "3+",
+              "share": 0.6
+            }
+          }
+        }
+      }
+    },
+    "celebration": {
+      "default": {
+        "best_k": 2,
+        "silhouette": 0.1691,
+        "stability_ari": 0.3752,
+        "citable": false,
+        "cluster_sizes": {
+          "0": 41,
+          "1": 9
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.6829
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.439
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.7561
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.3171
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.3902
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.4146
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.561
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.5122
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.8537
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.4146
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.5854
+            },
+            "U12": {
+              "majority": "unclear",
+              "share": 0.3659
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 0.7073
+            },
+            "C3": {
+              "majority": "no",
+              "share": 0.9024
+            },
+            "C4": {
+              "majority": "no",
+              "share": 0.878
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "unclear",
+              "share": 0.5556
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 0.5556
+            },
+            "U03": {
+              "majority": "no",
+              "share": 0.6667
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.6667
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.6667
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 0.6667
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.8889
+            },
+            "U08": {
+              "majority": "unclear",
+              "share": 0.5556
+            },
+            "U09": {
+              "majority": "unclear",
+              "share": 0.5556
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.8889
+            },
+            "U11": {
+              "majority": "unclear",
+              "share": 0.6667
+            },
+            "U12": {
+              "majority": "unclear",
+              "share": 0.5556
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 0.7778
+            },
+            "C3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "C4": {
+              "majority": "no",
+              "share": 1.0
+            }
+          }
+        }
+      },
+      "US": {
+        "best_k": 2,
+        "silhouette": 0.091,
+        "stability_ari": 0.7768,
+        "citable": true,
+        "cluster_sizes": {
+          "1": 20,
+          "0": 30
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.8333
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.8667
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.8333
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.6667
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.4
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "North America",
+              "share": 0.9667
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "C3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "C4": {
+              "majority": "no",
+              "share": 1.0
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.95
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.95
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.95
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.95
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.55
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.8
+            },
+            "U07": {
+              "majority": "other",
+              "share": 0.45
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.75
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.85
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.6
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8
+            },
+            "U12": {
+              "majority": "North America",
+              "share": 0.95
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 0.95
+            },
+            "C3": {
+              "majority": "no",
+              "share": 0.95
+            },
+            "C4": {
+              "majority": "no",
+              "share": 0.95
+            }
+          }
+        }
+      },
+      "DE": {
+        "best_k": 4,
+        "silhouette": 0.105,
+        "stability_ari": 0.5489,
+        "citable": true,
+        "cluster_sizes": {
+          "3": 3,
+          "2": 5,
+          "1": 20,
+          "0": 22
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9545
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.9545
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9545
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.9545
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.6818
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.7727
+            },
+            "U07": {
+              "majority": "house",
+              "share": 0.8182
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.6818
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9545
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.7273
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9545
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.9545
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 0.8182
+            },
+            "C3": {
+              "majority": "no",
+              "share": 0.9545
+            },
+            "C4": {
+              "majority": "no",
+              "share": 0.9545
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.65
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.9
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.95
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.95
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.75
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.75
+            },
+            "U07": {
+              "majority": "hall",
+              "share": 0.4
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.8
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.5
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.95
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.95
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 0.9
+            },
+            "C3": {
+              "majority": "no",
+              "share": 0.75
+            },
+            "C4": {
+              "majority": "no",
+              "share": 0.9
+            }
+          },
+          "2": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 1.0
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 1.0
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.6
+            },
+            "U07": {
+              "majority": "church",
+              "share": 1.0
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.8
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.6
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 1.0
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "C3": {
+              "majority": "no",
+              "share": 0.8
+            },
+            "C4": {
+              "majority": "no",
+              "share": 1.0
+            }
+          },
+          "3": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 1.0
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.6667
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.6667
+            },
+            "U07": {
+              "majority": "hall",
+              "share": 0.6667
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.6667
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 1.0
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 0.6667
+            },
+            "C3": {
+              "majority": "no",
+              "share": 0.6667
+            },
+            "C4": {
+              "majority": "no",
+              "share": 1.0
+            }
+          }
+        }
+      },
+      "RU": {
+        "best_k": 2,
+        "silhouette": 0.3322,
+        "stability_ari": 0.9896,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 22,
+          "1": 28
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.7273
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.9545
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.9545
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.6364
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U07": {
+              "majority": "church",
+              "share": 0.4091
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.6818
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9091
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.4091
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.5909
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 1.0
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 0.9545
+            },
+            "C3": {
+              "majority": "no",
+              "share": 0.6818
+            },
+            "C4": {
+              "majority": "no",
+              "share": 1.0
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9643
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.9643
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.8571
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.7857
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.4643
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.8571
+            },
+            "U07": {
+              "majority": "church",
+              "share": 0.9643
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.8929
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.8571
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.5
+            },
+            "U11": {
+              "majority": "wealthy",
+              "share": 0.6429
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.9643
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 0.9643
+            },
+            "C3": {
+              "majority": "no",
+              "share": 0.6429
+            },
+            "C4": {
+              "majority": "no",
+              "share": 0.9643
+            }
+          }
+        }
+      },
+      "IN": {
+        "best_k": 2,
+        "silhouette": 0.0775,
+        "stability_ari": 0.3352,
+        "citable": false,
+        "cluster_sizes": {
+          "0": 32,
+          "1": 18
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.5625
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "traditional",
+              "share": 0.9375
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.8125
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.4688
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.9375
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.7812
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 1.0
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "C3": {
+              "majority": "no",
+              "share": 0.5625
+            },
+            "C4": {
+              "majority": "no",
+              "share": 1.0
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.5556
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "traditional",
+              "share": 0.9444
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.7222
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.6111
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.6667
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.5556
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 1.0
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "C3": {
+              "majority": "no",
+              "share": 0.9444
+            },
+            "C4": {
+              "majority": "no",
+              "share": 0.8889
+            }
+          }
+        }
+      },
+      "ID": {
+        "best_k": 1,
+        "silhouette": 0.0442,
+        "citable": false,
+        "reason": "no k>=2 cleared the minimum silhouette -- no real substructure detected"
+      },
+      "JP": {
+        "best_k": 2,
+        "silhouette": 0.1749,
+        "stability_ari": 0.6077,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 40,
+          "1": 10
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.75
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.875
+            },
+            "U05b": {
+              "majority": "traditional",
+              "share": 0.75
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.625
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.7
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.575
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.6
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.875
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.9
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 0.9
+            },
+            "C3": {
+              "majority": "no",
+              "share": 0.9
+            },
+            "C4": {
+              "majority": "no",
+              "share": 0.9
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.5
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.9
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.5
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.5
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.9
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.9
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.6
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.9
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 0.9
+            },
+            "C3": {
+              "majority": "no",
+              "share": 0.9
+            },
+            "C4": {
+              "majority": "no",
+              "share": 0.9
+            }
+          }
+        }
+      },
+      "EG": {
+        "best_k": 3,
+        "silhouette": 0.1413,
+        "stability_ari": 0.6411,
+        "citable": true,
+        "cluster_sizes": {
+          "1": 21,
+          "2": 7,
+          "0": 22
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9091
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.8182
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9091
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.9091
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.5455
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.9091
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.4091
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.5909
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9091
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.9091
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9091
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 0.9091
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 0.7727
+            },
+            "C3": {
+              "majority": "no",
+              "share": 0.9091
+            },
+            "C4": {
+              "majority": "no",
+              "share": 0.9091
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.8571
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.5238
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.8571
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.8571
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.7619
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.8571
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.7619
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.8571
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.8571
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.8571
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8095
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 0.8095
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 0.8095
+            },
+            "C3": {
+              "majority": "no",
+              "share": 0.8571
+            },
+            "C4": {
+              "majority": "no",
+              "share": 0.8095
+            }
+          },
+          "2": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.5714
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.5714
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.8571
+            },
+            "U05b": {
+              "majority": "traditional",
+              "share": 1.0
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.5714
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.8571
+            },
+            "U11": {
+              "majority": "wealthy",
+              "share": 0.7143
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 1.0
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "C3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "C4": {
+              "majority": "no",
+              "share": 0.7143
+            }
+          }
+        }
+      },
+      "NG": {
+        "best_k": 2,
+        "silhouette": 0.1041,
+        "stability_ari": 0.5633,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 33,
+          "1": 17
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9697
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.697
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9697
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.9697
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.8788
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.9394
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.5758
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.9697
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9697
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.7273
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9697
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 0.9697
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 0.9394
+            },
+            "C3": {
+              "majority": "no",
+              "share": 0.9394
+            },
+            "C4": {
+              "majority": "no",
+              "share": 0.9697
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.5294
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.5294
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.5294
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.7647
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 1.0
+            },
+            "C2": {
+              "majority": "yes",
+              "share": 0.8824
+            },
+            "C3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "C4": {
+              "majority": "no",
+              "share": 0.9412
+            }
+          }
+        }
+      }
+    },
+    "family": {
+      "default": {
+        "best_k": 2,
+        "silhouette": 0.1235,
+        "stability_ari": 0.8903,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 29,
+          "1": 21
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.8621
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.7931
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.7586
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.4828
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.4138
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.6207
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.8621
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.5862
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9655
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.4483
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.931
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.4828
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.4828
+            },
+            "FA2": {
+              "majority": "no",
+              "share": 0.5172
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 0.8621
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.4762
+            },
+            "U02": {
+              "majority": "unclear",
+              "share": 0.4762
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9524
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.7619
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.8571
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.7619
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.8095
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.9048
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.8095
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.9524
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9524
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.4762
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.6667
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 0.8095
+            },
+            "FA3": {
+              "majority": "studio-portrait",
+              "share": 0.619
+            }
+          }
+        }
+      },
+      "US": {
+        "best_k": 2,
+        "silhouette": 0.067,
+        "stability_ari": 0.4129,
+        "citable": false,
+        "cluster_sizes": {
+          "0": 15,
+          "1": 35
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9333
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.5333
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9333
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.4667
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.8667
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.6667
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.4667
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.8
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9333
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.8
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9333
+            },
+            "U12": {
+              "majority": "North America",
+              "share": 0.9333
+            },
+            "FA1": {
+              "majority": "5-7",
+              "share": 0.6
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 0.9333
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 0.9333
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9143
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.4571
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9714
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.4857
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.8286
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.6286
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.6286
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.8286
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9714
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5714
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9714
+            },
+            "U12": {
+              "majority": "North America",
+              "share": 0.5429
+            },
+            "FA1": {
+              "majority": "5-7",
+              "share": 0.6
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 0.9714
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 0.8857
+            }
+          }
+        }
+      },
+      "DE": {
+        "best_k": 2,
+        "silhouette": 0.1438,
+        "stability_ari": 0.8834,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 23,
+          "1": 27
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.913
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.8261
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.913
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.6957
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.4348
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.6087
+            },
+            "U07": {
+              "majority": "house",
+              "share": 0.8261
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.7826
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.913
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.5217
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.913
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.913
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.6087
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 0.913
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 0.913
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.7037
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.6667
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.6667
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.5556
+            },
+            "U07": {
+              "majority": "house",
+              "share": 0.8519
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.7037
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 1.0
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.5185
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 1.0
+            }
+          }
+        }
+      },
+      "RU": {
+        "best_k": 2,
+        "silhouette": 0.1111,
+        "stability_ari": 0.6131,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 33,
+          "1": 17
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9394
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.9091
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9091
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.6364
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.6061
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.8182
+            },
+            "U07": {
+              "majority": "house",
+              "share": 0.5152
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.7879
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9394
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.5152
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8485
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.9394
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.4848
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 0.9091
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 0.9394
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.7647
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.5294
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.6471
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.8824
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.7059
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.5294
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9412
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.8824
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.9412
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.5882
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 0.9412
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 0.6471
+            }
+          }
+        }
+      },
+      "IN": {
+        "best_k": 2,
+        "silhouette": 0.064,
+        "stability_ari": 0.2351,
+        "citable": false,
+        "cluster_sizes": {
+          "0": 19,
+          "1": 31
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.8947
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.8947
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9474
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.8947
+            },
+            "U05b": {
+              "majority": "traditional",
+              "share": 0.5263
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.6842
+            },
+            "U07": {
+              "majority": "house",
+              "share": 0.6316
+            },
+            "U08": {
+              "majority": "unclear",
+              "share": 0.6316
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9474
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.7895
+            },
+            "U11": {
+              "majority": "poor",
+              "share": 0.8421
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.9474
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.8421
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 0.9474
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 0.8947
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9355
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.9032
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9355
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.6129
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.4839
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.5161
+            },
+            "U07": {
+              "majority": "house",
+              "share": 0.4516
+            },
+            "U08": {
+              "majority": "unclear",
+              "share": 0.8065
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9355
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5806
+            },
+            "U11": {
+              "majority": "poor",
+              "share": 0.871
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.9355
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.5484
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 0.9355
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 0.9355
+            }
+          }
+        }
+      },
+      "ID": {
+        "best_k": 2,
+        "silhouette": 0.0666,
+        "stability_ari": 0.3559,
+        "citable": false,
+        "cluster_sizes": {
+          "1": 28,
+          "0": 22
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9545
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.9545
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9545
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.8182
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.9545
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.6818
+            },
+            "U07": {
+              "majority": "hut",
+              "share": 0.7727
+            },
+            "U08": {
+              "majority": "unclear",
+              "share": 0.6364
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9545
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5
+            },
+            "U11": {
+              "majority": "poor",
+              "share": 0.7727
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.9545
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.6364
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 0.9545
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 0.9545
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9286
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 1.0
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.8929
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 1.0
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.5357
+            },
+            "U07": {
+              "majority": "hut",
+              "share": 1.0
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.6071
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5357
+            },
+            "U11": {
+              "majority": "poor",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 1.0
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.8929
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 0.9286
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 0.9286
+            }
+          }
+        }
+      },
+      "JP": {
+        "best_k": 2,
+        "silhouette": 0.0965,
+        "stability_ari": 0.6052,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 25,
+          "1": 25
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.56
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.64
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.8
+            },
+            "U06": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.92
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.8
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.6
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 1.0
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.6
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 1.0
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.92
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.84
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.92
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.72
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.72
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.88
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.52
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.48
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.92
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.4
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.92
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.92
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.64
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 0.88
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 0.92
+            }
+          }
+        }
+      },
+      "EG": {
+        "best_k": 2,
+        "silhouette": 0.1441,
+        "stability_ari": 0.8316,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 21,
+          "1": 29
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9524
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.8095
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9524
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.7619
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.8571
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.8571
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.9524
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.9524
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9524
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.9524
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9048
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 0.9524
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.7619
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 0.8571
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 0.9524
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9655
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.9655
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.8621
+            },
+            "U05b": {
+              "majority": "traditional",
+              "share": 0.5517
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.931
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.3103
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.931
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.7931
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 0.8276
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.7931
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 0.8966
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 0.9655
+            }
+          }
+        }
+      },
+      "NG": {
+        "best_k": 2,
+        "silhouette": 0.0768,
+        "stability_ari": 0.2723,
+        "citable": false,
+        "cluster_sizes": {
+          "1": 38,
+          "0": 12
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9167
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.9167
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9167
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.75
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.9167
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.6667
+            },
+            "U07": {
+              "majority": "hut",
+              "share": 0.9167
+            },
+            "U08": {
+              "majority": "unclear",
+              "share": 0.9167
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9167
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.8333
+            },
+            "U11": {
+              "majority": "poor",
+              "share": 0.5833
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 0.9167
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.6667
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 0.8333
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 0.9167
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9737
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.9737
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "3-5",
+              "share": 0.6316
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.8421
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.7368
+            },
+            "U07": {
+              "majority": "hut",
+              "share": 0.8421
+            },
+            "U08": {
+              "majority": "unclear",
+              "share": 0.8947
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5789
+            },
+            "U11": {
+              "majority": "poor",
+              "share": 0.6316
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 1.0
+            },
+            "FA1": {
+              "majority": "3-4",
+              "share": 0.6053
+            },
+            "FA2": {
+              "majority": "yes",
+              "share": 0.9737
+            },
+            "FA3": {
+              "majority": "outdoors",
+              "share": 0.9737
+            }
+          }
+        }
+      }
+    },
+    "funeral": {
+      "default": {
+        "best_k": 2,
+        "silhouette": 0.1829,
+        "stability_ari": 0.8364,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 36,
+          "1": 14
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.8333
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.5833
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9444
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.8333
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.5556
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.5556
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.3611
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.75
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9444
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.6389
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8889
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.8889
+            },
+            "F1": {
+              "majority": "black",
+              "share": 0.9444
+            },
+            "F2": {
+              "majority": "yes",
+              "share": 0.9444
+            },
+            "F3": {
+              "majority": "procession",
+              "share": 0.5833
+            },
+            "F4": {
+              "majority": "no",
+              "share": 0.5833
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9286
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.5714
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.9286
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.6429
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.6429
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.5714
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.7143
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.7857
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9286
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 1.0
+            },
+            "F1": {
+              "majority": "black",
+              "share": 0.9286
+            },
+            "F2": {
+              "majority": "no",
+              "share": 0.5714
+            },
+            "F3": {
+              "majority": "graveside",
+              "share": 0.5714
+            },
+            "F4": {
+              "majority": "yes",
+              "share": 0.5
+            }
+          }
+        }
+      },
+      "US": {
+        "best_k": 2,
+        "silhouette": 0.1688,
+        "stability_ari": 0.7844,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 17,
+          "1": 33
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9412
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.7059
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.8824
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.5882
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.5294
+            },
+            "U07": {
+              "majority": "church",
+              "share": 0.2941
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.6471
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5882
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8235
+            },
+            "U12": {
+              "majority": "North America",
+              "share": 0.8235
+            },
+            "F1": {
+              "majority": "black",
+              "share": 0.9412
+            },
+            "F2": {
+              "majority": "no",
+              "share": 0.5882
+            },
+            "F3": {
+              "majority": "graveside",
+              "share": 0.5294
+            },
+            "F4": {
+              "majority": "no",
+              "share": 0.6471
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9091
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.5455
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.9394
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.3636
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.6061
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.3939
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.697
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5152
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8788
+            },
+            "U12": {
+              "majority": "North America",
+              "share": 0.7576
+            },
+            "F1": {
+              "majority": "black",
+              "share": 0.9697
+            },
+            "F2": {
+              "majority": "yes",
+              "share": 0.9697
+            },
+            "F3": {
+              "majority": "procession",
+              "share": 0.697
+            },
+            "F4": {
+              "majority": "yes",
+              "share": 0.6364
+            }
+          }
+        }
+      },
+      "DE": {
+        "best_k": 2,
+        "silhouette": 0.1587,
+        "stability_ari": 0.8508,
+        "citable": true,
+        "cluster_sizes": {
+          "1": 31,
+          "0": 19
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9474
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.8947
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9474
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.9474
+            },
+            "U05b": {
+              "majority": "traditional",
+              "share": 0.4211
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.7895
+            },
+            "U07": {
+              "majority": "church",
+              "share": 0.4737
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.9474
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9474
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.8947
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9474
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.8947
+            },
+            "F1": {
+              "majority": "black",
+              "share": 0.9474
+            },
+            "F2": {
+              "majority": "no",
+              "share": 0.6316
+            },
+            "F3": {
+              "majority": "procession",
+              "share": 0.5789
+            },
+            "F4": {
+              "majority": "no",
+              "share": 0.8421
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9677
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.6452
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "traditional",
+              "share": 0.5484
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.8065
+            },
+            "U07": {
+              "majority": "church",
+              "share": 0.3548
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.9032
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.9032
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 1.0
+            },
+            "F1": {
+              "majority": "black",
+              "share": 1.0
+            },
+            "F2": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "F3": {
+              "majority": "procession",
+              "share": 0.871
+            },
+            "F4": {
+              "majority": "yes",
+              "share": 0.5484
+            }
+          }
+        }
+      },
+      "RU": {
+        "best_k": 2,
+        "silhouette": 0.1863,
+        "stability_ari": 0.6416,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 39,
+          "1": 11
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9744
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.7692
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9744
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.9487
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.7692
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.7692
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.7436
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.9487
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9744
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.9231
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9744
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.9744
+            },
+            "F1": {
+              "majority": "black",
+              "share": 0.9487
+            },
+            "F2": {
+              "majority": "yes",
+              "share": 0.9487
+            },
+            "F3": {
+              "majority": "procession",
+              "share": 0.5641
+            },
+            "F4": {
+              "majority": "yes",
+              "share": 0.7179
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.5455
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.5455
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.9091
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.3636
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.7273
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 1.0
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 1.0
+            },
+            "F1": {
+              "majority": "black",
+              "share": 1.0
+            },
+            "F2": {
+              "majority": "yes",
+              "share": 0.6364
+            },
+            "F3": {
+              "majority": "graveside",
+              "share": 0.5455
+            },
+            "F4": {
+              "majority": "no",
+              "share": 0.7273
+            }
+          }
+        }
+      },
+      "IN": {
+        "best_k": 2,
+        "silhouette": 0.1544,
+        "stability_ari": 0.8006,
+        "citable": true,
+        "cluster_sizes": {
+          "1": 34,
+          "0": 16
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.9375
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.5625
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.75
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.4375
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.4375
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.375
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.625
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 1.0
+            },
+            "F1": {
+              "majority": "colorful",
+              "share": 0.4375
+            },
+            "F2": {
+              "majority": "no",
+              "share": 0.8125
+            },
+            "F3": {
+              "majority": "procession",
+              "share": 0.625
+            },
+            "F4": {
+              "majority": "no",
+              "share": 0.5625
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9706
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.7353
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9706
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.9706
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.6765
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.7647
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.5588
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.7059
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9706
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5294
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9412
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.9706
+            },
+            "F1": {
+              "majority": "colorful",
+              "share": 0.5882
+            },
+            "F2": {
+              "majority": "yes",
+              "share": 0.9118
+            },
+            "F3": {
+              "majority": "procession",
+              "share": 0.8529
+            },
+            "F4": {
+              "majority": "yes",
+              "share": 0.6471
+            }
+          }
+        }
+      },
+      "ID": {
+        "best_k": 2,
+        "silhouette": 0.1493,
+        "stability_ari": 0.7567,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 35,
+          "1": 15
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9714
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.9429
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9714
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.9714
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.8571
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.8
+            },
+            "U07": {
+              "majority": "hut",
+              "share": 0.4286
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.8571
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9714
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5714
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9429
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.9714
+            },
+            "F1": {
+              "majority": "white",
+              "share": 0.6
+            },
+            "F2": {
+              "majority": "yes",
+              "share": 0.9714
+            },
+            "F3": {
+              "majority": "procession",
+              "share": 0.9429
+            },
+            "F4": {
+              "majority": "yes",
+              "share": 0.8857
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9333
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.8
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9333
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.9333
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.8
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.9333
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.5333
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.4667
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9333
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.6667
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.8
+            },
+            "F1": {
+              "majority": "white",
+              "share": 0.8
+            },
+            "F2": {
+              "majority": "no",
+              "share": 0.4667
+            },
+            "F3": {
+              "majority": "procession",
+              "share": 0.5333
+            },
+            "F4": {
+              "majority": "yes",
+              "share": 0.8
+            }
+          }
+        }
+      },
+      "JP": {
+        "best_k": 2,
+        "silhouette": 0.1662,
+        "stability_ari": 0.8213,
+        "citable": true,
+        "cluster_sizes": {
+          "1": 29,
+          "0": 21
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9524
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.5238
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.9048
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.619
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.619
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.4762
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.9048
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.5714
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9524
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 1.0
+            },
+            "F1": {
+              "majority": "black",
+              "share": 0.8095
+            },
+            "F2": {
+              "majority": "no",
+              "share": 0.6667
+            },
+            "F3": {
+              "majority": "graveside",
+              "share": 0.5714
+            },
+            "F4": {
+              "majority": "yes",
+              "share": 0.6667
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.931
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.4828
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.931
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.8621
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.4483
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.5517
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.3793
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.8966
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.931
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.6552
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8621
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.931
+            },
+            "F1": {
+              "majority": "black",
+              "share": 0.8966
+            },
+            "F2": {
+              "majority": "yes",
+              "share": 0.931
+            },
+            "F3": {
+              "majority": "procession",
+              "share": 0.7931
+            },
+            "F4": {
+              "majority": "yes",
+              "share": 0.5517
+            }
+          }
+        }
+      },
+      "EG": {
+        "best_k": 2,
+        "silhouette": 0.1687,
+        "stability_ari": 0.7624,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 30,
+          "1": 20
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.5667
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.7667
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.9667
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.5333
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.7333
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.8333
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8333
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.5333
+            },
+            "F1": {
+              "majority": "white",
+              "share": 0.4333
+            },
+            "F2": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "F3": {
+              "majority": "procession",
+              "share": 0.8667
+            },
+            "F4": {
+              "majority": "no",
+              "share": 0.7333
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.55
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.95
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.65
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.95
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.7
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.95
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.95
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.75
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 0.75
+            },
+            "F1": {
+              "majority": "white",
+              "share": 0.7
+            },
+            "F2": {
+              "majority": "no",
+              "share": 0.75
+            },
+            "F3": {
+              "majority": "procession",
+              "share": 0.4
+            },
+            "F4": {
+              "majority": "no",
+              "share": 0.8
+            }
+          }
+        }
+      },
+      "NG": {
+        "best_k": 2,
+        "silhouette": 0.1691,
+        "stability_ari": 0.8064,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 29,
+          "1": 21
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9655
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.8966
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9655
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.9655
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.8621
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.9655
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.5172
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.931
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9655
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5862
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8966
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 0.9655
+            },
+            "F1": {
+              "majority": "white",
+              "share": 0.5862
+            },
+            "F2": {
+              "majority": "no",
+              "share": 0.6897
+            },
+            "F3": {
+              "majority": "procession",
+              "share": 0.4138
+            },
+            "F4": {
+              "majority": "no",
+              "share": 0.8276
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.9524
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.9524
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.4762
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.6667
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9524
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 1.0
+            },
+            "F1": {
+              "majority": "colorful",
+              "share": 0.4286
+            },
+            "F2": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "F3": {
+              "majority": "procession",
+              "share": 0.8095
+            },
+            "F4": {
+              "majority": "no",
+              "share": 0.619
+            }
+          }
+        }
+      }
+    },
+    "school": {
+      "default": {
+        "best_k": 2,
+        "silhouette": 0.1316,
+        "stability_ari": 0.8193,
+        "citable": true,
+        "cluster_sizes": {
+          "1": 20,
+          "0": 30
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9333
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.7333
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.8
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.5
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.5
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.4333
+            },
+            "U07": {
+              "majority": "hall",
+              "share": 0.3667
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.5
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.6333
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.7
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.6
+            },
+            "S1": {
+              "majority": "outdoors",
+              "share": 0.9333
+            },
+            "S2": {
+              "majority": "no",
+              "share": 0.9667
+            },
+            "S3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "S4": {
+              "majority": "old building",
+              "share": 0.5333
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.65
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.65
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.55
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.65
+            },
+            "U07": {
+              "majority": "hall",
+              "share": 0.85
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.95
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.95
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.75
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.7
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.65
+            },
+            "S1": {
+              "majority": "classroom",
+              "share": 0.6
+            },
+            "S2": {
+              "majority": "no",
+              "share": 0.5
+            },
+            "S3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "S4": {
+              "majority": "old building",
+              "share": 0.85
+            }
+          }
+        }
+      },
+      "US": {
+        "best_k": 2,
+        "silhouette": 0.2903,
+        "stability_ari": 0.5128,
+        "citable": true,
+        "cluster_sizes": {
+          "1": 46,
+          "0": 4
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "indoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 1.0
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.5
+            },
+            "U06": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "U07": {
+              "majority": "hall",
+              "share": 0.5
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.75
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.75
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "North America",
+              "share": 1.0
+            },
+            "S1": {
+              "majority": "classroom",
+              "share": 1.0
+            },
+            "S2": {
+              "majority": "no",
+              "share": 0.75
+            },
+            "S3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "S4": {
+              "majority": "modern building",
+              "share": 0.5
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.8913
+            },
+            "U03": {
+              "majority": "no",
+              "share": 0.8043
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.8043
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.8043
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 0.8043
+            },
+            "U07": {
+              "majority": "other",
+              "share": 0.7174
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.7826
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.8043
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9565
+            },
+            "U12": {
+              "majority": "North America",
+              "share": 1.0
+            },
+            "S1": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "S2": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "S3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "S4": {
+              "majority": "modern building",
+              "share": 0.8261
+            }
+          }
+        }
+      },
+      "DE": {
+        "best_k": 2,
+        "silhouette": 0.3,
+        "stability_ari": 0.8674,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 42,
+          "1": 8
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.9286
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.9048
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.7857
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.6905
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.7381
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.7143
+            },
+            "U07": {
+              "majority": "hall",
+              "share": 0.619
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.8571
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9286
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5476
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9286
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.8095
+            },
+            "S1": {
+              "majority": "classroom",
+              "share": 0.9286
+            },
+            "S2": {
+              "majority": "no",
+              "share": 0.5
+            },
+            "S3": {
+              "majority": "no",
+              "share": 0.881
+            },
+            "S4": {
+              "majority": "modern building",
+              "share": 0.8333
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.875
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.875
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.75
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.5
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.625
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.5
+            },
+            "U07": {
+              "majority": "hall",
+              "share": 0.375
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.875
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.875
+            },
+            "S1": {
+              "majority": "outdoors",
+              "share": 0.875
+            },
+            "S2": {
+              "majority": "no",
+              "share": 0.875
+            },
+            "S3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "S4": {
+              "majority": "modern building",
+              "share": 0.875
+            }
+          }
+        }
+      },
+      "RU": {
+        "best_k": 2,
+        "silhouette": 0.3152,
+        "stability_ari": 0.7977,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 44,
+          "1": 6
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.9773
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.9318
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.75
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.6818
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.7273
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.6818
+            },
+            "U07": {
+              "majority": "other",
+              "share": 0.4773
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.6818
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9773
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.5909
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.7955
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.7045
+            },
+            "S1": {
+              "majority": "classroom",
+              "share": 0.9773
+            },
+            "S2": {
+              "majority": "yes",
+              "share": 0.5
+            },
+            "S3": {
+              "majority": "no",
+              "share": 0.9773
+            },
+            "S4": {
+              "majority": "modern building",
+              "share": 0.5227
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 1.0
+            },
+            "U03": {
+              "majority": "no",
+              "share": 0.5
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.5
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.5
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 0.5
+            },
+            "U07": {
+              "majority": "apartment",
+              "share": 0.5
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.6667
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.8333
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.8333
+            },
+            "S1": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "S2": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "S3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "S4": {
+              "majority": "old building",
+              "share": 0.6667
+            }
+          }
+        }
+      },
+      "IN": {
+        "best_k": 2,
+        "silhouette": 0.2394,
+        "stability_ari": 0.8718,
+        "citable": true,
+        "cluster_sizes": {
+          "1": 33,
+          "0": 17
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.7059
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 1.0
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.5294
+            },
+            "U06": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "U07": {
+              "majority": "house",
+              "share": 0.2941
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.5294
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.8824
+            },
+            "U11": {
+              "majority": "poor",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 1.0
+            },
+            "S1": {
+              "majority": "outdoors",
+              "share": 0.7059
+            },
+            "S2": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "S3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "S4": {
+              "majority": "old building",
+              "share": 0.6471
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.8182
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.9697
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.5758
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.9394
+            },
+            "U07": {
+              "majority": "hall",
+              "share": 0.7273
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.7879
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5758
+            },
+            "U11": {
+              "majority": "poor",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 1.0
+            },
+            "S1": {
+              "majority": "classroom",
+              "share": 0.8788
+            },
+            "S2": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "S3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "S4": {
+              "majority": "old building",
+              "share": 0.9091
+            }
+          }
+        }
+      },
+      "ID": {
+        "best_k": 2,
+        "silhouette": 0.3071,
+        "stability_ari": 0.8912,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 40,
+          "1": 10
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.9
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 1.0
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.775
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.875
+            },
+            "U07": {
+              "majority": "hut",
+              "share": 0.475
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.7
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.9
+            },
+            "U11": {
+              "majority": "poor",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 1.0
+            },
+            "S1": {
+              "majority": "classroom",
+              "share": 0.925
+            },
+            "S2": {
+              "majority": "yes",
+              "share": 0.975
+            },
+            "S3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "S4": {
+              "majority": "old building",
+              "share": 0.725
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.7
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.9
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.8
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.7
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.6
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.6
+            },
+            "U07": {
+              "majority": "hut",
+              "share": 0.6
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.5
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.6
+            },
+            "U11": {
+              "majority": "poor",
+              "share": 0.8
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.9
+            },
+            "S1": {
+              "majority": "outdoors",
+              "share": 0.8
+            },
+            "S2": {
+              "majority": "yes",
+              "share": 0.6
+            },
+            "S3": {
+              "majority": "no",
+              "share": 0.9
+            },
+            "S4": {
+              "majority": "old building",
+              "share": 0.5
+            }
+          }
+        }
+      },
+      "JP": {
+        "best_k": 2,
+        "silhouette": 0.2628,
+        "stability_ari": 0.9982,
+        "citable": true,
+        "cluster_sizes": {
+          "1": 31,
+          "0": 19
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.9474
+            },
+            "U03": {
+              "majority": "no",
+              "share": 0.5789
+            },
+            "U04": {
+              "majority": "0",
+              "share": 0.5789
+            },
+            "U05b": {
+              "majority": "n-a",
+              "share": 0.5789
+            },
+            "U06": {
+              "majority": "n-a",
+              "share": 0.5789
+            },
+            "U07": {
+              "majority": "apartment",
+              "share": 0.4737
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.5789
+            },
+            "U11": {
+              "majority": "average",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.9474
+            },
+            "S1": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "S2": {
+              "majority": "no",
+              "share": 0.8947
+            },
+            "S3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "S4": {
+              "majority": "modern building",
+              "share": 1.0
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.5484
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.871
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9677
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.9677
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.5806
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.8387
+            },
+            "U07": {
+              "majority": "hall",
+              "share": 0.6452
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.9032
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9677
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5161
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.9677
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.9677
+            },
+            "S1": {
+              "majority": "classroom",
+              "share": 0.5484
+            },
+            "S2": {
+              "majority": "yes",
+              "share": 0.9355
+            },
+            "S3": {
+              "majority": "no",
+              "share": 0.9677
+            },
+            "S4": {
+              "majority": "modern building",
+              "share": 0.8387
+            }
+          }
+        }
+      },
+      "EG": {
+        "best_k": 2,
+        "silhouette": 0.2467,
+        "stability_ari": 0.8965,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 29,
+          "1": 21
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.9655
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.5172
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.6897
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.6552
+            },
+            "U07": {
+              "majority": "hall",
+              "share": 0.7586
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.6897
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.6207
+            },
+            "U11": {
+              "majority": "poor",
+              "share": 0.931
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.6207
+            },
+            "S1": {
+              "majority": "classroom",
+              "share": 0.9655
+            },
+            "S2": {
+              "majority": "yes",
+              "share": 0.931
+            },
+            "S3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "S4": {
+              "majority": "old building",
+              "share": 0.8966
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.7619
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.5714
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9524
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.8095
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.4286
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.619
+            },
+            "U07": {
+              "majority": "hall",
+              "share": 0.3333
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.7143
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9524
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.9048
+            },
+            "U11": {
+              "majority": "poor",
+              "share": 0.8095
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 0.5238
+            },
+            "S1": {
+              "majority": "outdoors",
+              "share": 0.8095
+            },
+            "S2": {
+              "majority": "yes",
+              "share": 0.7143
+            },
+            "S3": {
+              "majority": "no",
+              "share": 0.9524
+            },
+            "S4": {
+              "majority": "old building",
+              "share": 0.8095
+            }
+          }
+        }
+      },
+      "NG": {
+        "best_k": 2,
+        "silhouette": 0.3012,
+        "stability_ari": 0.9513,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 38,
+          "1": 12
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.7368
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 1.0
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "modern",
+              "share": 0.8158
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.8158
+            },
+            "U07": {
+              "majority": "hall",
+              "share": 0.4737
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.5789
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.7105
+            },
+            "U11": {
+              "majority": "poor",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 1.0
+            },
+            "S1": {
+              "majority": "classroom",
+              "share": 0.7368
+            },
+            "S2": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "S3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "S4": {
+              "majority": "old building",
+              "share": 0.6316
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 1.0
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 1.0
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.6667
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.6667
+            },
+            "U07": {
+              "majority": "hut",
+              "share": 0.5
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.75
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.75
+            },
+            "U11": {
+              "majority": "poor",
+              "share": 1.0
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 1.0
+            },
+            "S1": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "S2": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "S3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "S4": {
+              "majority": "modern building",
+              "share": 0.3333
+            }
+          }
+        }
+      }
+    },
+    "wedding": {
+      "default": {
+        "best_k": 2,
+        "silhouette": 0.0584,
+        "stability_ari": 0.3984,
+        "citable": false,
+        "cluster_sizes": {
+          "1": 21,
+          "0": 29
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.8966
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.931
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "2",
+              "share": 0.6207
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.6207
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.7241
+            },
+            "U07": {
+              "majority": "house",
+              "share": 0.3448
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.8276
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.4138
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.5517
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.931
+            },
+            "W1": {
+              "majority": "white",
+              "share": 1.0
+            },
+            "W2": {
+              "majority": "other",
+              "share": 0.4828
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.9655
+            },
+            "W4": {
+              "majority": "no",
+              "share": 1.0
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.4286
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.4762
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.7143
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.4762
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.5238
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.619
+            },
+            "U07": {
+              "majority": "hall",
+              "share": 0.3333
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.5238
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.7143
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.5714
+            },
+            "U11": {
+              "majority": "wealthy",
+              "share": 0.5714
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.619
+            },
+            "W1": {
+              "majority": "white",
+              "share": 0.7143
+            },
+            "W2": {
+              "majority": "garden",
+              "share": 0.3333
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.7619
+            },
+            "W4": {
+              "majority": "no",
+              "share": 0.7619
+            }
+          }
+        }
+      },
+      "US": {
+        "best_k": 2,
+        "silhouette": 0.0759,
+        "stability_ari": 0.5043,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 31,
+          "1": 19
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.7097
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.7097
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.7419
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.6129
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.5161
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.5161
+            },
+            "U07": {
+              "majority": "unclear",
+              "share": 0.2581
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.6129
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.7419
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.4839
+            },
+            "U11": {
+              "majority": "wealthy",
+              "share": 0.4194
+            },
+            "U12": {
+              "majority": "North America",
+              "share": 0.4516
+            },
+            "W1": {
+              "majority": "white",
+              "share": 0.7419
+            },
+            "W2": {
+              "majority": "garden",
+              "share": 0.4194
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.7419
+            },
+            "W4": {
+              "majority": "no",
+              "share": 0.7419
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.6842
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.3684
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.6842
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.5263
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.5789
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.4737
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.4211
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.6842
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.6842
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5789
+            },
+            "U11": {
+              "majority": "wealthy",
+              "share": 0.4211
+            },
+            "U12": {
+              "majority": "North America",
+              "share": 0.5263
+            },
+            "W1": {
+              "majority": "white",
+              "share": 0.6842
+            },
+            "W2": {
+              "majority": "garden",
+              "share": 0.4737
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.6842
+            },
+            "W4": {
+              "majority": "no",
+              "share": 0.6842
+            }
+          }
+        }
+      },
+      "DE": {
+        "best_k": 2,
+        "silhouette": 0.0573,
+        "stability_ari": 0.2482,
+        "citable": false,
+        "cluster_sizes": {
+          "1": 26,
+          "0": 24
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.625
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.4583
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.625
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.5
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.5833
+            },
+            "U06": {
+              "majority": "unclear",
+              "share": 0.375
+            },
+            "U07": {
+              "majority": "house",
+              "share": 0.5
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.5
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.625
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.5
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.625
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.625
+            },
+            "W1": {
+              "majority": "white",
+              "share": 0.625
+            },
+            "W2": {
+              "majority": "other",
+              "share": 0.4583
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.5833
+            },
+            "W4": {
+              "majority": "no",
+              "share": 0.625
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.8846
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.8077
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.8846
+            },
+            "U04": {
+              "majority": "2",
+              "share": 0.4231
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.6923
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.5
+            },
+            "U07": {
+              "majority": "house",
+              "share": 0.5385
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.6923
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.8846
+            },
+            "U10": {
+              "majority": "cloudy",
+              "share": 0.3846
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.7692
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.8846
+            },
+            "W1": {
+              "majority": "white",
+              "share": 0.8846
+            },
+            "W2": {
+              "majority": "other",
+              "share": 0.5
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.8462
+            },
+            "W4": {
+              "majority": "no",
+              "share": 0.8846
+            }
+          }
+        }
+      },
+      "RU": {
+        "best_k": 3,
+        "silhouette": 0.0904,
+        "stability_ari": 0.3892,
+        "citable": false,
+        "cluster_sizes": {
+          "0": 35,
+          "2": 13,
+          "1": 2
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.7429
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.8286
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9143
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.4
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.8571
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.7714
+            },
+            "U07": {
+              "majority": "house",
+              "share": 0.3714
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.7714
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9143
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.4
+            },
+            "U11": {
+              "majority": "wealthy",
+              "share": 0.4571
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.9143
+            },
+            "W1": {
+              "majority": "white",
+              "share": 0.8857
+            },
+            "W2": {
+              "majority": "other",
+              "share": 0.4286
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.8571
+            },
+            "W4": {
+              "majority": "no",
+              "share": 0.9143
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 1.0
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "2",
+              "share": 0.5
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 1.0
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U07": {
+              "majority": "church",
+              "share": 1.0
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5
+            },
+            "U11": {
+              "majority": "wealthy",
+              "share": 0.5
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 1.0
+            },
+            "W1": {
+              "majority": "white",
+              "share": 1.0
+            },
+            "W2": {
+              "majority": "church",
+              "share": 1.0
+            },
+            "W3": {
+              "majority": "no",
+              "share": 1.0
+            },
+            "W4": {
+              "majority": "no",
+              "share": 1.0
+            }
+          },
+          "2": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.6154
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.4615
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.6923
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.6154
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.6923
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.5385
+            },
+            "U07": {
+              "majority": "unclear",
+              "share": 0.3077
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.3846
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.6923
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.4615
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.4615
+            },
+            "U12": {
+              "majority": "Europe",
+              "share": 0.6923
+            },
+            "W1": {
+              "majority": "white",
+              "share": 0.6923
+            },
+            "W2": {
+              "majority": "unclear",
+              "share": 0.3077
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.6154
+            },
+            "W4": {
+              "majority": "no",
+              "share": 0.6923
+            }
+          }
+        }
+      },
+      "IN": {
+        "best_k": 2,
+        "silhouette": 0.155,
+        "stability_ari": 0.8187,
+        "citable": true,
+        "cluster_sizes": {
+          "1": 33,
+          "0": 17
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 1.0
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.7647
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.8824
+            },
+            "U05b": {
+              "majority": "traditional",
+              "share": 0.8824
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.5882
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.7647
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.8235
+            },
+            "U11": {
+              "majority": "wealthy",
+              "share": 0.7059
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 1.0
+            },
+            "W1": {
+              "majority": "colorful",
+              "share": 1.0
+            },
+            "W2": {
+              "majority": "temple",
+              "share": 0.4706
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.9412
+            },
+            "W4": {
+              "majority": "no",
+              "share": 1.0
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.8788
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.4848
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.7879
+            },
+            "U05b": {
+              "majority": "traditional",
+              "share": 1.0
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.7273
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.7576
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.7576
+            },
+            "U11": {
+              "majority": "wealthy",
+              "share": 0.7273
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 1.0
+            },
+            "W1": {
+              "majority": "colorful",
+              "share": 0.9697
+            },
+            "W2": {
+              "majority": "other",
+              "share": 0.4545
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.7879
+            },
+            "W4": {
+              "majority": "no",
+              "share": 0.9697
+            }
+          }
+        }
+      },
+      "ID": {
+        "best_k": 2,
+        "silhouette": 0.0784,
+        "stability_ari": 0.4345,
+        "citable": false,
+        "cluster_sizes": {
+          "0": 32,
+          "1": 18
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9062
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.875
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9375
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.875
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.6875
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.875
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.4375
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.7188
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9375
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5312
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8438
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.9375
+            },
+            "W1": {
+              "majority": "white",
+              "share": 0.5312
+            },
+            "W2": {
+              "majority": "garden",
+              "share": 0.625
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.8125
+            },
+            "W4": {
+              "majority": "no",
+              "share": 0.9375
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.8333
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.7778
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.8333
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.7222
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.5
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.7778
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.7778
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.6667
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.8333
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5556
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.5
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.8333
+            },
+            "W1": {
+              "majority": "white",
+              "share": 0.5556
+            },
+            "W2": {
+              "majority": "temple",
+              "share": 0.6667
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.8333
+            },
+            "W4": {
+              "majority": "no",
+              "share": 0.8333
+            }
+          }
+        }
+      },
+      "JP": {
+        "best_k": 2,
+        "silhouette": 0.0984,
+        "stability_ari": 0.5795,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 19,
+          "1": 31
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.8947
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.8421
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.8947
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.5789
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.8421
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.5263
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.8947
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.7895
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.8947
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.4737
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.5789
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.8947
+            },
+            "W1": {
+              "majority": "white",
+              "share": 0.6842
+            },
+            "W2": {
+              "majority": "temple",
+              "share": 0.6316
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.8947
+            },
+            "W4": {
+              "majority": "no",
+              "share": 0.8947
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9355
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.4839
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9355
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.7097
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.7742
+            },
+            "U06": {
+              "majority": "no",
+              "share": 0.5161
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.6129
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.6774
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9355
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.5806
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.7742
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.9355
+            },
+            "W1": {
+              "majority": "white",
+              "share": 0.7097
+            },
+            "W2": {
+              "majority": "garden",
+              "share": 0.5484
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.9355
+            },
+            "W4": {
+              "majority": "no",
+              "share": 0.9355
+            }
+          }
+        }
+      },
+      "EG": {
+        "best_k": 3,
+        "silhouette": 0.1047,
+        "stability_ari": 0.5841,
+        "citable": true,
+        "cluster_sizes": {
+          "0": 15,
+          "2": 23,
+          "1": 12
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "indoors",
+              "share": 0.6
+            },
+            "U02": {
+              "majority": "urban",
+              "share": 0.9333
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.8
+            },
+            "U05b": {
+              "majority": "traditional",
+              "share": 0.7333
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.8667
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.9333
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "unclear",
+              "share": 0.5333
+            },
+            "U11": {
+              "majority": "wealthy",
+              "share": 0.7333
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 0.8
+            },
+            "W1": {
+              "majority": "colorful",
+              "share": 0.6
+            },
+            "W2": {
+              "majority": "temple",
+              "share": 0.8667
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.9333
+            },
+            "W4": {
+              "majority": "no",
+              "share": 1.0
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.9167
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.5833
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9167
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.75
+            },
+            "U05b": {
+              "majority": "traditional",
+              "share": 0.5
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.9167
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.4167
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.5
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9167
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.75
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.8333
+            },
+            "U12": {
+              "majority": "Asia",
+              "share": 0.8333
+            },
+            "W1": {
+              "majority": "white",
+              "share": 0.75
+            },
+            "W2": {
+              "majority": "other",
+              "share": 0.5
+            },
+            "W3": {
+              "majority": "yes",
+              "share": 0.5
+            },
+            "W4": {
+              "majority": "no",
+              "share": 0.9167
+            }
+          },
+          "2": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.8696
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.5652
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.9565
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.7391
+            },
+            "U05b": {
+              "majority": "mixed",
+              "share": 0.8696
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.9565
+            },
+            "U07": {
+              "majority": "temple",
+              "share": 0.7826
+            },
+            "U08": {
+              "majority": "historical",
+              "share": 0.8261
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.9565
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.913
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.6522
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 0.8261
+            },
+            "W1": {
+              "majority": "white",
+              "share": 0.7826
+            },
+            "W2": {
+              "majority": "temple",
+              "share": 0.6522
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.8261
+            },
+            "W4": {
+              "majority": "no",
+              "share": 0.9565
+            }
+          }
+        }
+      },
+      "NG": {
+        "best_k": 2,
+        "silhouette": 0.0586,
+        "stability_ari": 0.1925,
+        "citable": false,
+        "cluster_sizes": {
+          "1": 25,
+          "0": 25
+        },
+        "cluster_vqa_profile": {
+          "0": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.96
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.72
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 0.96
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.8
+            },
+            "U05b": {
+              "majority": "traditional",
+              "share": 0.48
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 0.96
+            },
+            "U07": {
+              "majority": "hut",
+              "share": 0.36
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 0.96
+            },
+            "U09": {
+              "majority": "day",
+              "share": 0.96
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.64
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.64
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 0.96
+            },
+            "W1": {
+              "majority": "colorful",
+              "share": 0.52
+            },
+            "W2": {
+              "majority": "garden",
+              "share": 0.44
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.96
+            },
+            "W4": {
+              "majority": "no",
+              "share": 0.96
+            }
+          },
+          "1": {
+            "U01": {
+              "majority": "outdoors",
+              "share": 0.96
+            },
+            "U02": {
+              "majority": "rural",
+              "share": 0.84
+            },
+            "U03": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U04": {
+              "majority": "6+",
+              "share": 0.96
+            },
+            "U05b": {
+              "majority": "traditional",
+              "share": 0.6
+            },
+            "U06": {
+              "majority": "yes",
+              "share": 1.0
+            },
+            "U07": {
+              "majority": "none",
+              "share": 0.52
+            },
+            "U08": {
+              "majority": "modern",
+              "share": 1.0
+            },
+            "U09": {
+              "majority": "day",
+              "share": 1.0
+            },
+            "U10": {
+              "majority": "sunny",
+              "share": 0.64
+            },
+            "U11": {
+              "majority": "average",
+              "share": 0.68
+            },
+            "U12": {
+              "majority": "Africa",
+              "share": 1.0
+            },
+            "W1": {
+              "majority": "colorful",
+              "share": 0.6
+            },
+            "W2": {
+              "majority": "garden",
+              "share": 0.52
+            },
+            "W3": {
+              "majority": "no",
+              "share": 0.84
+            },
+            "W4": {
+              "majority": "no",
+              "share": 1.0
+            }
+          }
+        }
+      }
+    }
+  }
+}

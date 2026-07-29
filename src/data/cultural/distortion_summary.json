@@ -1,0 +1,40 @@
+{
+ "sd21": {
+  "toward_default": 89,
+  "toward_reality": 83,
+  "n_questions_tested": 31,
+  "n_significant_p05": 0
+ },
+ "models": {
+  "flux": {
+   "toward_default": 166,
+   "toward_reality": 75
+  },
+  "kolors": {
+   "toward_default": 159,
+   "toward_reality": 74
+  },
+  "sdxl": {
+   "toward_default": 113,
+   "toward_reality": 67
+  },
+  "sd35": {
+   "toward_default": 109,
+   "toward_reality": 88
+  },
+  "qwenimage": {
+   "toward_default": 145,
+   "toward_reality": 83
+  },
+  "hunyuandit": {
+   "toward_default": 133,
+   "toward_reality": 91
+  }
+ },
+ "caveat": "SD 2.1's own run uses its qwen3_vl-primary tables, so cross-model vs SD 2.1 comparison carries the same instrument asymmetry documented for Stage 3.5 -- compare the cross-model models to each other freely; against SD 2.1 treat as indicative.",
+ "pooled": {
+  "toward_default": 914,
+  "toward_reality": 561,
+  "ratio": 1.63
+ }
+}

@@ -1,0 +1,933 @@
+{
+  "method": "dinov3_reality_anchor",
+  "cfg": 7,
+  "n_bootstrap": 10000,
+  "vendi_available": true,
+  "note": "generated_vs_real_distance: cosine distance between the generated variant's centroid and that country's real-photo centroid \u2014 the caricature-vs-reality number. real_intraset_sim/vendi vs generated_intraset_sim/vendi: is the model narrower than reality? _default_generated_vs_real_countries: is the unqualified default already closer to one country's real photos than another's?",
+  "results": {
+    "breakfast": {
+      "default": {
+        "n_generated": 50,
+        "n_real": 0,
+        "generated_intraset_sim": 0.4366549253463745,
+        "generated_vendi_score": 14.622628211975098
+      },
+      "united_states": {
+        "n_generated": 50,
+        "n_real": 87,
+        "generated_vs_real_distance": {
+          "value": 0.5319057703018188,
+          "ci_lo": 0.5141777321696281,
+          "ci_hi": 0.5842795446515083
+        },
+        "real_intraset_sim": {
+          "value": 0.15687881410121918,
+          "ci_lo": 0.14242560528218745,
+          "ci_hi": 0.195623517408967
+        },
+        "real_vendi_score": 42.912742614746094,
+        "generated_intraset_sim": 0.541349470615387,
+        "generated_vendi_score": 9.952466011047363
+      },
+      "germany": {
+        "n_generated": 50,
+        "n_real": 83,
+        "generated_vs_real_distance": {
+          "value": 0.5254947543144226,
+          "ci_lo": 0.5138872057199478,
+          "ci_hi": 0.5828475713729858
+        },
+        "real_intraset_sim": {
+          "value": 0.11839308589696884,
+          "ci_lo": 0.11742283757776022,
+          "ci_hi": 0.14294035062193872
+        },
+        "real_vendi_score": 52.865657806396484,
+        "generated_intraset_sim": 0.5062990188598633,
+        "generated_vendi_score": 11.140461921691895
+      },
+      "russia": {
+        "n_generated": 50,
+        "n_real": 77,
+        "generated_vs_real_distance": {
+          "value": 0.5786470174789429,
+          "ci_lo": 0.5608958289027214,
+          "ci_hi": 0.6327526271343231
+        },
+        "real_intraset_sim": {
+          "value": 0.1394919902086258,
+          "ci_lo": 0.1333452805876732,
+          "ci_hi": 0.17206333987414837
+        },
+        "real_vendi_score": 41.103153228759766,
+        "generated_intraset_sim": 0.5533348321914673,
+        "generated_vendi_score": 9.570547103881836
+      },
+      "india": {
+        "n_generated": 50,
+        "n_real": 90,
+        "generated_vs_real_distance": {
+          "value": 0.3960173726081848,
+          "ci_lo": 0.3700965031981468,
+          "ci_hi": 0.45666324645280837
+        },
+        "real_intraset_sim": {
+          "value": 0.19536277651786804,
+          "ci_lo": 0.1844787485897541,
+          "ci_hi": 0.2272108644247055
+        },
+        "real_vendi_score": 36.205013275146484,
+        "generated_intraset_sim": 0.5791093707084656,
+        "generated_vendi_score": 8.044994354248047
+      },
+      "indonesia": {
+        "n_generated": 50,
+        "n_real": 66,
+        "generated_vs_real_distance": {
+          "value": 0.5290955305099487,
+          "ci_lo": 0.5140477895736695,
+          "ci_hi": 0.5877964735031127
+        },
+        "real_intraset_sim": {
+          "value": 0.1497216373682022,
+          "ci_lo": 0.14215141125023364,
+          "ci_hi": 0.18747657276690005
+        },
+        "real_vendi_score": 37.53587341308594,
+        "generated_intraset_sim": 0.517439603805542,
+        "generated_vendi_score": 11.032027244567871
+      },
+      "japan": {
+        "n_generated": 50,
+        "n_real": 43,
+        "generated_vs_real_distance": {
+          "value": 0.43766164779663086,
+          "ci_lo": 0.43057594299316404,
+          "ci_hi": 0.5011591434478759
+        },
+        "real_intraset_sim": {
+          "value": 0.19360338151454926,
+          "ci_lo": 0.17649527080357075,
+          "ci_hi": 0.25785747244954105
+        },
+        "real_vendi_score": 25.62547492980957,
+        "generated_intraset_sim": 0.576772153377533,
+        "generated_vendi_score": 9.035724639892578
+      },
+      "egypt": {
+        "n_generated": 50,
+        "n_real": 52,
+        "generated_vs_real_distance": {
+          "value": 0.5658148527145386,
+          "ci_lo": 0.5443820610642434,
+          "ci_hi": 0.6326471745967864
+        },
+        "real_intraset_sim": {
+          "value": 0.16008307039737701,
+          "ci_lo": 0.14016949459910394,
+          "ci_hi": 0.2230321854352951
+        },
+        "real_vendi_score": 26.268739700317383,
+        "generated_intraset_sim": 0.5657595992088318,
+        "generated_vendi_score": 8.491540908813477
+      },
+      "nigeria": {
+        "n_generated": 50,
+        "n_real": 36,
+        "generated_vs_real_distance": {
+          "value": 0.5519705414772034,
+          "ci_lo": 0.5402809649705886,
+          "ci_hi": 0.6311440274119376
+        },
+        "real_intraset_sim": {
+          "value": 0.13783368468284607,
+          "ci_lo": 0.13616543188691138,
+          "ci_hi": 0.1948298867791891
+        },
+        "real_vendi_score": 24.73477554321289,
+        "generated_intraset_sim": 0.5672166347503662,
+        "generated_vendi_score": 8.725312232971191
+      },
+      "_default_generated_vs_real_countries": {
+        "united_states": 0.5492476224899292,
+        "germany": 0.4834862947463989,
+        "russia": 0.4973514676094055,
+        "india": 0.7047780156135559,
+        "indonesia": 0.6116907596588135,
+        "japan": 0.6842949986457825,
+        "egypt": 0.6031479239463806,
+        "nigeria": 0.6586565375328064
+      }
+    },
+    "celebration": {
+      "default": {
+        "n_generated": 50,
+        "n_real": 0,
+        "generated_intraset_sim": 0.4436730742454529,
+        "generated_vendi_score": 13.282147407531738
+      },
+      "united_states": {
+        "n_generated": 50,
+        "n_real": 48,
+        "generated_vs_real_distance": {
+          "value": 0.5207758545875549,
+          "ci_lo": 0.49557745903730394,
+          "ci_hi": 0.6252241149544716
+        },
+        "real_intraset_sim": {
+          "value": 0.10939127951860428,
+          "ci_lo": 0.10961532834917306,
+          "ci_hi": 0.1507734727114439
+        },
+        "real_vendi_score": 32.34928894042969,
+        "generated_intraset_sim": 0.42415767908096313,
+        "generated_vendi_score": 14.383659362792969
+      },
+      "germany": {
+        "n_generated": 50,
+        "n_real": 78,
+        "generated_vs_real_distance": {
+          "value": 0.6476137042045593,
+          "ci_lo": 0.6192197412252426,
+          "ci_hi": 0.715465585887432
+        },
+        "real_intraset_sim": {
+          "value": 0.11521546542644501,
+          "ci_lo": 0.11162968333810568,
+          "ci_hi": 0.14627403803169728
+        },
+        "real_vendi_score": 42.34255599975586,
+        "generated_intraset_sim": 0.508406937122345,
+        "generated_vendi_score": 10.423877716064453
+      },
+      "russia": {
+        "n_generated": 50,
+        "n_real": 31,
+        "generated_vs_real_distance": {
+          "value": 0.7172380089759827,
+          "ci_lo": 0.6955509305000305,
+          "ci_hi": 0.7850148752331734
+        },
+        "real_intraset_sim": {
+          "value": 0.12724392116069794,
+          "ci_lo": 0.12811440005898475,
+          "ci_hi": 0.19304411746561526
+        },
+        "real_vendi_score": 23.0015869140625,
+        "generated_intraset_sim": 0.5124948620796204,
+        "generated_vendi_score": 7.238300800323486
+      },
+      "india": {
+        "n_generated": 50,
+        "n_real": 82,
+        "generated_vs_real_distance": {
+          "value": 0.3560613989830017,
+          "ci_lo": 0.33392585813999176,
+          "ci_hi": 0.41657520085573196
+        },
+        "real_intraset_sim": {
+          "value": 0.20169633626937866,
+          "ci_lo": 0.190949796885252,
+          "ci_hi": 0.23285833783447743
+        },
+        "real_vendi_score": 38.229488372802734,
+        "generated_intraset_sim": 0.6790697574615479,
+        "generated_vendi_score": 5.509000301361084
+      },
+      "indonesia": {
+        "n_generated": 50,
+        "n_real": 83,
+        "generated_vs_real_distance": {
+          "value": 0.42516857385635376,
+          "ci_lo": 0.40501605719327927,
+          "ci_hi": 0.47033051699399947
+        },
+        "real_intraset_sim": {
+          "value": 0.2793460786342621,
+          "ci_lo": 0.25787074491381645,
+          "ci_hi": 0.32043558806180955
+        },
+        "real_vendi_score": 26.946855545043945,
+        "generated_intraset_sim": 0.5831423401832581,
+        "generated_vendi_score": 8.625357627868652
+      },
+      "japan": {
+        "n_generated": 50,
+        "n_real": 55,
+        "generated_vs_real_distance": {
+          "value": 0.5435356497764587,
+          "ci_lo": 0.5131106093525887,
+          "ci_hi": 0.5939224243164063
+        },
+        "real_intraset_sim": {
+          "value": 0.29831916093826294,
+          "ci_lo": 0.2608962319791317,
+          "ci_hi": 0.3663735173642635
+        },
+        "real_vendi_score": 19.604820251464844,
+        "generated_intraset_sim": 0.6343031525611877,
+        "generated_vendi_score": 6.091599941253662
+      },
+      "egypt": {
+        "n_generated": 50,
+        "n_real": 36,
+        "generated_vs_real_distance": {
+          "value": 0.7833225727081299,
+          "ci_lo": 0.7381209939718246,
+          "ci_hi": 0.8340785905718804
+        },
+        "real_intraset_sim": {
+          "value": 0.39117515087127686,
+          "ci_lo": 0.3201433032751083,
+          "ci_hi": 0.5068762615323067
+        },
+        "real_vendi_score": 8.9277925491333,
+        "generated_intraset_sim": 0.5745872259140015,
+        "generated_vendi_score": 7.736252784729004
+      },
+      "nigeria": {
+        "n_generated": 50,
+        "n_real": 54,
+        "generated_vs_real_distance": {
+          "value": 0.4505050778388977,
+          "ci_lo": 0.42868936657905576,
+          "ci_hi": 0.4963216245174408
+        },
+        "real_intraset_sim": {
+          "value": 0.33761337399482727,
+          "ci_lo": 0.30548701286315916,
+          "ci_hi": 0.397871383279562
+        },
+        "real_vendi_score": 17.70966911315918,
+        "generated_intraset_sim": 0.7261156439781189,
+        "generated_vendi_score": 4.4322590827941895
+      },
+      "_default_generated_vs_real_countries": {
+        "united_states": 0.7037150859832764,
+        "germany": 0.7758233547210693,
+        "russia": 0.7844398021697998,
+        "india": 0.7948387265205383,
+        "indonesia": 0.8238295316696167,
+        "japan": 0.8304760456085205,
+        "egypt": 0.8348044157028198,
+        "nigeria": 0.8215891718864441
+      }
+    },
+    "family": {
+      "default": {
+        "n_generated": 50,
+        "n_real": 0,
+        "generated_intraset_sim": 0.31869685649871826,
+        "generated_vendi_score": 18.83531951904297
+      },
+      "united_states": {
+        "n_generated": 50,
+        "n_real": 30,
+        "generated_vs_real_distance": {
+          "value": 0.38658732175827026,
+          "ci_lo": 0.38185802698135374,
+          "ci_hi": 0.5258334070444107
+        },
+        "real_intraset_sim": {
+          "value": 0.11785051971673965,
+          "ci_lo": 0.12137533519417047,
+          "ci_hi": 0.18585602343082427
+        },
+        "real_vendi_score": 22.543569564819336,
+        "generated_intraset_sim": 0.3843485713005066,
+        "generated_vendi_score": 16.69646453857422
+      },
+      "germany": {
+        "n_generated": 50,
+        "n_real": 59,
+        "generated_vs_real_distance": {
+          "value": 0.3553470969200134,
+          "ci_lo": 0.3108319014310837,
+          "ci_hi": 0.4534936189651489
+        },
+        "real_intraset_sim": {
+          "value": 0.2411118596792221,
+          "ci_lo": 0.21466732174158096,
+          "ci_hi": 0.301290150731802
+        },
+        "real_vendi_score": 25.79387664794922,
+        "generated_intraset_sim": 0.3940460979938507,
+        "generated_vendi_score": 14.638525009155273
+      },
+      "russia": {
+        "n_generated": 50,
+        "n_real": 57,
+        "generated_vs_real_distance": {
+          "value": 0.36773765087127686,
+          "ci_lo": 0.31986268162727355,
+          "ci_hi": 0.47017848789691924
+        },
+        "real_intraset_sim": {
+          "value": 0.23527592420578003,
+          "ci_lo": 0.19343604743480683,
+          "ci_hi": 0.31455893814563746
+        },
+        "real_vendi_score": 22.88582420349121,
+        "generated_intraset_sim": 0.36025720834732056,
+        "generated_vendi_score": 16.824047088623047
+      },
+      "india": {
+        "n_generated": 50,
+        "n_real": 66,
+        "generated_vs_real_distance": {
+          "value": 0.3912215232849121,
+          "ci_lo": 0.36937774866819384,
+          "ci_hi": 0.44857519418001174
+        },
+        "real_intraset_sim": {
+          "value": 0.2228807806968689,
+          "ci_lo": 0.2026145625859499,
+          "ci_hi": 0.27028619199991216
+        },
+        "real_vendi_score": 25.994115829467773,
+        "generated_intraset_sim": 0.6850812435150146,
+        "generated_vendi_score": 5.420424461364746
+      },
+      "indonesia": {
+        "n_generated": 50,
+        "n_real": 55,
+        "generated_vs_real_distance": {
+          "value": 0.5792725086212158,
+          "ci_lo": 0.5437166750431061,
+          "ci_hi": 0.6373626366257668
+        },
+        "real_intraset_sim": {
+          "value": 0.23309823870658875,
+          "ci_lo": 0.2079246610403061,
+          "ci_hi": 0.290414173156023
+        },
+        "real_vendi_score": 25.9992733001709,
+        "generated_intraset_sim": 0.6217021346092224,
+        "generated_vendi_score": 7.055137634277344
+      },
+      "japan": {
+        "n_generated": 50,
+        "n_real": 44,
+        "generated_vs_real_distance": {
+          "value": 0.5747026801109314,
+          "ci_lo": 0.5504084318876267,
+          "ci_hi": 0.6293410316109658
+        },
+        "real_intraset_sim": {
+          "value": 0.2663188576698303,
+          "ci_lo": 0.2188071683049202,
+          "ci_hi": 0.3621971502900123
+        },
+        "real_vendi_score": 15.984166145324707,
+        "generated_intraset_sim": 0.5768153667449951,
+        "generated_vendi_score": 8.00126838684082
+      },
+      "egypt": {
+        "n_generated": 50,
+        "n_real": 41,
+        "generated_vs_real_distance": {
+          "value": 0.5734258890151978,
+          "ci_lo": 0.5320249304175377,
+          "ci_hi": 0.6691008567810058
+        },
+        "real_intraset_sim": {
+          "value": 0.13869649171829224,
+          "ci_lo": 0.13325195237994195,
+          "ci_hi": 0.1931535419076681
+        },
+        "real_vendi_score": 27.995649337768555,
+        "generated_intraset_sim": 0.5794122219085693,
+        "generated_vendi_score": 7.525928020477295
+      },
+      "nigeria": {
+        "n_generated": 50,
+        "n_real": 34,
+        "generated_vs_real_distance": {
+          "value": 0.36377185583114624,
+          "ci_lo": 0.33147179037332536,
+          "ci_hi": 0.46947693228721615
+        },
+        "real_intraset_sim": {
+          "value": 0.2036934792995453,
+          "ci_lo": 0.17425701655447484,
+          "ci_hi": 0.2953317567706108
+        },
+        "real_vendi_score": 18.75240135192871,
+        "generated_intraset_sim": 0.7431391477584839,
+        "generated_vendi_score": 4.162601947784424
+      },
+      "_default_generated_vs_real_countries": {
+        "united_states": 0.4873870611190796,
+        "germany": 0.3964815139770508,
+        "russia": 0.42052972316741943,
+        "india": 0.5429671406745911,
+        "indonesia": 0.5295587778091431,
+        "japan": 0.5050294995307922,
+        "egypt": 0.45060479640960693,
+        "nigeria": 0.6051612496376038
+      }
+    },
+    "funeral": {
+      "default": {
+        "n_generated": 50,
+        "n_real": 0,
+        "generated_intraset_sim": 0.6495798826217651,
+        "generated_vendi_score": 6.018309593200684
+      },
+      "united_states": {
+        "n_generated": 50,
+        "n_real": 83,
+        "generated_vs_real_distance": {
+          "value": 0.45297735929489136,
+          "ci_lo": 0.4163913309574127,
+          "ci_hi": 0.5134509265422821
+        },
+        "real_intraset_sim": {
+          "value": 0.29235324263572693,
+          "ci_lo": 0.25542375072836876,
+          "ci_hi": 0.35446495264768596
+        },
+        "real_vendi_score": 20.269969940185547,
+        "generated_intraset_sim": 0.5743136405944824,
+        "generated_vendi_score": 7.741438388824463
+      },
+      "germany": {
+        "n_generated": 50,
+        "n_real": 86,
+        "generated_vs_real_distance": {
+          "value": 0.37633514404296875,
+          "ci_lo": 0.3558458209037781,
+          "ci_hi": 0.4251153856515884
+        },
+        "real_intraset_sim": {
+          "value": 0.2740606963634491,
+          "ci_lo": 0.25357838794589044,
+          "ci_hi": 0.31333979219198227
+        },
+        "real_vendi_score": 28.358482360839844,
+        "generated_intraset_sim": 0.5672374367713928,
+        "generated_vendi_score": 8.04681396484375
+      },
+      "russia": {
+        "n_generated": 50,
+        "n_real": 67,
+        "generated_vs_real_distance": {
+          "value": 0.38613271713256836,
+          "ci_lo": 0.3646049052476883,
+          "ci_hi": 0.44896246939897533
+        },
+        "real_intraset_sim": {
+          "value": 0.21008937060832977,
+          "ci_lo": 0.19890709668397905,
+          "ci_hi": 0.24770525954663752
+        },
+        "real_vendi_score": 32.20416259765625,
+        "generated_intraset_sim": 0.6246359348297119,
+        "generated_vendi_score": 6.3960700035095215
+      },
+      "india": {
+        "n_generated": 50,
+        "n_real": 56,
+        "generated_vs_real_distance": {
+          "value": 0.3657803535461426,
+          "ci_lo": 0.3416737735271454,
+          "ci_hi": 0.4394232392311096
+        },
+        "real_intraset_sim": {
+          "value": 0.21500501036643982,
+          "ci_lo": 0.19240136332809926,
+          "ci_hi": 0.27279137521982194
+        },
+        "real_vendi_score": 23.292930603027344,
+        "generated_intraset_sim": 0.5894262194633484,
+        "generated_vendi_score": 7.431947231292725
+      },
+      "indonesia": {
+        "n_generated": 50,
+        "n_real": 74,
+        "generated_vs_real_distance": {
+          "value": 0.5880537033081055,
+          "ci_lo": 0.5300047740340232,
+          "ci_hi": 0.6643778517842293
+        },
+        "real_intraset_sim": {
+          "value": 0.21818400919437408,
+          "ci_lo": 0.18962115608155727,
+          "ci_hi": 0.2779126979410648
+        },
+        "real_vendi_score": 25.471899032592773,
+        "generated_intraset_sim": 0.6214408874511719,
+        "generated_vendi_score": 6.745876312255859
+      },
+      "japan": {
+        "n_generated": 50,
+        "n_real": 80,
+        "generated_vs_real_distance": {
+          "value": 0.5558092594146729,
+          "ci_lo": 0.5420146718621254,
+          "ci_hi": 0.5922217324376107
+        },
+        "real_intraset_sim": {
+          "value": 0.2521364688873291,
+          "ci_lo": 0.23182827271521092,
+          "ci_hi": 0.29506671652197836
+        },
+        "real_vendi_score": 27.933012008666992,
+        "generated_intraset_sim": 0.6015979051589966,
+        "generated_vendi_score": 6.948116302490234
+      },
+      "egypt": {
+        "n_generated": 50,
+        "n_real": 43,
+        "generated_vs_real_distance": {
+          "value": 0.5360671281814575,
+          "ci_lo": 0.49043909162282945,
+          "ci_hi": 0.6211742773652077
+        },
+        "real_intraset_sim": {
+          "value": 0.2318841964006424,
+          "ci_lo": 0.199755597487092,
+          "ci_hi": 0.314128215610981
+        },
+        "real_vendi_score": 17.855913162231445,
+        "generated_intraset_sim": 0.6111935377120972,
+        "generated_vendi_score": 6.518796920776367
+      },
+      "nigeria": {
+        "n_generated": 50,
+        "n_real": 61,
+        "generated_vs_real_distance": {
+          "value": 0.27832019329071045,
+          "ci_lo": 0.256544491648674,
+          "ci_hi": 0.3329877719283104
+        },
+        "real_intraset_sim": {
+          "value": 0.3352784514427185,
+          "ci_lo": 0.307297208160162,
+          "ci_hi": 0.38919026404619217
+        },
+        "real_vendi_score": 17.734149932861328,
+        "generated_intraset_sim": 0.6167303323745728,
+        "generated_vendi_score": 6.331477165222168
+      },
+      "_default_generated_vs_real_countries": {
+        "united_states": 0.5381669998168945,
+        "germany": 0.530795693397522,
+        "russia": 0.5234540700912476,
+        "india": 0.6542195081710815,
+        "indonesia": 0.5874631404876709,
+        "japan": 0.6512759923934937,
+        "egypt": 0.7015722393989563,
+        "nigeria": 0.6655000448226929
+      }
+    },
+    "school": {
+      "default": {
+        "n_generated": 50,
+        "n_real": 0,
+        "generated_intraset_sim": 0.45344841480255127,
+        "generated_vendi_score": 12.387933731079102
+      },
+      "united_states": {
+        "n_generated": 50,
+        "n_real": 80,
+        "generated_vs_real_distance": {
+          "value": 0.709058403968811,
+          "ci_lo": 0.6558824777603149,
+          "ci_hi": 0.7752334639430046
+        },
+        "real_intraset_sim": {
+          "value": 0.15708516538143158,
+          "ci_lo": 0.14417873099446296,
+          "ci_hi": 0.19621722921729087
+        },
+        "real_vendi_score": 39.671634674072266,
+        "generated_intraset_sim": 0.5605728626251221,
+        "generated_vendi_score": 7.9970879554748535
+      },
+      "germany": {
+        "n_generated": 50,
+        "n_real": 83,
+        "generated_vs_real_distance": {
+          "value": 0.47265875339508057,
+          "ci_lo": 0.45279279053211213,
+          "ci_hi": 0.5251813143491745
+        },
+        "real_intraset_sim": {
+          "value": 0.20333200693130493,
+          "ci_lo": 0.1817837219685316,
+          "ci_hi": 0.248610744997859
+        },
+        "real_vendi_score": 32.31550979614258,
+        "generated_intraset_sim": 0.6496362090110779,
+        "generated_vendi_score": 5.5531697273254395
+      },
+      "russia": {
+        "n_generated": 50,
+        "n_real": 76,
+        "generated_vs_real_distance": {
+          "value": 0.4341450333595276,
+          "ci_lo": 0.4117934763431549,
+          "ci_hi": 0.48396895527839656
+        },
+        "real_intraset_sim": {
+          "value": 0.2545359134674072,
+          "ci_lo": 0.22512340508401393,
+          "ci_hi": 0.308682818710804
+        },
+        "real_vendi_score": 26.747804641723633,
+        "generated_intraset_sim": 0.6325390338897705,
+        "generated_vendi_score": 5.940465927124023
+      },
+      "india": {
+        "n_generated": 50,
+        "n_real": 55,
+        "generated_vs_real_distance": {
+          "value": 0.5489712953567505,
+          "ci_lo": 0.49106429517269135,
+          "ci_hi": 0.6279400199651718
+        },
+        "real_intraset_sim": {
+          "value": 0.22542977333068848,
+          "ci_lo": 0.2079955402761698,
+          "ci_hi": 0.27621024698019025
+        },
+        "real_vendi_score": 28.49581527709961,
+        "generated_intraset_sim": 0.723024308681488,
+        "generated_vendi_score": 4.035499572753906
+      },
+      "indonesia": {
+        "n_generated": 50,
+        "n_real": 61,
+        "generated_vs_real_distance": {
+          "value": 0.5577890276908875,
+          "ci_lo": 0.49846641421318055,
+          "ci_hi": 0.6290578037500382
+        },
+        "real_intraset_sim": {
+          "value": 0.27087417244911194,
+          "ci_lo": 0.244217948615551,
+          "ci_hi": 0.32648239284753794
+        },
+        "real_vendi_score": 24.387187957763672,
+        "generated_intraset_sim": 0.6945202350616455,
+        "generated_vendi_score": 4.528341770172119
+      },
+      "japan": {
+        "n_generated": 50,
+        "n_real": 92,
+        "generated_vs_real_distance": {
+          "value": 0.5874770879745483,
+          "ci_lo": 0.5316217452287674,
+          "ci_hi": 0.6580242320895194
+        },
+        "real_intraset_sim": {
+          "value": 0.3942375183105469,
+          "ci_lo": 0.3481291264295578,
+          "ci_hi": 0.4592593602836132
+        },
+        "real_vendi_score": 16.46436309814453,
+        "generated_intraset_sim": 0.5526595711708069,
+        "generated_vendi_score": 7.275165557861328
+      },
+      "egypt": {
+        "n_generated": 50,
+        "n_real": 38,
+        "generated_vs_real_distance": {
+          "value": 0.29717588424682617,
+          "ci_lo": 0.2782903343439102,
+          "ci_hi": 0.3847403734922409
+        },
+        "real_intraset_sim": {
+          "value": 0.22880013287067413,
+          "ci_lo": 0.19306843727827072,
+          "ci_hi": 0.3244994103908539
+        },
+        "real_vendi_score": 18.108787536621094,
+        "generated_intraset_sim": 0.5793434381484985,
+        "generated_vendi_score": 6.691383361816406
+      },
+      "nigeria": {
+        "n_generated": 50,
+        "n_real": 82,
+        "generated_vs_real_distance": {
+          "value": 0.3501473069190979,
+          "ci_lo": 0.32182706594467164,
+          "ci_hi": 0.4041172698140144
+        },
+        "real_intraset_sim": {
+          "value": 0.3027143180370331,
+          "ci_lo": 0.2675203584134579,
+          "ci_hi": 0.36175011992454525
+        },
+        "real_vendi_score": 19.315046310424805,
+        "generated_intraset_sim": 0.7432436347007751,
+        "generated_vendi_score": 3.681875705718994
+      },
+      "_default_generated_vs_real_countries": {
+        "united_states": 0.6179375052452087,
+        "germany": 0.6948638558387756,
+        "russia": 0.7143707275390625,
+        "india": 0.7387739419937134,
+        "indonesia": 0.7496188879013062,
+        "japan": 0.7784414291381836,
+        "egypt": 0.6542403697967529,
+        "nigeria": 0.7098708748817444
+      }
+    },
+    "wedding": {
+      "default": {
+        "n_generated": 50,
+        "n_real": 0,
+        "generated_intraset_sim": 0.5018391013145447,
+        "generated_vendi_score": 11.561922073364258
+      },
+      "united_states": {
+        "n_generated": 50,
+        "n_real": 80,
+        "generated_vs_real_distance": {
+          "value": 0.4907567501068115,
+          "ci_lo": 0.462630333006382,
+          "ci_hi": 0.5505732640624046
+        },
+        "real_intraset_sim": {
+          "value": 0.19453071057796478,
+          "ci_lo": 0.17427827455103398,
+          "ci_hi": 0.23978997729718685
+        },
+        "real_vendi_score": 37.537715911865234,
+        "generated_intraset_sim": 0.5244333744049072,
+        "generated_vendi_score": 10.364582061767578
+      },
+      "germany": {
+        "n_generated": 50,
+        "n_real": 61,
+        "generated_vs_real_distance": {
+          "value": 0.5752313137054443,
+          "ci_lo": 0.5586978510022164,
+          "ci_hi": 0.6351908341050148
+        },
+        "real_intraset_sim": {
+          "value": 0.1511654108762741,
+          "ci_lo": 0.13509950488805772,
+          "ci_hi": 0.20175130665302277
+        },
+        "real_vendi_score": 33.966827392578125,
+        "generated_intraset_sim": 0.4588802456855774,
+        "generated_vendi_score": 13.250247955322266
+      },
+      "russia": {
+        "n_generated": 50,
+        "n_real": 54,
+        "generated_vs_real_distance": {
+          "value": 0.5882571935653687,
+          "ci_lo": 0.5629877418279647,
+          "ci_hi": 0.6505684062838555
+        },
+        "real_intraset_sim": {
+          "value": 0.17879082262516022,
+          "ci_lo": 0.16638650447130204,
+          "ci_hi": 0.23205984197556973
+        },
+        "real_vendi_score": 24.856956481933594,
+        "generated_intraset_sim": 0.46153730154037476,
+        "generated_vendi_score": 13.038032531738281
+      },
+      "india": {
+        "n_generated": 50,
+        "n_real": 53,
+        "generated_vs_real_distance": {
+          "value": 0.28796082735061646,
+          "ci_lo": 0.2661207109689713,
+          "ci_hi": 0.35199839621782303
+        },
+        "real_intraset_sim": {
+          "value": 0.2903749346733093,
+          "ci_lo": 0.26675930544734,
+          "ci_hi": 0.34567284435033796
+        },
+        "real_vendi_score": 19.868371963500977,
+        "generated_intraset_sim": 0.6343676447868347,
+        "generated_vendi_score": 6.3408203125
+      },
+      "indonesia": {
+        "n_generated": 50,
+        "n_real": 61,
+        "generated_vs_real_distance": {
+          "value": 0.5241979956626892,
+          "ci_lo": 0.4827489048242569,
+          "ci_hi": 0.5979491010308265
+        },
+        "real_intraset_sim": {
+          "value": 0.23846471309661865,
+          "ci_lo": 0.2121924117207527,
+          "ci_hi": 0.29825960770249366
+        },
+        "real_vendi_score": 20.4643497467041,
+        "generated_intraset_sim": 0.483261376619339,
+        "generated_vendi_score": 12.069796562194824
+      },
+      "japan": {
+        "n_generated": 50,
+        "n_real": 58,
+        "generated_vs_real_distance": {
+          "value": 0.41376590728759766,
+          "ci_lo": 0.3999732345342636,
+          "ci_hi": 0.46291826516389845
+        },
+        "real_intraset_sim": {
+          "value": 0.25987252593040466,
+          "ci_lo": 0.22754532620310783,
+          "ci_hi": 0.326330791413784
+        },
+        "real_vendi_score": 21.640134811401367,
+        "generated_intraset_sim": 0.5958583354949951,
+        "generated_vendi_score": 7.567603588104248
+      },
+      "egypt": {
+        "n_generated": 50,
+        "n_real": 47,
+        "generated_vs_real_distance": {
+          "value": 0.6853362321853638,
+          "ci_lo": 0.6538589566946029,
+          "ci_hi": 0.726991668343544
+        },
+        "real_intraset_sim": {
+          "value": 0.3314409852027893,
+          "ci_lo": 0.2928705722093582,
+          "ci_hi": 0.40380386635661125
+        },
+        "real_vendi_score": 16.00301742553711,
+        "generated_intraset_sim": 0.6002734899520874,
+        "generated_vendi_score": 7.338951587677002
+      },
+      "nigeria": {
+        "n_generated": 50,
+        "n_real": 59,
+        "generated_vs_real_distance": {
+          "value": 0.27345025539398193,
+          "ci_lo": 0.250670513510704,
+          "ci_hi": 0.3202482298016548
+        },
+        "real_intraset_sim": {
+          "value": 0.45704516768455505,
+          "ci_lo": 0.4322176553308964,
+          "ci_hi": 0.5041484639048577
+        },
+        "real_vendi_score": 10.55614948272705,
+        "generated_intraset_sim": 0.7295079231262207,
+        "generated_vendi_score": 4.396851539611816
+      },
+      "_default_generated_vs_real_countries": {
+        "united_states": 0.5122612714767456,
+        "germany": 0.5682241320610046,
+        "russia": 0.6443300843238831,
+        "india": 0.7797271013259888,
+        "indonesia": 0.7025018334388733,
+        "japan": 0.712951123714447,
+        "egypt": 0.6563097834587097,
+        "nigeria": 0.6742467880249023
+      }
+    }
+  }
+}

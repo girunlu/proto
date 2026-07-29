@@ -1,0 +1,149 @@
+{
+  "prompt": "a school in Egypt",
+  "model": "sd3.5-large",
+  "situation": "school",
+  "country": "Egypt",
+  "n_seeds": 10,
+  "specified_detection": "heuristic_substring_match",
+  "named_assumptions": [
+    {
+      "question_id": "U01",
+      "question": "Is this scene indoors or outdoors?",
+      "assumed_value": "outdoors",
+      "consistency": 1.0,
+      "tier": "headline",
+      "steerable": true,
+      "steerability_detail": {
+        "counter_prompt": "a school in Egypt, indoors",
+        "consistency_after_counter_spec": 0.875,
+        "majority_value_after": "indoors",
+        "steerable": true
+      },
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "U09",
+      "question": "Is it daytime or nighttime in the image?",
+      "assumed_value": "day",
+      "consistency": 1.0,
+      "tier": "headline",
+      "steerable": true,
+      "steerability_detail": {
+        "counter_prompt": "a school in Egypt, at night",
+        "consistency_after_counter_spec": 0.75,
+        "majority_value_after": "night",
+        "steerable": true
+      },
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "U10",
+      "question": "What is the weather in the scene?",
+      "assumed_value": "sunny",
+      "consistency": 1.0,
+      "tier": "headline",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "S1",
+      "question": "Is the scene a classroom or outdoors?",
+      "assumed_value": "outdoors",
+      "consistency": 1.0,
+      "tier": "headline",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "S3",
+      "question": "Are computers or technology visible?",
+      "assumed_value": "no",
+      "consistency": 1.0,
+      "tier": "headline",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "U02",
+      "question": "Is the setting urban or rural?",
+      "assumed_value": "urban",
+      "consistency": 0.9,
+      "tier": "headline",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "U11",
+      "question": "Does the setting look wealthy, average, or poor?",
+      "assumed_value": "average",
+      "consistency": 0.8,
+      "tier": "headline",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "U06",
+      "question": "Are any people wearing headwear?",
+      "assumed_value": "no",
+      "consistency": 0.7,
+      "tier": "secondary",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "U08",
+      "question": "Does the scene look modern or historical?",
+      "assumed_value": "historical",
+      "consistency": 0.6,
+      "tier": "secondary",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "S2",
+      "question": "Are uniforms worn?",
+      "assumed_value": "no",
+      "consistency": 0.6,
+      "tier": "secondary",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "S4",
+      "question": "What type of building is visible?",
+      "assumed_value": "old building",
+      "consistency": 0.6,
+      "tier": "secondary",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    }
+  ],
+  "homogeneity": {
+    "basis": "reality_anchor_grid",
+    "real_intraset_sim": 0.22880013287067413,
+    "real_vendi_score": 18.108787536621094,
+    "generated_intraset_sim": 0.5132,
+    "generated_vendi_score": 4.7124,
+    "homogeneity_trap": true
+  }
+}

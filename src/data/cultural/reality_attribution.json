@@ -1,0 +1,42 @@
+{
+ "wedding_nigeria": [
+  {
+   "file": "wedding_nigeria_img_001.webp",
+   "author": "Sani Oumar",
+   "license": "CC BY-SA 4.0",
+   "url": "https://commons.wikimedia.org/wiki/File%3AA_moment_of_joy_-_Bride_and_her_groom_dancing_at_their_wedding_party_in_northern_Nigeria_%281%29.jpg"
+  },
+  {
+   "file": "wedding_nigeria_img_002.webp",
+   "author": "Sani Oumar",
+   "license": "CC BY-SA 4.0",
+   "url": "https://commons.wikimedia.org/wiki/File%3AA_moment_of_joy_-_Bride_and_her_groom_dancing_at_their_wedding_party_in_northern_Nigeria_%2810%29.jpg"
+  },
+  {
+   "file": "wedding_nigeria_img_003.webp",
+   "author": "Sani Oumar",
+   "license": "CC BY-SA 4.0",
+   "url": "https://commons.wikimedia.org/wiki/File%3AA_moment_of_joy_-_Bride_and_her_groom_dancing_at_their_wedding_party_in_northern_Nigeria_%282%29.jpg"
+  },
+  {
+   "file": "wedding_nigeria_img_004.webp",
+   "author": "Sani Oumar",
+   "license": "CC BY-SA 4.0",
+   "url": "https://commons.wikimedia.org/wiki/File%3AA_moment_of_joy_-_Bride_and_her_groom_dancing_at_their_wedding_party_in_northern_Nigeria_%283%29.jpg"
+  }
+ ],
+ "wedding_united_states": [
+  {
+   "file": "wedding_united_states_img_000.webp",
+   "author": "Hossein Qollar-Aqasi",
+   "license": "Public domain",
+   "url": "https://commons.wikimedia.org/wiki/File%3AThe_Wedding_of_Naser_al-Din_Shah.jpg"
+  },
+  {
+   "file": "wedding_united_states_img_003.webp",
+   "author": "Nitido 2007",
+   "license": "CC BY-SA 4.0",
+   "url": "https://commons.wikimedia.org/wiki/File%3AWedding_in_the_St._Bernard_de_Clairvaux_Church.jpg"
+  }
+ ]
+}

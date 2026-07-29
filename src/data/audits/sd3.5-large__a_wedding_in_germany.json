@@ -1,0 +1,138 @@
+{
+  "prompt": "a wedding in Germany",
+  "model": "sd3.5-large",
+  "situation": "wedding",
+  "country": "Germany",
+  "n_seeds": 10,
+  "specified_detection": "heuristic_substring_match",
+  "named_assumptions": [
+    {
+      "question_id": "U09",
+      "question": "Is it daytime or nighttime in the image?",
+      "assumed_value": "day",
+      "consistency": 1.0,
+      "tier": "headline",
+      "steerable": true,
+      "steerability_detail": {
+        "counter_prompt": "a wedding in Germany, at night",
+        "consistency_after_counter_spec": 0.875,
+        "majority_value_after": "night",
+        "steerable": true
+      },
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "U11",
+      "question": "Does the setting look wealthy, average, or poor?",
+      "assumed_value": "wealthy",
+      "consistency": 1.0,
+      "tier": "headline",
+      "steerable": false,
+      "steerability_detail": {
+        "counter_prompt": "a wedding in Germany, in a modest setting",
+        "consistency_after_counter_spec": 1.0,
+        "majority_value_after": "wealthy",
+        "steerable": false
+      },
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "W1",
+      "question": "What color is the main ceremonial outfit?",
+      "assumed_value": "white",
+      "consistency": 1.0,
+      "tier": "headline",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "W3",
+      "question": "Are people dancing?",
+      "assumed_value": "no",
+      "consistency": 1.0,
+      "tier": "headline",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "W4",
+      "question": "Is food visible?",
+      "assumed_value": "no",
+      "consistency": 1.0,
+      "tier": "headline",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "U01",
+      "question": "Is this scene indoors or outdoors?",
+      "assumed_value": "outdoors",
+      "consistency": 0.9,
+      "tier": "headline",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "U04",
+      "question": "How many people are in the image?",
+      "assumed_value": "6+",
+      "consistency": 0.9,
+      "tier": "headline",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "U02",
+      "question": "Is the setting urban or rural?",
+      "assumed_value": "urban",
+      "consistency": 0.7,
+      "tier": "secondary",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "U05b",
+      "question": "Is the clothing traditional or modern?",
+      "assumed_value": "modern",
+      "consistency": 0.7,
+      "tier": "secondary",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    },
+    {
+      "question_id": "U06",
+      "question": "Are any people wearing headwear?",
+      "assumed_value": "yes",
+      "consistency": 0.7,
+      "tier": "secondary",
+      "steerable": null,
+      "steerability_detail": null,
+      "lock_in_step": null,
+      "lock_in_note": "not computed -- requires a slow latent-checkpoint generation mode + a second swap-to prompt + a logistic MLE fit (see prompt_swap.py / cultural_lockup_curve.py); out of scope for an on-demand CLI pass"
+    }
+  ],
+  "homogeneity": {
+    "basis": "reality_anchor_grid",
+    "real_intraset_sim": 0.1511654108762741,
+    "real_vendi_score": 33.966827392578125,
+    "generated_intraset_sim": 0.431,
+    "generated_vendi_score": 5.8207,
+    "homogeneity_trap": true
+  }
+}

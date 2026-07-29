@@ -1,11 +1,13 @@
+# promptswontsaveyou.dev
 
-  # Project prototype
+An interactive explorable on the assumptions text-to-image models make before
+you say anything: where they live, when they lock in, and what it costs to
+override them.
 
-  This is a code bundle for Project prototype. The original project is available at https://www.figma.com/design/NgCXjWLO8OVElBrfupQanj/Project-prototype.
+Measured on Stable Diffusion 2.1 in depth, and replicated on six further
+models. 54 frozen prompts × 50 seeds × 7 models, with every number on the page
+traceable to the analysis that produced it.
 
-  ## Running the code
+Explainable AI × human–computer interaction · thesis explorable.
 
-  Run `npm i` to install the dependencies.
-
-  Run `npm run dev` to start the development server.
-  
+See `HOW_TO_START.txt` to run it locally, `ATTRIBUTIONS.md` for credits.
