@@ -1,0 +1,88 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PART I: THE DEFAULT · findings F1–F5
+// Data sources: src/data/cultural/chunk1.json (per-cell dist/intraset/typical_order,
+// f3 per-seed nearest-country labels, empty_prior), src/data/cultural/umap.json
+// (real UMAP export, 30 points per variant + true centroids).
+// F5 silhouette range 0.10–0.27 from master_docs/findings_summary.md (clip-matrix
+// statistics). F3 headline 16/300 = 5.3% computed from chunk1.f3 (below).
+// ─────────────────────────────────────────────────────────────────────────────
+import chunk1 from './cultural/chunk1.json'
+import umap from './cultural/umap.json'
+
+export type Sit = 'wedding' | 'funeral' | 'celebration' | 'family' | 'breakfast' | 'school'
+export type Code = 'US' | 'DE' | 'RU' | 'ID' | 'JP' | 'EG' | 'IN' | 'NG'
+
+export const SITS = chunk1.situations as Sit[]
+export const CODES = chunk1.codes as Code[]
+
+// WEIRD → far order, matching the project's validated categorical palette
+export const COUNTRY8: { id: Code; name: string; cv: string }[] = [
+  { id: 'US', name: 'United States', cv: '--c-us' },
+  { id: 'DE', name: 'Germany', cv: '--c-de' },
+  { id: 'RU', name: 'Russia', cv: '--c-ru' },
+  { id: 'ID', name: 'Indonesia', cv: '--c-id' },
+  { id: 'JP', name: 'Japan', cv: '--c-jp' },
+  { id: 'EG', name: 'Egypt', cv: '--c-eg' },
+  { id: 'IN', name: 'India', cv: '--c-in' },
+  { id: 'NG', name: 'Nigeria', cv: '--c-ng' },
+]
+export const CV_DEFAULT = '--c-gray'
+export const C8 = Object.fromEntries(COUNTRY8.map((c) => [c.id, c])) as Record<Code, (typeof COUNTRY8)[number]>
+
+// UMAP export uses full lowercase country names
+export const UMAP_NAME_TO_CODE: Record<string, Code | 'default'> = {
+  default: 'default', usa: 'US', germany: 'DE', russia: 'RU', indonesia: 'ID',
+  japan: 'JP', egypt: 'EG', india: 'IN', nigeria: 'NG',
+}
+
+export interface Cell {
+  dist: { country: string; mean: number; ci_low: number; ci_high: number } | null
+  intraset: { mean: number; ci_low: number; ci_high: number; n_seeds: number }
+  diverse9: number[]
+  headline_n: number
+  secondary_n: number
+  top_cards: { id: string; q: string; v: string; p: number }[]
+  typical_order: number[]
+  subclusters: { k: number; citable: boolean; ari: number }
+}
+export const CELLS = chunk1.cells as unknown as Record<string, Cell>
+export const cellKey = (sit: Sit, code: Code | 'default') => `${sit}_${code}`
+export const cell = (sit: Sit, code: Code | 'default'): Cell => CELLS[cellKey(sit, code)]
+
+// F3: per-seed nearest-country label for each default seed, per situation
+export const F3 = chunk1.f3 as unknown as Record<Sit, Code[]>
+// F3 headline: seeds landing nearest the Global-South countries (IN/NG/ID/EG).
+// 16/300 = 0.053, matching ui_findings_handbook.md F3 ("non-Western share = 0.053").
+export const SOUTH: Code[] = ['IN', 'NG', 'ID', 'EG']
+export const F3_SOUTH_COUNT = SITS.reduce(
+  (acc, s) => acc + F3[s].filter((l) => SOUTH.includes(l)).length,
+  0
+)
+export const F3_TOTAL = SITS.reduce((acc, s) => acc + F3[s].length, 0)
+
+// F2: empty-prompt distances (30 images, prompt = "")
+export const EMPTY = chunk1.empty_prior as unknown as {
+  mean_by_country: Record<Code | 'default', number>
+}
+
+// F4: real UMAP export
+export interface UmapPoint { country: string; seed: number; x: number; y: number }
+export const UMAP = umap.results as unknown as Record<
+  Sit,
+  { points: UmapPoint[]; centroids: Record<string, { x: number; y: number }>; clusters: [number, number][][] }
+>
+
+// F5: silhouette range across situations (findings_summary.md: "0.10–0.27")
+export const SILHOUETTE_RANGE: [number, number] = [0.1, 0.27]
+
+// image helpers
+export const seedImg = (sit: Sit, code: Code | 'default', seed: number) =>
+  `/images/seeds/${sit}_${code}_s${String(seed).padStart(2, '0')}.webp`
+export const ZERO_IMGS = Array.from({ length: 30 }, (_, i) => `/images/zero/ep_${String(i).padStart(2, '0')}.webp`)
+
+// yardstick calibration (ui_findings_handbook.md: required on every distance chart)
+export const YARDSTICK = {
+  emptyPrior: 0.26, // distance of the empty prompt itself from a situation default
+  ceiling: [0.7, 0.9] as [number, number], // distance between two different situations
+  note: '0.5 ≈ most of the way to being a different event',
+}

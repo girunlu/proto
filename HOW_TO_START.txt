@@ -1,5 +1,5 @@
-HOW TO RUN THE FRONTEND
-=======================
+HOW TO RUN
+==========
 
 1. Install dependencies (first time only):
    npm install
@@ -8,30 +8,38 @@ HOW TO RUN THE FRONTEND
    npm run dev
 
 3. Open in browser:
-   http://localhost:5173
+   http://localhost:5184
 
-That's it. No backend, no API — everything is static files.
+No backend, no API. Everything is static files.
 
----
+
+BEFORE YOU PUSH
+===============
+
+Run BOTH. `vite build` is transpile-only and will happily succeed on an
+undefined-variable reference; `tsc` is what catches it. That exact bug once
+shipped a blank white page despite a clean build.
+
+   npm run typecheck
+   npm run build
+
 
 WHAT'S IN THE REPO
 ==================
 
-src/app/components/
-  Layer1–5.tsx   — the five explorable sections
-  ToolCard.tsx   — shared components (Lightbox, PredictionReveal, Section, etc.)
+src/sections/     the numbered scenes, in page order
+src/components/   Scene shell, the chart primitives (Viz.tsx), the model switcher
+src/data/         every number the page shows, exported from the analysis pipeline
+public/images/    9,236 generated images, attention maps and reference photographs
 
-public/images/
-  cultural/      — 9 real SD 2.1 images (wedding/breakfast/funeral × default/Nigeria/Japan)
-  swaps/         — 15 prompt-swap images (3 pairs × 5 denoising steps, seed_00)
+The data and images are produced by
+code_giray/scripts/phase4_frontend_export/ in the research repo. They are
+committed here so the site builds with no pipeline present.
 
-All data (DINOv2 distances, aesthetics scores, lock-in curves) is embedded
-directly as TypeScript constants — no JSON files need to be present.
 
----
+DEPLOYMENT
+==========
 
-NODE VERSION
-============
-
-Tested on Node 18+. If npm install fails, check your node version:
-  node --version
+Pushing to main triggers a Cloudflare build, which runs `npm install` and
+`npm run build`, then serves ./dist at promptswontsaveyou.dev.
+See wrangler.jsonc. `dist/` and `node_modules/` are intentionally NOT tracked.

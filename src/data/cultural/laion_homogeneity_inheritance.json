@@ -1,0 +1,505 @@
+{
+  "method": "D1_part2_homogeneity_inheritance_regression",
+  "index_source": "huggingface.co/datasets/zcaoyao/improved_aesthetics_6.5plus_clip_retrieval (proxy, see laion_neighborhood.json's caveats)",
+  "top_k": 50,
+  "note": "retrieval_intraset_sim/vendi: computed on the actual reconstructed CLIP embeddings of the top-K nearest training-data neighbors for each prompt (same formulas as cultural_dinov3.py/cultural_vendi_score.py). output_intraset_sim/vendi: the model's OWN generated-image homogeneity, already on disk. Correlated across all 48 cells.",
+  "intraset_correlation": {
+    "rho": -0.0522,
+    "p": 0.707852,
+    "n": 54
+  },
+  "vendi_correlation": {
+    "rho": -0.1286,
+    "p": 0.353883,
+    "n": 54
+  },
+  "verdict": "not clearly inherited: little/no correlation between training-data-neighborhood narrowness and the model's own output homogeneity -- the model's homogenization looks more like its own behavior than something it copied from an already-narrow training slice",
+  "rows": [
+    {
+      "situation": "breakfast",
+      "country": "default",
+      "prompt": "a breakfast",
+      "retrieval_intraset_sim": 0.569247,
+      "retrieval_vendi_score": 6.6388,
+      "output_intraset_sim": 0.436655,
+      "output_vendi_score": 14.6226
+    },
+    {
+      "situation": "breakfast",
+      "country": "US",
+      "prompt": "a breakfast in United States",
+      "retrieval_intraset_sim": 0.473138,
+      "retrieval_vendi_score": 8.5409,
+      "output_intraset_sim": 0.541349,
+      "output_vendi_score": 9.9525
+    },
+    {
+      "situation": "breakfast",
+      "country": "DE",
+      "prompt": "a breakfast in Germany",
+      "retrieval_intraset_sim": 0.53374,
+      "retrieval_vendi_score": 7.3363,
+      "output_intraset_sim": 0.506299,
+      "output_vendi_score": 11.1405
+    },
+    {
+      "situation": "breakfast",
+      "country": "RU",
+      "prompt": "a breakfast in Russia",
+      "retrieval_intraset_sim": 0.639575,
+      "retrieval_vendi_score": 5.1456,
+      "output_intraset_sim": 0.553335,
+      "output_vendi_score": 9.5705
+    },
+    {
+      "situation": "breakfast",
+      "country": "IN",
+      "prompt": "a breakfast in India",
+      "retrieval_intraset_sim": 0.619017,
+      "retrieval_vendi_score": 5.2634,
+      "output_intraset_sim": 0.579109,
+      "output_vendi_score": 8.045
+    },
+    {
+      "situation": "breakfast",
+      "country": "ID",
+      "prompt": "a breakfast in Indonesia",
+      "retrieval_intraset_sim": 0.502013,
+      "retrieval_vendi_score": 9.6,
+      "output_intraset_sim": 0.51744,
+      "output_vendi_score": 11.032
+    },
+    {
+      "situation": "breakfast",
+      "country": "JP",
+      "prompt": "a breakfast in Japan",
+      "retrieval_intraset_sim": 0.550985,
+      "retrieval_vendi_score": 7.5279,
+      "output_intraset_sim": 0.576772,
+      "output_vendi_score": 9.0357
+    },
+    {
+      "situation": "breakfast",
+      "country": "EG",
+      "prompt": "a breakfast in Egypt",
+      "retrieval_intraset_sim": 0.620618,
+      "retrieval_vendi_score": 5.0289,
+      "output_intraset_sim": 0.56576,
+      "output_vendi_score": 8.4915
+    },
+    {
+      "situation": "breakfast",
+      "country": "NG",
+      "prompt": "a breakfast in Nigeria",
+      "retrieval_intraset_sim": 0.531828,
+      "retrieval_vendi_score": 8.4133,
+      "output_intraset_sim": 0.567217,
+      "output_vendi_score": 8.7253
+    },
+    {
+      "situation": "celebration",
+      "country": "default",
+      "prompt": "a celebration",
+      "retrieval_intraset_sim": 0.827208,
+      "retrieval_vendi_score": 2.231,
+      "output_intraset_sim": 0.443673,
+      "output_vendi_score": 13.2821
+    },
+    {
+      "situation": "celebration",
+      "country": "US",
+      "prompt": "a celebration in United States",
+      "retrieval_intraset_sim": 0.450064,
+      "retrieval_vendi_score": 9.1923,
+      "output_intraset_sim": 0.424158,
+      "output_vendi_score": 14.3837
+    },
+    {
+      "situation": "celebration",
+      "country": "DE",
+      "prompt": "a celebration in Germany",
+      "retrieval_intraset_sim": 0.542413,
+      "retrieval_vendi_score": 5.2729,
+      "output_intraset_sim": 0.508407,
+      "output_vendi_score": 10.4239
+    },
+    {
+      "situation": "celebration",
+      "country": "RU",
+      "prompt": "a celebration in Russia",
+      "retrieval_intraset_sim": 0.604822,
+      "retrieval_vendi_score": 5.7218,
+      "output_intraset_sim": 0.512495,
+      "output_vendi_score": 7.2383
+    },
+    {
+      "situation": "celebration",
+      "country": "IN",
+      "prompt": "a celebration in India",
+      "retrieval_intraset_sim": 0.524782,
+      "retrieval_vendi_score": 8.4419,
+      "output_intraset_sim": 0.67907,
+      "output_vendi_score": 5.509
+    },
+    {
+      "situation": "celebration",
+      "country": "ID",
+      "prompt": "a celebration in Indonesia",
+      "retrieval_intraset_sim": 0.451769,
+      "retrieval_vendi_score": 10.308,
+      "output_intraset_sim": 0.583142,
+      "output_vendi_score": 8.6254
+    },
+    {
+      "situation": "celebration",
+      "country": "JP",
+      "prompt": "a celebration in Japan",
+      "retrieval_intraset_sim": 0.596517,
+      "retrieval_vendi_score": 6.7573,
+      "output_intraset_sim": 0.634303,
+      "output_vendi_score": 6.0916
+    },
+    {
+      "situation": "celebration",
+      "country": "EG",
+      "prompt": "a celebration in Egypt",
+      "retrieval_intraset_sim": 0.513795,
+      "retrieval_vendi_score": 7.2422,
+      "output_intraset_sim": 0.574587,
+      "output_vendi_score": 7.7363
+    },
+    {
+      "situation": "celebration",
+      "country": "NG",
+      "prompt": "a celebration in Nigeria",
+      "retrieval_intraset_sim": 0.47238,
+      "retrieval_vendi_score": 10.4507,
+      "output_intraset_sim": 0.726116,
+      "output_vendi_score": 4.4323
+    },
+    {
+      "situation": "family",
+      "country": "default",
+      "prompt": "a family",
+      "retrieval_intraset_sim": 0.454227,
+      "retrieval_vendi_score": 9.8017,
+      "output_intraset_sim": 0.318697,
+      "output_vendi_score": 18.8353
+    },
+    {
+      "situation": "family",
+      "country": "US",
+      "prompt": "a family in United States",
+      "retrieval_intraset_sim": 0.480016,
+      "retrieval_vendi_score": 8.7179,
+      "output_intraset_sim": 0.384349,
+      "output_vendi_score": 16.6965
+    },
+    {
+      "situation": "family",
+      "country": "DE",
+      "prompt": "a family in Germany",
+      "retrieval_intraset_sim": 0.673356,
+      "retrieval_vendi_score": 4.755,
+      "output_intraset_sim": 0.394046,
+      "output_vendi_score": 14.6385
+    },
+    {
+      "situation": "family",
+      "country": "RU",
+      "prompt": "a family in Russia",
+      "retrieval_intraset_sim": 0.602899,
+      "retrieval_vendi_score": 5.008,
+      "output_intraset_sim": 0.360257,
+      "output_vendi_score": 16.824
+    },
+    {
+      "situation": "family",
+      "country": "IN",
+      "prompt": "a family in India",
+      "retrieval_intraset_sim": 0.559766,
+      "retrieval_vendi_score": 7.374,
+      "output_intraset_sim": 0.685081,
+      "output_vendi_score": 5.4204
+    },
+    {
+      "situation": "family",
+      "country": "ID",
+      "prompt": "a family in Indonesia",
+      "retrieval_intraset_sim": 0.488767,
+      "retrieval_vendi_score": 9.9725,
+      "output_intraset_sim": 0.621702,
+      "output_vendi_score": 7.0551
+    },
+    {
+      "situation": "family",
+      "country": "JP",
+      "prompt": "a family in Japan",
+      "retrieval_intraset_sim": 0.524319,
+      "retrieval_vendi_score": 7.2797,
+      "output_intraset_sim": 0.576815,
+      "output_vendi_score": 8.0013
+    },
+    {
+      "situation": "family",
+      "country": "EG",
+      "prompt": "a family in Egypt",
+      "retrieval_intraset_sim": 0.622987,
+      "retrieval_vendi_score": 5.1775,
+      "output_intraset_sim": 0.579412,
+      "output_vendi_score": 7.5259
+    },
+    {
+      "situation": "family",
+      "country": "NG",
+      "prompt": "a family in Nigeria",
+      "retrieval_intraset_sim": 0.508798,
+      "retrieval_vendi_score": 7.8219,
+      "output_intraset_sim": 0.743139,
+      "output_vendi_score": 4.1626
+    },
+    {
+      "situation": "funeral",
+      "country": "default",
+      "prompt": "a funeral",
+      "retrieval_intraset_sim": 0.476314,
+      "retrieval_vendi_score": 9.2067,
+      "output_intraset_sim": 0.64958,
+      "output_vendi_score": 6.0183
+    },
+    {
+      "situation": "funeral",
+      "country": "US",
+      "prompt": "a funeral in United States",
+      "retrieval_intraset_sim": 0.419297,
+      "retrieval_vendi_score": 9.8109,
+      "output_intraset_sim": 0.574314,
+      "output_vendi_score": 7.7414
+    },
+    {
+      "situation": "funeral",
+      "country": "DE",
+      "prompt": "a funeral in Germany",
+      "retrieval_intraset_sim": 0.516882,
+      "retrieval_vendi_score": 5.0701,
+      "output_intraset_sim": 0.567237,
+      "output_vendi_score": 8.0468
+    },
+    {
+      "situation": "funeral",
+      "country": "RU",
+      "prompt": "a funeral in Russia",
+      "retrieval_intraset_sim": 0.503907,
+      "retrieval_vendi_score": 8.84,
+      "output_intraset_sim": 0.624636,
+      "output_vendi_score": 6.3961
+    },
+    {
+      "situation": "funeral",
+      "country": "IN",
+      "prompt": "a funeral in India",
+      "retrieval_intraset_sim": 0.505663,
+      "retrieval_vendi_score": 8.4543,
+      "output_intraset_sim": 0.589426,
+      "output_vendi_score": 7.4319
+    },
+    {
+      "situation": "funeral",
+      "country": "ID",
+      "prompt": "a funeral in Indonesia",
+      "retrieval_intraset_sim": 0.472917,
+      "retrieval_vendi_score": 8.3203,
+      "output_intraset_sim": 0.621441,
+      "output_vendi_score": 6.7459
+    },
+    {
+      "situation": "funeral",
+      "country": "JP",
+      "prompt": "a funeral in Japan",
+      "retrieval_intraset_sim": 0.475258,
+      "retrieval_vendi_score": 9.2799,
+      "output_intraset_sim": 0.601598,
+      "output_vendi_score": 6.9481
+    },
+    {
+      "situation": "funeral",
+      "country": "EG",
+      "prompt": "a funeral in Egypt",
+      "retrieval_intraset_sim": 0.582626,
+      "retrieval_vendi_score": 7.0299,
+      "output_intraset_sim": 0.611194,
+      "output_vendi_score": 6.5188
+    },
+    {
+      "situation": "funeral",
+      "country": "NG",
+      "prompt": "a funeral in Nigeria",
+      "retrieval_intraset_sim": 0.439736,
+      "retrieval_vendi_score": 10.7844,
+      "output_intraset_sim": 0.61673,
+      "output_vendi_score": 6.3315
+    },
+    {
+      "situation": "school",
+      "country": "default",
+      "prompt": "a school",
+      "retrieval_intraset_sim": 0.560926,
+      "retrieval_vendi_score": 5.5464,
+      "output_intraset_sim": 0.453448,
+      "output_vendi_score": 12.3879
+    },
+    {
+      "situation": "school",
+      "country": "US",
+      "prompt": "a school in United States",
+      "retrieval_intraset_sim": 0.599665,
+      "retrieval_vendi_score": 5.1436,
+      "output_intraset_sim": 0.560573,
+      "output_vendi_score": 7.9971
+    },
+    {
+      "situation": "school",
+      "country": "DE",
+      "prompt": "a school in Germany",
+      "retrieval_intraset_sim": 0.634402,
+      "retrieval_vendi_score": 4.8694,
+      "output_intraset_sim": 0.649636,
+      "output_vendi_score": 5.5532
+    },
+    {
+      "situation": "school",
+      "country": "RU",
+      "prompt": "a school in Russia",
+      "retrieval_intraset_sim": 0.598941,
+      "retrieval_vendi_score": 5.3463,
+      "output_intraset_sim": 0.632539,
+      "output_vendi_score": 5.9405
+    },
+    {
+      "situation": "school",
+      "country": "IN",
+      "prompt": "a school in India",
+      "retrieval_intraset_sim": 0.571873,
+      "retrieval_vendi_score": 5.4885,
+      "output_intraset_sim": 0.723024,
+      "output_vendi_score": 4.0355
+    },
+    {
+      "situation": "school",
+      "country": "ID",
+      "prompt": "a school in Indonesia",
+      "retrieval_intraset_sim": 0.453121,
+      "retrieval_vendi_score": 9.6095,
+      "output_intraset_sim": 0.69452,
+      "output_vendi_score": 4.5283
+    },
+    {
+      "situation": "school",
+      "country": "JP",
+      "prompt": "a school in Japan",
+      "retrieval_intraset_sim": 0.408401,
+      "retrieval_vendi_score": 12.6826,
+      "output_intraset_sim": 0.55266,
+      "output_vendi_score": 7.2752
+    },
+    {
+      "situation": "school",
+      "country": "EG",
+      "prompt": "a school in Egypt",
+      "retrieval_intraset_sim": 0.465464,
+      "retrieval_vendi_score": 8.5751,
+      "output_intraset_sim": 0.579343,
+      "output_vendi_score": 6.6914
+    },
+    {
+      "situation": "school",
+      "country": "NG",
+      "prompt": "a school in Nigeria",
+      "retrieval_intraset_sim": 0.492987,
+      "retrieval_vendi_score": 7.9626,
+      "output_intraset_sim": 0.743244,
+      "output_vendi_score": 3.6819
+    },
+    {
+      "situation": "wedding",
+      "country": "default",
+      "prompt": "a wedding",
+      "retrieval_intraset_sim": 0.583627,
+      "retrieval_vendi_score": 6.1262,
+      "output_intraset_sim": 0.501839,
+      "output_vendi_score": 11.5619
+    },
+    {
+      "situation": "wedding",
+      "country": "US",
+      "prompt": "a wedding in United States",
+      "retrieval_intraset_sim": 0.455832,
+      "retrieval_vendi_score": 9.4175,
+      "output_intraset_sim": 0.524433,
+      "output_vendi_score": 10.3646
+    },
+    {
+      "situation": "wedding",
+      "country": "DE",
+      "prompt": "a wedding in Germany",
+      "retrieval_intraset_sim": 0.491108,
+      "retrieval_vendi_score": 7.079,
+      "output_intraset_sim": 0.45888,
+      "output_vendi_score": 13.2502
+    },
+    {
+      "situation": "wedding",
+      "country": "RU",
+      "prompt": "a wedding in Russia",
+      "retrieval_intraset_sim": 0.447228,
+      "retrieval_vendi_score": 10.7954,
+      "output_intraset_sim": 0.461537,
+      "output_vendi_score": 13.038
+    },
+    {
+      "situation": "wedding",
+      "country": "IN",
+      "prompt": "a wedding in India",
+      "retrieval_intraset_sim": 0.527341,
+      "retrieval_vendi_score": 8.7296,
+      "output_intraset_sim": 0.634368,
+      "output_vendi_score": 6.3408
+    },
+    {
+      "situation": "wedding",
+      "country": "ID",
+      "prompt": "a wedding in Indonesia",
+      "retrieval_intraset_sim": 0.435921,
+      "retrieval_vendi_score": 12.5067,
+      "output_intraset_sim": 0.483261,
+      "output_vendi_score": 12.0698
+    },
+    {
+      "situation": "wedding",
+      "country": "JP",
+      "prompt": "a wedding in Japan",
+      "retrieval_intraset_sim": 0.567328,
+      "retrieval_vendi_score": 7.0681,
+      "output_intraset_sim": 0.595858,
+      "output_vendi_score": 7.5676
+    },
+    {
+      "situation": "wedding",
+      "country": "EG",
+      "prompt": "a wedding in Egypt",
+      "retrieval_intraset_sim": 0.516015,
+      "retrieval_vendi_score": 8.4573,
+      "output_intraset_sim": 0.600273,
+      "output_vendi_score": 7.339
+    },
+    {
+      "situation": "wedding",
+      "country": "NG",
+      "prompt": "a wedding in Nigeria",
+      "retrieval_intraset_sim": 0.507662,
+      "retrieval_vendi_score": 7.8463,
+      "output_intraset_sim": 0.729508,
+      "output_vendi_score": 4.3969
+    }
+  ]
+}

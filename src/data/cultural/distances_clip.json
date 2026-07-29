@@ -1,0 +1,404 @@
+{
+  "method": "clip_cosine_distance_from_default",
+  "cfg": 7,
+  "n_seeds": 50,
+  "n_bootstrap": 10000,
+  "results": {
+    "breakfast": {
+      "US": {
+        "country": "United States",
+        "mean": 0.193129,
+        "ci_low": 0.17295,
+        "ci_high": 0.217906,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "DE": {
+        "country": "Germany",
+        "mean": 0.190904,
+        "ci_low": 0.171372,
+        "ci_high": 0.216437,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "RU": {
+        "country": "Russia",
+        "mean": 0.169872,
+        "ci_low": 0.152801,
+        "ci_high": 0.194265,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "IN": {
+        "country": "India",
+        "mean": 0.293261,
+        "ci_low": 0.276375,
+        "ci_high": 0.313804,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "ID": {
+        "country": "Indonesia",
+        "mean": 0.254599,
+        "ci_low": 0.232661,
+        "ci_high": 0.279887,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "JP": {
+        "country": "Japan",
+        "mean": 0.279974,
+        "ci_low": 0.261797,
+        "ci_high": 0.300804,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "EG": {
+        "country": "Egypt",
+        "mean": 0.27029,
+        "ci_low": 0.246479,
+        "ci_high": 0.30068,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "NG": {
+        "country": "Nigeria",
+        "mean": 0.311376,
+        "ci_low": 0.28931,
+        "ci_high": 0.340864,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      }
+    },
+    "celebration": {
+      "US": {
+        "country": "United States",
+        "mean": 0.29093,
+        "ci_low": 0.269222,
+        "ci_high": 0.329289,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "DE": {
+        "country": "Germany",
+        "mean": 0.293249,
+        "ci_low": 0.267489,
+        "ci_high": 0.337571,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "RU": {
+        "country": "Russia",
+        "mean": 0.215416,
+        "ci_low": 0.206046,
+        "ci_high": 0.242995,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "IN": {
+        "country": "India",
+        "mean": 0.248085,
+        "ci_low": 0.236911,
+        "ci_high": 0.276113,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "ID": {
+        "country": "Indonesia",
+        "mean": 0.261801,
+        "ci_low": 0.249907,
+        "ci_high": 0.289645,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "JP": {
+        "country": "Japan",
+        "mean": 0.250219,
+        "ci_low": 0.239625,
+        "ci_high": 0.277519,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "EG": {
+        "country": "Egypt",
+        "mean": 0.235016,
+        "ci_low": 0.216256,
+        "ci_high": 0.274516,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "NG": {
+        "country": "Nigeria",
+        "mean": 0.339214,
+        "ci_low": 0.322554,
+        "ci_high": 0.370453,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      }
+    },
+    "family": {
+      "US": {
+        "country": "United States",
+        "mean": 0.080476,
+        "ci_low": 0.068639,
+        "ci_high": 0.114638,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "DE": {
+        "country": "Germany",
+        "mean": 0.129619,
+        "ci_low": 0.116766,
+        "ci_high": 0.162625,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "RU": {
+        "country": "Russia",
+        "mean": 0.09777,
+        "ci_low": 0.089504,
+        "ci_high": 0.126143,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "IN": {
+        "country": "India",
+        "mean": 0.246477,
+        "ci_low": 0.232626,
+        "ci_high": 0.271309,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "ID": {
+        "country": "Indonesia",
+        "mean": 0.270556,
+        "ci_low": 0.253031,
+        "ci_high": 0.299535,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "JP": {
+        "country": "Japan",
+        "mean": 0.211458,
+        "ci_low": 0.196323,
+        "ci_high": 0.240232,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "EG": {
+        "country": "Egypt",
+        "mean": 0.177188,
+        "ci_low": 0.168474,
+        "ci_high": 0.202444,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "NG": {
+        "country": "Nigeria",
+        "mean": 0.28959,
+        "ci_low": 0.276914,
+        "ci_high": 0.313167,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      }
+    },
+    "funeral": {
+      "US": {
+        "country": "United States",
+        "mean": 0.061702,
+        "ci_low": 0.051709,
+        "ci_high": 0.087249,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "DE": {
+        "country": "Germany",
+        "mean": 0.128563,
+        "ci_low": 0.106913,
+        "ci_high": 0.163189,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "RU": {
+        "country": "Russia",
+        "mean": 0.124681,
+        "ci_low": 0.111106,
+        "ci_high": 0.147869,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "IN": {
+        "country": "India",
+        "mean": 0.251519,
+        "ci_low": 0.240437,
+        "ci_high": 0.272014,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "ID": {
+        "country": "Indonesia",
+        "mean": 0.210252,
+        "ci_low": 0.199716,
+        "ci_high": 0.228965,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "JP": {
+        "country": "Japan",
+        "mean": 0.12549,
+        "ci_low": 0.114496,
+        "ci_high": 0.146971,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "EG": {
+        "country": "Egypt",
+        "mean": 0.163024,
+        "ci_low": 0.151329,
+        "ci_high": 0.188121,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "NG": {
+        "country": "Nigeria",
+        "mean": 0.334885,
+        "ci_low": 0.312427,
+        "ci_high": 0.366103,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      }
+    },
+    "school": {
+      "US": {
+        "country": "United States",
+        "mean": 0.173623,
+        "ci_low": 0.144121,
+        "ci_high": 0.219347,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "DE": {
+        "country": "Germany",
+        "mean": 0.113365,
+        "ci_low": 0.096093,
+        "ci_high": 0.146475,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "RU": {
+        "country": "Russia",
+        "mean": 0.12441,
+        "ci_low": 0.108496,
+        "ci_high": 0.155082,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "IN": {
+        "country": "India",
+        "mean": 0.239214,
+        "ci_low": 0.225719,
+        "ci_high": 0.263435,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "ID": {
+        "country": "Indonesia",
+        "mean": 0.241824,
+        "ci_low": 0.225966,
+        "ci_high": 0.268859,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "JP": {
+        "country": "Japan",
+        "mean": 0.133809,
+        "ci_low": 0.121093,
+        "ci_high": 0.163724,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "EG": {
+        "country": "Egypt",
+        "mean": 0.194595,
+        "ci_low": 0.178291,
+        "ci_high": 0.223768,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "NG": {
+        "country": "Nigeria",
+        "mean": 0.251279,
+        "ci_low": 0.236621,
+        "ci_high": 0.276529,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      }
+    },
+    "wedding": {
+      "US": {
+        "country": "United States",
+        "mean": 0.044606,
+        "ci_low": 0.042273,
+        "ci_high": 0.062992,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "DE": {
+        "country": "Germany",
+        "mean": 0.110612,
+        "ci_low": 0.096098,
+        "ci_high": 0.137644,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "RU": {
+        "country": "Russia",
+        "mean": 0.102468,
+        "ci_low": 0.093476,
+        "ci_high": 0.125425,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "IN": {
+        "country": "India",
+        "mean": 0.171171,
+        "ci_low": 0.163916,
+        "ci_high": 0.188743,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "ID": {
+        "country": "Indonesia",
+        "mean": 0.151403,
+        "ci_low": 0.142036,
+        "ci_high": 0.170865,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "JP": {
+        "country": "Japan",
+        "mean": 0.164158,
+        "ci_low": 0.156195,
+        "ci_high": 0.182113,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "EG": {
+        "country": "Egypt",
+        "mean": 0.176538,
+        "ci_low": 0.162676,
+        "ci_high": 0.205983,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      },
+      "NG": {
+        "country": "Nigeria",
+        "mean": 0.251418,
+        "ci_low": 0.240555,
+        "ci_high": 0.270695,
+        "n_seeds_default": 50,
+        "n_seeds_country": 50
+      }
+    }
+  }
+}

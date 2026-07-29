@@ -1,0 +1,98 @@
+{
+ "wedding_NG": {
+  "default_load_bits": 17.2812,
+  "cultural_ladder_delta_bits": 2.187,
+  "control_delta_bits": {
+   "ctrl_large": -1.6733,
+   "ctrl_rain": 2.4763,
+   "ctrl_1985": 1.5005
+  },
+  "mean_control_delta_bits": 0.7678,
+  "D14_congruent_delta_bits": {
+   "L1c": 0.4047,
+   "L2c": -1.9612
+  },
+  "D14_negation_delta_bits": {
+   "neg_L1": -1.1584,
+   "neg_L2": -3.0566
+  }
+ },
+ "celebration_NG": {
+  "default_load_bits": 9.9205,
+  "cultural_ladder_delta_bits": 3.4539,
+  "control_delta_bits": {
+   "ctrl_large": 4.49,
+   "ctrl_rain": 7.1351,
+   "ctrl_1985": 8.5977
+  },
+  "mean_control_delta_bits": 6.7409,
+  "D14_congruent_delta_bits": {
+   "L1c": 3.2689,
+   "L2c": 3.1235
+  },
+  "D14_negation_delta_bits": {
+   "neg_L1": 3.4714,
+   "neg_L2": -0.0499
+  }
+ },
+ "wedding_IN": {
+  "default_load_bits": 17.2812,
+  "cultural_ladder_delta_bits": -0.919,
+  "control_delta_bits": {
+   "ctrl_large": -1.6733,
+   "ctrl_rain": 2.4763,
+   "ctrl_1985": 1.5005
+  },
+  "mean_control_delta_bits": 0.7678
+ },
+ "wedding_DE": {
+  "default_load_bits": 17.2812,
+  "cultural_ladder_delta_bits": 1.382,
+  "control_delta_bits": {
+   "ctrl_large": -1.6733,
+   "ctrl_rain": 2.4763,
+   "ctrl_1985": 1.5005
+  },
+  "mean_control_delta_bits": 0.7678
+ },
+ "wedding_EG": {
+  "default_load_bits": 17.2812,
+  "cultural_ladder_delta_bits": -2.703,
+  "control_delta_bits": {
+   "ctrl_large": -1.6733,
+   "ctrl_rain": 2.4763,
+   "ctrl_1985": 1.5005
+  },
+  "mean_control_delta_bits": 0.7678
+ },
+ "celebration_DE": {
+  "default_load_bits": 9.9205,
+  "cultural_ladder_delta_bits": 1.0313,
+  "control_delta_bits": {
+   "ctrl_large": 4.49,
+   "ctrl_rain": 7.1351,
+   "ctrl_1985": 8.5977
+  },
+  "mean_control_delta_bits": 6.7409
+ },
+ "celebration_IN": {
+  "default_load_bits": 9.9205,
+  "cultural_ladder_delta_bits": 4.3925,
+  "control_delta_bits": {
+   "ctrl_large": 4.49,
+   "ctrl_rain": 7.1351,
+   "ctrl_1985": 8.5977
+  },
+  "mean_control_delta_bits": 6.7409
+ },
+ "celebration_EG": {
+  "default_load_bits": 9.9205,
+  "cultural_ladder_delta_bits": -1.5812,
+  "control_delta_bits": {
+   "ctrl_large": 4.49,
+   "ctrl_rain": 7.1351,
+   "ctrl_1985": 8.5977
+  },
+  "mean_control_delta_bits": 6.7409
+ }
+}

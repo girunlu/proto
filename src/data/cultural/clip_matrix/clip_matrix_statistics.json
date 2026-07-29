@@ -1,0 +1,121 @@
+{
+  "method": "clip_matrix_statistics_v1",
+  "n_permutations_mantel": 10000,
+  "note": "silhouette_score_image_space: sklearn silhouette (cosine metric) over all 450 per-seed image embeddings labeled by country \u2014 'images genuinely cluster by country' as one number, computed on the FULL per-seed embeddings (not the 9x9 collapsed matrix, which has only 1 point/country and can't support this). mantel_test_text_vs_image: permutation correlation between the 9x9 text-distance and 9x9 image-distance matrices (collapsed country means) \u2014 low r + significant p supports the underdetermination claim (text geometry doesn't predict image geometry) as a single statistic instead of two heatmaps.",
+  "results": {
+    "breakfast": {
+      "clip": {
+        "silhouette_score_image_space": 0.20791415870189667,
+        "n_points": 450,
+        "n_countries": 9,
+        "mantel_test_text_vs_image": {
+          "r": 0.720225209178817,
+          "p_value": 0.0005,
+          "n_perm": 10000,
+          "null_mean": 0.0005364682959744688,
+          "null_std": 0.2588376858180325
+        }
+      },
+      "dinov3": {
+        "silhouette_score_image_space": 0.08910738676786423,
+        "n_points": 450,
+        "n_countries": 9
+      }
+    },
+    "celebration": {
+      "clip": {
+        "silhouette_score_image_space": 0.34973835945129395,
+        "n_points": 450,
+        "n_countries": 9,
+        "mantel_test_text_vs_image": {
+          "r": 0.09071064287089614,
+          "p_value": 0.7954,
+          "n_perm": 10000,
+          "null_mean": -0.00044460624093875224,
+          "null_std": 0.2774116068672882
+        }
+      },
+      "dinov3": {
+        "silhouette_score_image_space": 0.2983027398586273,
+        "n_points": 450,
+        "n_countries": 9
+      }
+    },
+    "family": {
+      "clip": {
+        "silhouette_score_image_space": 0.2778001129627228,
+        "n_points": 450,
+        "n_countries": 9,
+        "mantel_test_text_vs_image": {
+          "r": 0.45349617233798806,
+          "p_value": 0.0072,
+          "n_perm": 10000,
+          "null_mean": 0.000781510300770628,
+          "null_std": 0.16889009658255982
+        }
+      },
+      "dinov3": {
+        "silhouette_score_image_space": 0.19486162066459656,
+        "n_points": 450,
+        "n_countries": 9
+      }
+    },
+    "funeral": {
+      "clip": {
+        "silhouette_score_image_space": 0.26005226373672485,
+        "n_points": 450,
+        "n_countries": 9,
+        "mantel_test_text_vs_image": {
+          "r": 0.44143717513868314,
+          "p_value": 0.0166,
+          "n_perm": 10000,
+          "null_mean": -0.0006510269648050032,
+          "null_std": 0.192577914017722
+        }
+      },
+      "dinov3": {
+        "silhouette_score_image_space": 0.11479020118713379,
+        "n_points": 450,
+        "n_countries": 9
+      }
+    },
+    "school": {
+      "clip": {
+        "silhouette_score_image_space": 0.22047743201255798,
+        "n_points": 450,
+        "n_countries": 9,
+        "mantel_test_text_vs_image": {
+          "r": 0.09937148967431812,
+          "p_value": 0.5653,
+          "n_perm": 10000,
+          "null_mean": 0.004033599824338242,
+          "null_std": 0.24753563485015484
+        }
+      },
+      "dinov3": {
+        "silhouette_score_image_space": 0.07672242820262909,
+        "n_points": 450,
+        "n_countries": 9
+      }
+    },
+    "wedding": {
+      "clip": {
+        "silhouette_score_image_space": 0.2687588632106781,
+        "n_points": 450,
+        "n_countries": 9,
+        "mantel_test_text_vs_image": {
+          "r": -0.09738168983551096,
+          "p_value": 0.7547,
+          "n_perm": 10000,
+          "null_mean": 0.0017404116182492488,
+          "null_std": 0.2808650172292953
+        }
+      },
+      "dinov3": {
+        "silhouette_score_image_space": 0.2129909098148346,
+        "n_points": 450,
+        "n_countries": 9
+      }
+    }
+  }
+}

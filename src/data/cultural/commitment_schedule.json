@@ -1,0 +1,5016 @@
+{
+  "method": "D7_commitment_schedule",
+  "note": "Per (swap direction, closed universal question): P(answer closer to B's endpoint majority | swapped at step k), fitted with the same logistic MLE machinery as cultural_lockin_hardening.py's embedding-centroid curve. fit='logistic' entries have a converged MLE crossing step + bootstrap CI; fit='interval_fallback' entries (power fallback, stated in advance per v5) report a bracket or one-sided interval instead of a point estimate when the fit didn't converge or its crossing fell outside [0,30] steps. H1/H2/H3 are analysis-plan hypotheses, NOT pre-registered predictions (binding decision 1) -- report is honest about whichever branch the data actually supports.",
+  "hypotheses": {
+    "H1_scene_before_texture": {
+      "mean_crossing_scene": 11.41,
+      "mean_crossing_texture": 12.23,
+      "n_scene": 21,
+      "n_texture": 31,
+      "supported": true
+    },
+    "H2_people_count": {
+      "mean_crossing_U04": 8.78,
+      "mean_crossing_other_attributes": 12.2,
+      "n_U04_fits": 2,
+      "n_U04_no_discriminating_contrast": 20,
+      "n_U04_interval_fallback_only": 2,
+      "branch": "capability_gap_leaning: U04 rarely produces a clean fitted crossing (often no discriminating contrast or non-convergent) -- consistent with a generic counting-capability gap rather than clean cultural commitment"
+    },
+    "H3_coupling_cross_check": {
+      "n_pairs": 345,
+      "r_coupling_vs_crossing_step": 0.0406,
+      "p_value": 0.4519,
+      "interpretation": "does not support H3's predicted direction"
+    }
+  },
+  "summary": {
+    "n_directions": 24,
+    "n_attribute_curves_fitted_logistic": 89,
+    "n_attribute_curves_interval_fallback": 37
+  },
+  "results": {
+    "breakfast_DE_to_NG": {
+      "situation": "breakfast",
+      "country_A": "DE",
+      "country_B": "NG",
+      "type": "strong",
+      "per_question": {
+        "U01": {
+          "assumed_value_A": "indoors",
+          "assumed_value_B": "outdoors",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.5,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 24.69,
+          "crossing_step_ci": [
+            14.02,
+            91.79
+          ],
+          "logistic_slope": 0.0537,
+          "qid_group": "scene"
+        },
+        "U03": {
+          "assumed_value_A": "no",
+          "assumed_value_B": "yes",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 4.38,
+          "crossing_step_ci": [
+            -14.01,
+            11.57
+          ],
+          "logistic_slope": 0.0779,
+          "qid_group": "other"
+        },
+        "U04": {
+          "assumed_value_A": "0",
+          "assumed_value_B": "3-5",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "other"
+        },
+        "U05b": {
+          "assumed_value_A": "n-a",
+          "assumed_value_B": "modern",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0833,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "texture"
+        },
+        "U11": {
+          "assumed_value_A": "average",
+          "assumed_value_B": "poor",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 1.48,
+          "crossing_step_ci": [
+            -6.18,
+            5.43
+          ],
+          "logistic_slope": 0.1723,
+          "qid_group": "texture"
+        },
+        "U12": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "Africa",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 4.22,
+          "crossing_step_ci": [
+            -0.74,
+            7.59
+          ],
+          "logistic_slope": 0.1874,
+          "qid_group": "other"
+        }
+      }
+    },
+    "breakfast_JP_to_RU": {
+      "situation": "breakfast",
+      "country_A": "JP",
+      "country_B": "RU",
+      "type": "weak",
+      "per_question": {
+        "U12": {
+          "assumed_value_A": "Asia",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.5,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 25.56,
+          "crossing_step_ci": [
+            20.59,
+            44.77
+          ],
+          "logistic_slope": 0.1641,
+          "qid_group": "other"
+        }
+      }
+    },
+    "breakfast_NG_to_DE": {
+      "situation": "breakfast",
+      "country_A": "NG",
+      "country_B": "DE",
+      "type": "strong",
+      "per_question": {
+        "U01": {
+          "assumed_value_A": "outdoors",
+          "assumed_value_B": "indoors",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.4167,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 22.59,
+          "crossing_step_ci": [
+            9.64,
+            125.93
+          ],
+          "logistic_slope": 0.0429,
+          "qid_group": "scene"
+        },
+        "U03": {
+          "assumed_value_A": "yes",
+          "assumed_value_B": "no",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 8.9,
+          "crossing_step_ci": [
+            3.87,
+            13.57
+          ],
+          "logistic_slope": 0.1241,
+          "qid_group": "other"
+        },
+        "U04": {
+          "assumed_value_A": "3-5",
+          "assumed_value_B": "0",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 8.9,
+          "crossing_step_ci": [
+            3.77,
+            13.63
+          ],
+          "logistic_slope": 0.1241,
+          "qid_group": "other"
+        },
+        "U05b": {
+          "assumed_value_A": "modern",
+          "assumed_value_B": "n-a",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 10.23,
+          "crossing_step_ci": [
+            5.65,
+            16.09
+          ],
+          "logistic_slope": 0.1147,
+          "qid_group": "texture"
+        },
+        "U11": {
+          "assumed_value_A": "poor",
+          "assumed_value_B": "average",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.5833,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 26.08,
+          "crossing_step_ci": [
+            22.02,
+            34.4
+          ],
+          "logistic_slope": 0.2637,
+          "qid_group": "texture"
+        },
+        "U12": {
+          "assumed_value_A": "Africa",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 19.86,
+          "crossing_step_ci": [
+            15.88,
+            27.03
+          ],
+          "logistic_slope": 0.154,
+          "qid_group": "other"
+        }
+      }
+    },
+    "breakfast_RU_to_JP": {
+      "situation": "breakfast",
+      "country_A": "RU",
+      "country_B": "JP",
+      "type": "weak",
+      "per_question": {
+        "U12": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "Asia",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 9.6,
+          "crossing_step_ci": [
+            5.59,
+            13.04
+          ],
+          "logistic_slope": 0.1541,
+          "qid_group": "other"
+        }
+      }
+    },
+    "celebration_DE_to_US": {
+      "situation": "celebration",
+      "country_A": "DE",
+      "country_B": "US",
+      "type": "weak",
+      "per_question": {
+        "U06": {
+          "assumed_value_A": "no",
+          "assumed_value_B": "yes",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.5,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 23.43,
+          "crossing_step_ci": [
+            11.07,
+            98.27
+          ],
+          "logistic_slope": 0.0398,
+          "qid_group": "texture"
+        },
+        "U07": {
+          "assumed_value_A": "house",
+          "assumed_value_B": "other",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0833,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 3.26,
+          "crossing_step_ci": [
+            -14.88,
+            9.57
+          ],
+          "logistic_slope": 0.0894,
+          "qid_group": "scene"
+        },
+        "U10": {
+          "assumed_value_A": "cloudy",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 1.57,
+          "crossing_step_ci": [
+            -33.45,
+            46.97
+          ],
+          "logistic_slope": 0.0519,
+          "qid_group": "other"
+        },
+        "U12": {
+          "assumed_value_A": "Europe",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.4167,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 29.58,
+          "crossing_step_ci": [
+            -29.95,
+            150.57
+          ],
+          "logistic_slope": -0.0477,
+          "qid_group": "other"
+        }
+      }
+    },
+    "celebration_ID_to_JP": {
+      "situation": "celebration",
+      "country_A": "ID",
+      "country_B": "JP",
+      "type": "weak",
+      "per_question": {
+        "U02": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "urban",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.3333,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 20.95,
+          "crossing_step_ci": [
+            16.02,
+            32.1
+          ],
+          "logistic_slope": 0.1273,
+          "qid_group": "scene"
+        },
+        "U05b": {
+          "assumed_value_A": "mixed",
+          "assumed_value_B": "traditional",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.75,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly before step 1",
+          "qid_group": "texture"
+        },
+        "U06": {
+          "assumed_value_A": "yes",
+          "assumed_value_B": "no",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 5.8,
+          "crossing_step_ci": [
+            -5.02,
+            10.95
+          ],
+          "logistic_slope": 0.1086,
+          "qid_group": "texture"
+        },
+        "U07": {
+          "assumed_value_A": "none",
+          "assumed_value_B": "temple",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 4.25,
+          "crossing_step_ci": [
+            -2.59,
+            7.94
+          ],
+          "logistic_slope": 0.1547,
+          "qid_group": "scene"
+        },
+        "U08": {
+          "assumed_value_A": "modern",
+          "assumed_value_B": "historical",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 5.15,
+          "crossing_step_ci": [
+            0.08,
+            8.5
+          ],
+          "logistic_slope": 0.1726,
+          "qid_group": "other"
+        },
+        "U10": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "cloudy",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly before step 1",
+          "qid_group": "other"
+        }
+      }
+    },
+    "celebration_JP_to_ID": {
+      "situation": "celebration",
+      "country_A": "JP",
+      "country_B": "ID",
+      "type": "weak",
+      "per_question": {
+        "U02": {
+          "assumed_value_A": "urban",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0833,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "scene"
+        },
+        "U05b": {
+          "assumed_value_A": "traditional",
+          "assumed_value_B": "mixed",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0833,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 1.27,
+          "crossing_step_ci": [
+            -24.91,
+            8.51
+          ],
+          "logistic_slope": 0.0772,
+          "qid_group": "texture"
+        },
+        "U06": {
+          "assumed_value_A": "no",
+          "assumed_value_B": "yes",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.5833,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 24.27,
+          "crossing_step_ci": [
+            12.99,
+            108.35
+          ],
+          "logistic_slope": 0.0491,
+          "qid_group": "texture"
+        },
+        "U07": {
+          "assumed_value_A": "temple",
+          "assumed_value_B": "none",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "scene"
+        },
+        "U08": {
+          "assumed_value_A": "historical",
+          "assumed_value_B": "modern",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.5833,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 25.01,
+          "crossing_step_ci": [
+            15.28,
+            118.54
+          ],
+          "logistic_slope": 0.0586,
+          "qid_group": "other"
+        },
+        "U10": {
+          "assumed_value_A": "cloudy",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.8333,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly before step 1",
+          "qid_group": "other"
+        }
+      }
+    },
+    "celebration_US_to_DE": {
+      "situation": "celebration",
+      "country_A": "US",
+      "country_B": "DE",
+      "type": "weak",
+      "per_question": {
+        "U06": {
+          "assumed_value_A": "yes",
+          "assumed_value_B": "no",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0833,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "texture"
+        },
+        "U07": {
+          "assumed_value_A": "other",
+          "assumed_value_B": "house",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0833,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "scene"
+        },
+        "U10": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "cloudy",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 3.31,
+          "crossing_step_ci": [
+            -21.82,
+            10.21
+          ],
+          "logistic_slope": 0.077,
+          "qid_group": "other"
+        },
+        "U12": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "Europe",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 7.08,
+          "crossing_step_ci": [
+            4.01,
+            9.92
+          ],
+          "logistic_slope": 0.2203,
+          "qid_group": "other"
+        }
+      }
+    },
+    "family_EG_to_RU": {
+      "situation": "family",
+      "country_A": "EG",
+      "country_B": "RU",
+      "type": "strong",
+      "per_question": {
+        "U02": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "urban",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 11.53,
+          "crossing_step_ci": [
+            6.96,
+            15.03
+          ],
+          "logistic_slope": 0.1298,
+          "qid_group": "scene"
+        },
+        "U05b": {
+          "assumed_value_A": "mixed",
+          "assumed_value_B": "modern",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 10.93,
+          "crossing_step_ci": [
+            5.99,
+            16.87
+          ],
+          "logistic_slope": 0.1167,
+          "qid_group": "texture"
+        },
+        "U07": {
+          "assumed_value_A": "temple",
+          "assumed_value_B": "house",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 8.69,
+          "crossing_step_ci": [
+            -12.5,
+            26.59
+          ],
+          "logistic_slope": 0.0579,
+          "qid_group": "scene"
+        },
+        "U10": {
+          "assumed_value_A": "sunny",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 14.56,
+          "crossing_step_ci": [
+            10.55,
+            19.48
+          ],
+          "logistic_slope": 0.1446,
+          "qid_group": "other"
+        },
+        "U11": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "average",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 6.11,
+          "crossing_step_ci": [
+            2.7,
+            9.04
+          ],
+          "logistic_slope": 0.2246,
+          "qid_group": "texture"
+        },
+        "U12": {
+          "assumed_value_A": "Africa",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 9.59,
+          "crossing_step_ci": [
+            4.46,
+            13.13
+          ],
+          "logistic_slope": 0.1372,
+          "qid_group": "other"
+        }
+      }
+    },
+    "family_JP_to_US": {
+      "situation": "family",
+      "country_A": "JP",
+      "country_B": "US",
+      "type": "strong",
+      "per_question": {
+        "U02": {
+          "assumed_value_A": "urban",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.3333,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "scene"
+        },
+        "U07": {
+          "assumed_value_A": "temple",
+          "assumed_value_B": "none",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 0.93,
+          "crossing_step_ci": [
+            0.93,
+            1.06
+          ],
+          "logistic_slope": 5.1061,
+          "qid_group": "scene"
+        },
+        "U08": {
+          "assumed_value_A": "historical",
+          "assumed_value_B": "modern",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.3333,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 21.15,
+          "crossing_step_ci": [
+            16.86,
+            27.79
+          ],
+          "logistic_slope": 0.191,
+          "qid_group": "other"
+        },
+        "U12": {
+          "assumed_value_A": "Asia",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 5.26,
+          "crossing_step_ci": [
+            -1.83,
+            9.58
+          ],
+          "logistic_slope": 0.1154,
+          "qid_group": "other"
+        }
+      }
+    },
+    "family_RU_to_EG": {
+      "situation": "family",
+      "country_A": "RU",
+      "country_B": "EG",
+      "type": "strong",
+      "per_question": {
+        "U02": {
+          "assumed_value_A": "urban",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.3333,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 19.22,
+          "crossing_step_ci": [
+            2.3,
+            91.62
+          ],
+          "logistic_slope": 0.034,
+          "qid_group": "scene"
+        },
+        "U05b": {
+          "assumed_value_A": "modern",
+          "assumed_value_B": "mixed",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 13.43,
+          "crossing_step_ci": [
+            -10.08,
+            68.69
+          ],
+          "logistic_slope": 0.0301,
+          "qid_group": "texture"
+        },
+        "U07": {
+          "assumed_value_A": "house",
+          "assumed_value_B": "temple",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 4.94,
+          "crossing_step_ci": [
+            1.76,
+            7.55
+          ],
+          "logistic_slope": 0.2818,
+          "qid_group": "scene"
+        },
+        "U10": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "sunny",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 8.53,
+          "crossing_step_ci": [
+            4.94,
+            11.73
+          ],
+          "logistic_slope": 0.1908,
+          "qid_group": "other"
+        },
+        "U11": {
+          "assumed_value_A": "average",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 1.71,
+          "crossing_step_ci": [
+            -31.49,
+            80.03
+          ],
+          "logistic_slope": 0.0443,
+          "qid_group": "texture"
+        },
+        "U12": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "Africa",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 14.43,
+          "crossing_step_ci": [
+            12.1,
+            16.42
+          ],
+          "logistic_slope": 0.3438,
+          "qid_group": "other"
+        }
+      }
+    },
+    "family_US_to_JP": {
+      "situation": "family",
+      "country_A": "US",
+      "country_B": "JP",
+      "type": "strong",
+      "per_question": {
+        "U02": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "urban",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.5,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 19.97,
+          "crossing_step_ci": [
+            2.81,
+            108.35
+          ],
+          "logistic_slope": 0.031,
+          "qid_group": "scene"
+        },
+        "U07": {
+          "assumed_value_A": "none",
+          "assumed_value_B": "temple",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "scene"
+        },
+        "U08": {
+          "assumed_value_A": "modern",
+          "assumed_value_B": "historical",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly before step 1",
+          "qid_group": "other"
+        },
+        "U12": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "Asia",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": [
+            15,
+            25
+          ],
+          "note": "crosses between steps 15 and 25",
+          "qid_group": "other"
+        }
+      }
+    },
+    "funeral_IN_to_RU": {
+      "situation": "funeral",
+      "country_A": "IN",
+      "country_B": "RU",
+      "type": "strong",
+      "per_question": {
+        "U02": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "rural",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.3333,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "scene"
+        },
+        "U05b": {
+          "assumed_value_A": "mixed",
+          "assumed_value_B": "modern",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 8.54,
+          "crossing_step_ci": [
+            5.57,
+            11.37
+          ],
+          "logistic_slope": 0.2183,
+          "qid_group": "texture"
+        },
+        "U06": {
+          "assumed_value_A": "yes",
+          "assumed_value_B": "no",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 2.65,
+          "crossing_step_ci": [
+            -31.39,
+            72.87
+          ],
+          "logistic_slope": 0.0406,
+          "qid_group": "texture"
+        },
+        "U07": {
+          "assumed_value_A": "house",
+          "assumed_value_B": "none",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.4167,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 16.78,
+          "crossing_step_ci": [
+            0.75,
+            83.83
+          ],
+          "logistic_slope": 0.0366,
+          "qid_group": "scene"
+        },
+        "U10": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "cloudy",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 11.28,
+          "crossing_step_ci": [
+            7.84,
+            15.62
+          ],
+          "logistic_slope": 0.1681,
+          "qid_group": "other"
+        },
+        "U12": {
+          "assumed_value_A": "Asia",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 21.22,
+          "crossing_step_ci": [
+            15.34,
+            48.62
+          ],
+          "logistic_slope": 0.0848,
+          "qid_group": "other"
+        }
+      }
+    },
+    "funeral_NG_to_US": {
+      "situation": "funeral",
+      "country_A": "NG",
+      "country_B": "US",
+      "type": "strong",
+      "per_question": {
+        "U02": {
+          "assumed_value_A": "rural",
+          "assumed_value_B": "urban",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0833,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 5.78,
+          "crossing_step_ci": [
+            -1.22,
+            9.6
+          ],
+          "logistic_slope": 0.1361,
+          "qid_group": "scene"
+        },
+        "U05b": {
+          "assumed_value_A": "mixed",
+          "assumed_value_B": "modern",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 5.75,
+          "crossing_step_ci": [
+            -15.36,
+            14.08
+          ],
+          "logistic_slope": 0.0677,
+          "qid_group": "texture"
+        },
+        "U06": {
+          "assumed_value_A": "yes",
+          "assumed_value_B": "no",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "texture"
+        },
+        "U10": {
+          "assumed_value_A": "sunny",
+          "assumed_value_B": "cloudy",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 2.33,
+          "crossing_step_ci": [
+            -20.89,
+            8.52
+          ],
+          "logistic_slope": 0.0893,
+          "qid_group": "other"
+        },
+        "U11": {
+          "assumed_value_A": "poor",
+          "assumed_value_B": "average",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 17.22,
+          "crossing_step_ci": [
+            9.86,
+            38.55
+          ],
+          "logistic_slope": 0.072,
+          "qid_group": "texture"
+        },
+        "U12": {
+          "assumed_value_A": "Africa",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0833,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 14.15,
+          "crossing_step_ci": [
+            8.65,
+            19.7
+          ],
+          "logistic_slope": 0.0989,
+          "qid_group": "other"
+        }
+      }
+    },
+    "funeral_RU_to_IN": {
+      "situation": "funeral",
+      "country_A": "RU",
+      "country_B": "IN",
+      "type": "strong",
+      "per_question": {
+        "U02": {
+          "assumed_value_A": "rural",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.4167,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "scene"
+        },
+        "U05b": {
+          "assumed_value_A": "modern",
+          "assumed_value_B": "mixed",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 23.73,
+          "crossing_step_ci": [
+            17.59,
+            61.49
+          ],
+          "logistic_slope": 0.0814,
+          "qid_group": "texture"
+        },
+        "U06": {
+          "assumed_value_A": "no",
+          "assumed_value_B": "yes",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.5,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": [
+            1,
+            5
+          ],
+          "note": "crosses between steps 1 and 5",
+          "qid_group": "texture"
+        },
+        "U07": {
+          "assumed_value_A": "none",
+          "assumed_value_B": "house",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 1.37,
+          "crossing_step_ci": [
+            -5.82,
+            4.99
+          ],
+          "logistic_slope": 0.194,
+          "qid_group": "scene"
+        },
+        "U10": {
+          "assumed_value_A": "cloudy",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 4.1,
+          "crossing_step_ci": [
+            -11.31,
+            10.19
+          ],
+          "logistic_slope": 0.0883,
+          "qid_group": "other"
+        },
+        "U12": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "Asia",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0833,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 15.32,
+          "crossing_step_ci": [
+            11.08,
+            19.94
+          ],
+          "logistic_slope": 0.1397,
+          "qid_group": "other"
+        }
+      }
+    },
+    "funeral_US_to_NG": {
+      "situation": "funeral",
+      "country_A": "US",
+      "country_B": "NG",
+      "type": "strong",
+      "per_question": {
+        "U02": {
+          "assumed_value_A": "urban",
+          "assumed_value_B": "rural",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 2.59,
+          "crossing_step_ci": [
+            -6.56,
+            6.89
+          ],
+          "logistic_slope": 0.1419,
+          "qid_group": "scene"
+        },
+        "U05b": {
+          "assumed_value_A": "modern",
+          "assumed_value_B": "mixed",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.3333,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 22.94,
+          "crossing_step_ci": [
+            16.87,
+            45.47
+          ],
+          "logistic_slope": 0.0984,
+          "qid_group": "texture"
+        },
+        "U06": {
+          "assumed_value_A": "no",
+          "assumed_value_B": "yes",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.5,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 23.11,
+          "crossing_step_ci": [
+            14.32,
+            79.99
+          ],
+          "logistic_slope": 0.0615,
+          "qid_group": "texture"
+        },
+        "U10": {
+          "assumed_value_A": "cloudy",
+          "assumed_value_B": "sunny",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "other"
+        },
+        "U11": {
+          "assumed_value_A": "average",
+          "assumed_value_B": "poor",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 7.82,
+          "crossing_step_ci": [
+            2.74,
+            11.42
+          ],
+          "logistic_slope": 0.1506,
+          "qid_group": "texture"
+        },
+        "U12": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "Africa",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 15.0,
+          "crossing_step_ci": [
+            14.92,
+            15.08
+          ],
+          "logistic_slope": 4.3039,
+          "qid_group": "other"
+        }
+      }
+    },
+    "school_EG_to_US": {
+      "situation": "school",
+      "country_A": "EG",
+      "country_B": "US",
+      "type": "weak",
+      "per_question": {
+        "U01": {
+          "assumed_value_A": "indoors",
+          "assumed_value_B": "outdoors",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.3333,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": [
+            1,
+            5
+          ],
+          "note": "crosses between steps 1 and 5",
+          "qid_group": "scene"
+        },
+        "U02": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "urban",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 5.74,
+          "crossing_step_ci": [
+            -1.2,
+            10.08
+          ],
+          "logistic_slope": 0.1341,
+          "qid_group": "scene"
+        },
+        "U04": {
+          "assumed_value_A": "6+",
+          "assumed_value_B": "0",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "other"
+        },
+        "U05b": {
+          "assumed_value_A": "modern",
+          "assumed_value_B": "n-a",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "texture"
+        },
+        "U08": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "modern",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.3333,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 23.57,
+          "crossing_step_ci": [
+            20.3,
+            31.74
+          ],
+          "logistic_slope": 0.2412,
+          "qid_group": "other"
+        },
+        "U10": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "sunny",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.4167,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": [
+            1,
+            5
+          ],
+          "note": "crosses between steps 1 and 5",
+          "qid_group": "other"
+        },
+        "U11": {
+          "assumed_value_A": "poor",
+          "assumed_value_B": "average",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 22.12,
+          "crossing_step_ci": [
+            19.04,
+            28.63
+          ],
+          "logistic_slope": 0.2241,
+          "qid_group": "texture"
+        },
+        "U12": {
+          "assumed_value_A": "Africa",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.6667,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly before step 1",
+          "qid_group": "other"
+        }
+      }
+    },
+    "school_JP_to_RU": {
+      "situation": "school",
+      "country_A": "JP",
+      "country_B": "RU",
+      "type": "weak",
+      "per_question": {
+        "U01": {
+          "assumed_value_A": "outdoors",
+          "assumed_value_B": "indoors",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.4167,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 11.14,
+          "crossing_step_ci": [
+            -4.5,
+            42.56
+          ],
+          "logistic_slope": 0.0502,
+          "qid_group": "scene"
+        },
+        "U02": {
+          "assumed_value_A": "urban",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.3333,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly before step 1",
+          "qid_group": "scene"
+        },
+        "U12": {
+          "assumed_value_A": "Asia",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.3333,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 20.84,
+          "crossing_step_ci": [
+            14.61,
+            39.53
+          ],
+          "logistic_slope": 0.1007,
+          "qid_group": "other"
+        }
+      }
+    },
+    "school_RU_to_JP": {
+      "situation": "school",
+      "country_A": "RU",
+      "country_B": "JP",
+      "type": "weak",
+      "per_question": {
+        "U01": {
+          "assumed_value_A": "indoors",
+          "assumed_value_B": "outdoors",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "scene"
+        },
+        "U02": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "urban",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.5,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 24.41,
+          "crossing_step_ci": [
+            -31.13,
+            119.13
+          ],
+          "logistic_slope": -0.0367,
+          "qid_group": "scene"
+        },
+        "U12": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "Asia",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 12.91,
+          "crossing_step_ci": [
+            5.99,
+            23.51
+          ],
+          "logistic_slope": 0.0799,
+          "qid_group": "other"
+        }
+      }
+    },
+    "school_US_to_EG": {
+      "situation": "school",
+      "country_A": "US",
+      "country_B": "EG",
+      "type": "weak",
+      "per_question": {
+        "U01": {
+          "assumed_value_A": "outdoors",
+          "assumed_value_B": "indoors",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "scene"
+        },
+        "U02": {
+          "assumed_value_A": "urban",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly before step 1",
+          "qid_group": "scene"
+        },
+        "U04": {
+          "assumed_value_A": "0",
+          "assumed_value_B": "6+",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 8.66,
+          "crossing_step_ci": [
+            2.88,
+            15.11
+          ],
+          "logistic_slope": 0.1,
+          "qid_group": "other"
+        },
+        "U05b": {
+          "assumed_value_A": "n-a",
+          "assumed_value_B": "modern",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.75,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly before step 1",
+          "qid_group": "texture"
+        },
+        "U08": {
+          "assumed_value_A": "modern",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly before step 1",
+          "qid_group": "other"
+        },
+        "U10": {
+          "assumed_value_A": "sunny",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": [
+            1,
+            5
+          ],
+          "note": "crosses between steps 1 and 5",
+          "qid_group": "other"
+        },
+        "U11": {
+          "assumed_value_A": "average",
+          "assumed_value_B": "poor",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 2.88,
+          "crossing_step_ci": [
+            -2.76,
+            5.83
+          ],
+          "logistic_slope": 0.2114,
+          "qid_group": "texture"
+        },
+        "U12": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "Africa",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 13.6,
+          "crossing_step_ci": [
+            8.47,
+            17.42
+          ],
+          "logistic_slope": 0.0885,
+          "qid_group": "other"
+        }
+      }
+    },
+    "wedding_DE_to_IN": {
+      "situation": "wedding",
+      "country_A": "DE",
+      "country_B": "IN",
+      "type": "strong",
+      "per_question": {
+        "U02": {
+          "assumed_value_A": "urban",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "scene"
+        },
+        "U05b": {
+          "assumed_value_A": "mixed",
+          "assumed_value_B": "traditional",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 11.62,
+          "crossing_step_ci": [
+            8.89,
+            15.43
+          ],
+          "logistic_slope": 0.2027,
+          "qid_group": "texture"
+        },
+        "U06": {
+          "assumed_value_A": "no",
+          "assumed_value_B": "yes",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.4167,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 18.84,
+          "crossing_step_ci": [
+            13.4,
+            32.25
+          ],
+          "logistic_slope": 0.1043,
+          "qid_group": "texture"
+        },
+        "U07": {
+          "assumed_value_A": "house",
+          "assumed_value_B": "none",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "scene"
+        },
+        "U08": {
+          "assumed_value_A": "historical",
+          "assumed_value_B": "modern",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": [
+            1,
+            5
+          ],
+          "note": "crosses between steps 1 and 5",
+          "qid_group": "other"
+        },
+        "U10": {
+          "assumed_value_A": "cloudy",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.3333,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 16.78,
+          "crossing_step_ci": [
+            8.3,
+            40.1
+          ],
+          "logistic_slope": 0.0635,
+          "qid_group": "other"
+        },
+        "U11": {
+          "assumed_value_A": "average",
+          "assumed_value_B": "wealthy",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 3.54,
+          "crossing_step_ci": [
+            -8.58,
+            8.01
+          ],
+          "logistic_slope": 0.1285,
+          "qid_group": "texture"
+        },
+        "U12": {
+          "assumed_value_A": "Europe",
+          "assumed_value_B": "Asia",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 16.04,
+          "crossing_step_ci": [
+            14.03,
+            18.08
+          ],
+          "logistic_slope": 0.4918,
+          "qid_group": "other"
+        }
+      }
+    },
+    "wedding_IN_to_DE": {
+      "situation": "wedding",
+      "country_A": "IN",
+      "country_B": "DE",
+      "type": "strong",
+      "per_question": {
+        "U02": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "urban",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.5,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 20.03,
+          "crossing_step_ci": [
+            12.89,
+            47.91
+          ],
+          "logistic_slope": 0.0759,
+          "qid_group": "scene"
+        },
+        "U05b": {
+          "assumed_value_A": "traditional",
+          "assumed_value_B": "mixed",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 12.17,
+          "crossing_step_ci": [
+            7.91,
+            15.56
+          ],
+          "logistic_slope": 0.1309,
+          "qid_group": "texture"
+        },
+        "U06": {
+          "assumed_value_A": "yes",
+          "assumed_value_B": "no",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0833,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 5.96,
+          "crossing_step_ci": [
+            -0.39,
+            9.61
+          ],
+          "logistic_slope": 0.1468,
+          "qid_group": "texture"
+        },
+        "U07": {
+          "assumed_value_A": "none",
+          "assumed_value_B": "house",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.3333,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 5.51,
+          "crossing_step_ci": [
+            -18.97,
+            22.48
+          ],
+          "logistic_slope": 0.0641,
+          "qid_group": "scene"
+        },
+        "U08": {
+          "assumed_value_A": "modern",
+          "assumed_value_B": "historical",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.3333,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 1.96,
+          "crossing_step_ci": [
+            -37.98,
+            71.79
+          ],
+          "logistic_slope": 0.0374,
+          "qid_group": "other"
+        },
+        "U10": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "cloudy",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0833,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": [
+            1,
+            5
+          ],
+          "note": "crosses between steps 1 and 5",
+          "qid_group": "other"
+        },
+        "U11": {
+          "assumed_value_A": "wealthy",
+          "assumed_value_B": "average",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 10.84,
+          "crossing_step_ci": [
+            6.78,
+            15.39
+          ],
+          "logistic_slope": 0.139,
+          "qid_group": "texture"
+        },
+        "U12": {
+          "assumed_value_A": "Asia",
+          "assumed_value_B": "Europe",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 4.45,
+          "crossing_step_ci": [
+            1.23,
+            6.78
+          ],
+          "logistic_slope": 0.2763,
+          "qid_group": "other"
+        }
+      }
+    },
+    "wedding_NG_to_US": {
+      "situation": "wedding",
+      "country_A": "NG",
+      "country_B": "US",
+      "type": "strong",
+      "per_question": {
+        "U02": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "urban",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 5.24,
+          "crossing_step_ci": [
+            2.92,
+            7.63
+          ],
+          "logistic_slope": 0.2438,
+          "qid_group": "scene"
+        },
+        "U06": {
+          "assumed_value_A": "yes",
+          "assumed_value_B": "no",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.3333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 4.78,
+          "crossing_step_ci": [
+            3.67,
+            6.37
+          ],
+          "logistic_slope": 0.525,
+          "qid_group": "texture"
+        },
+        "U07": {
+          "assumed_value_A": "none",
+          "assumed_value_B": "other",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.1667,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "scene"
+        },
+        "U11": {
+          "assumed_value_A": "average",
+          "assumed_value_B": "wealthy",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.75,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.4167,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 23.01,
+          "crossing_step_ci": [
+            17.04,
+            42.4
+          ],
+          "logistic_slope": 0.109,
+          "qid_group": "texture"
+        },
+        "U12": {
+          "assumed_value_A": "Africa",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 12.82,
+          "crossing_step_ci": [
+            10.83,
+            14.87
+          ],
+          "logistic_slope": 0.3814,
+          "qid_group": "other"
+        }
+      }
+    },
+    "wedding_US_to_NG": {
+      "situation": "wedding",
+      "country_A": "US",
+      "country_B": "NG",
+      "type": "strong",
+      "per_question": {
+        "U02": {
+          "assumed_value_A": "urban",
+          "assumed_value_B": "unclear",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": [
+            1,
+            5
+          ],
+          "note": "crosses between steps 1 and 5",
+          "qid_group": "scene"
+        },
+        "U06": {
+          "assumed_value_A": "no",
+          "assumed_value_B": "yes",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.4167,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.3333,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 14.82,
+          "crossing_step_ci": [
+            10.63,
+            21.6
+          ],
+          "logistic_slope": 0.1316,
+          "qid_group": "texture"
+        },
+        "U07": {
+          "assumed_value_A": "other",
+          "assumed_value_B": "none",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.25,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.0833,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.1667,
+              "n": 12
+            }
+          ],
+          "fit": "interval_fallback",
+          "crossing_step_bracket": null,
+          "note": "locks strictly after step 25",
+          "qid_group": "scene"
+        },
+        "U11": {
+          "assumed_value_A": "wealthy",
+          "assumed_value_B": "average",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 0.6667,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.5833,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.5,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.25,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 12.2,
+          "crossing_step_ci": [
+            0.21,
+            28.12
+          ],
+          "logistic_slope": 0.0652,
+          "qid_group": "texture"
+        },
+        "U12": {
+          "assumed_value_A": "unclear",
+          "assumed_value_B": "Africa",
+          "raw_points": [
+            {
+              "step": 1,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 5,
+              "p_closer_B": 1.0,
+              "n": 12
+            },
+            {
+              "step": 10,
+              "p_closer_B": 0.9167,
+              "n": 12
+            },
+            {
+              "step": 15,
+              "p_closer_B": 0.8333,
+              "n": 12
+            },
+            {
+              "step": 25,
+              "p_closer_B": 0.0833,
+              "n": 12
+            }
+          ],
+          "fit": "logistic",
+          "crossing_step_mle": 18.7,
+          "crossing_step_ci": [
+            16.04,
+            21.44
+          ],
+          "logistic_slope": 0.359,
+          "qid_group": "other"
+        }
+      }
+    }
+  }
+}

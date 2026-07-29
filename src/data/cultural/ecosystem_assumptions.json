@@ -1,0 +1,1738 @@
+[
+ {
+  "situation": "breakfast",
+  "variant": "DE",
+  "question_id": "B2",
+  "question": "Is the food served at a table, on the floor, or at a counter?",
+  "value": "table",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "DE",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "indoors",
+  "tier": "secondary"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "DE",
+  "question_id": "U04",
+  "question": "How many people are in the image?",
+  "value": "0",
+  "tier": "secondary"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "DE",
+  "question_id": "U05b",
+  "question": "Is the clothing traditional or modern?",
+  "value": "n-a",
+  "tier": "secondary"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "DE",
+  "question_id": "U06",
+  "question": "Are any people wearing headwear?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "DE",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "DE",
+  "question_id": "U11",
+  "question": "Does the setting look wealthy, average, or poor?",
+  "value": "average",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "EG",
+  "question_id": "B2",
+  "question": "Is the food served at a table, on the floor, or at a counter?",
+  "value": "table",
+  "tier": "secondary"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "EG",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "ID",
+  "question_id": "B2",
+  "question": "Is the food served at a table, on the floor, or at a counter?",
+  "value": "table",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "ID",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "indoors",
+  "tier": "secondary"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "ID",
+  "question_id": "U04",
+  "question": "How many people are in the image?",
+  "value": "0",
+  "tier": "secondary"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "ID",
+  "question_id": "U05b",
+  "question": "Is the clothing traditional or modern?",
+  "value": "n-a",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "ID",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "ID",
+  "question_id": "U11",
+  "question": "Does the setting look wealthy, average, or poor?",
+  "value": "average",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "IN",
+  "question_id": "B2",
+  "question": "Is the food served at a table, on the floor, or at a counter?",
+  "value": "table",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "IN",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "IN",
+  "question_id": "U11",
+  "question": "Does the setting look wealthy, average, or poor?",
+  "value": "average",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "JP",
+  "question_id": "B2",
+  "question": "Is the food served at a table, on the floor, or at a counter?",
+  "value": "table",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "JP",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "indoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "JP",
+  "question_id": "U04",
+  "question": "How many people are in the image?",
+  "value": "0",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "JP",
+  "question_id": "U05b",
+  "question": "Is the clothing traditional or modern?",
+  "value": "n-a",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "JP",
+  "question_id": "U06",
+  "question": "Are any people wearing headwear?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "JP",
+  "question_id": "U08",
+  "question": "Does the scene look modern or historical?",
+  "value": "modern",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "JP",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "JP",
+  "question_id": "U11",
+  "question": "Does the setting look wealthy, average, or poor?",
+  "value": "average",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "NG",
+  "question_id": "B2",
+  "question": "Is the food served at a table, on the floor, or at a counter?",
+  "value": "table",
+  "tier": "secondary"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "NG",
+  "question_id": "U02",
+  "question": "Is the setting urban or rural?",
+  "value": "unclear",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "NG",
+  "question_id": "U06",
+  "question": "Are any people wearing headwear?",
+  "value": "no",
+  "tier": "secondary"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "NG",
+  "question_id": "U08",
+  "question": "Does the scene look modern or historical?",
+  "value": "modern",
+  "tier": "secondary"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "NG",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "RU",
+  "question_id": "B2",
+  "question": "Is the food served at a table, on the floor, or at a counter?",
+  "value": "table",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "RU",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "indoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "RU",
+  "question_id": "U04",
+  "question": "How many people are in the image?",
+  "value": "0",
+  "tier": "secondary"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "RU",
+  "question_id": "U05b",
+  "question": "Is the clothing traditional or modern?",
+  "value": "n-a",
+  "tier": "secondary"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "RU",
+  "question_id": "U06",
+  "question": "Are any people wearing headwear?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "RU",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "US",
+  "question_id": "B2",
+  "question": "Is the food served at a table, on the floor, or at a counter?",
+  "value": "table",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "US",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "indoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "US",
+  "question_id": "U04",
+  "question": "How many people are in the image?",
+  "value": "0",
+  "tier": "secondary"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "US",
+  "question_id": "U05b",
+  "question": "Is the clothing traditional or modern?",
+  "value": "n-a",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "US",
+  "question_id": "U06",
+  "question": "Are any people wearing headwear?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "US",
+  "question_id": "U08",
+  "question": "Does the scene look modern or historical?",
+  "value": "modern",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "US",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "default",
+  "question_id": "B2",
+  "question": "Is the food served at a table, on the floor, or at a counter?",
+  "value": "table",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "default",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "indoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "default",
+  "question_id": "U02",
+  "question": "Is the setting urban or rural?",
+  "value": "unclear",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "default",
+  "question_id": "U04",
+  "question": "How many people are in the image?",
+  "value": "0",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "default",
+  "question_id": "U05b",
+  "question": "Is the clothing traditional or modern?",
+  "value": "n-a",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "default",
+  "question_id": "U06",
+  "question": "Are any people wearing headwear?",
+  "value": "no",
+  "tier": "secondary"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "default",
+  "question_id": "U08",
+  "question": "Does the scene look modern or historical?",
+  "value": "modern",
+  "tier": "secondary"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "default",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "default",
+  "question_id": "U10",
+  "question": "What is the weather in the scene?",
+  "value": "unclear",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "default",
+  "question_id": "U11",
+  "question": "Does the setting look wealthy, average, or poor?",
+  "value": "average",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "default",
+  "question_id": "U12",
+  "question": "Which continent does this scene appear to be located in?",
+  "value": "unclear",
+  "tier": "headline"
+ },
+ {
+  "situation": "breakfast",
+  "variant": "default",
+  "question_id": "U14",
+  "question": "Describe the setting of this image in one sentence.",
+  "value": "breakfast",
+  "tier": "secondary"
+ },
+ {
+  "situation": "celebration",
+  "variant": "DE",
+  "question_id": "C4",
+  "question": "Are musical instruments visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "DE",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "EG",
+  "question_id": "C4",
+  "question": "Are musical instruments visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "EG",
+  "question_id": "U08",
+  "question": "Does the scene look modern or historical?",
+  "value": "historical",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "EG",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "ID",
+  "question_id": "C4",
+  "question": "Are musical instruments visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "IN",
+  "question_id": "C4",
+  "question": "Are musical instruments visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "IN",
+  "question_id": "U05b",
+  "question": "Is the clothing traditional or modern?",
+  "value": "traditional",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "IN",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "JP",
+  "question_id": "C4",
+  "question": "Are musical instruments visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "JP",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "NG",
+  "question_id": "C3",
+  "question": "Are fireworks or confetti visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "NG",
+  "question_id": "C4",
+  "question": "Are musical instruments visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "NG",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "RU",
+  "question_id": "C4",
+  "question": "Are musical instruments visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "US",
+  "question_id": "C4",
+  "question": "Are musical instruments visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "US",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "default",
+  "question_id": "C4",
+  "question": "Are musical instruments visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "celebration",
+  "variant": "default",
+  "question_id": "U12",
+  "question": "Which continent does this scene appear to be located in?",
+  "value": "unclear",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "DE",
+  "question_id": "FA1",
+  "question": "How many people are in the image?",
+  "value": "3-4",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "DE",
+  "question_id": "FA2",
+  "question": "Are multiple generations visible?",
+  "value": "yes",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "DE",
+  "question_id": "FA3",
+  "question": "What is the setting?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "DE",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "DE",
+  "question_id": "U04",
+  "question": "How many people are in the image?",
+  "value": "3-5",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "DE",
+  "question_id": "U05b",
+  "question": "Is the clothing traditional or modern?",
+  "value": "modern",
+  "tier": "secondary"
+ },
+ {
+  "situation": "family",
+  "variant": "DE",
+  "question_id": "U06",
+  "question": "Are any people wearing headwear?",
+  "value": "no",
+  "tier": "secondary"
+ },
+ {
+  "situation": "family",
+  "variant": "DE",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "DE",
+  "question_id": "U11",
+  "question": "Does the setting look wealthy, average, or poor?",
+  "value": "average",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "EG",
+  "question_id": "FA1",
+  "question": "How many people are in the image?",
+  "value": "3-4",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "EG",
+  "question_id": "FA2",
+  "question": "Are multiple generations visible?",
+  "value": "yes",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "EG",
+  "question_id": "FA3",
+  "question": "What is the setting?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "EG",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "EG",
+  "question_id": "U04",
+  "question": "How many people are in the image?",
+  "value": "3-5",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "EG",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "ID",
+  "question_id": "FA1",
+  "question": "How many people are in the image?",
+  "value": "3-4",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "ID",
+  "question_id": "FA2",
+  "question": "Are multiple generations visible?",
+  "value": "yes",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "ID",
+  "question_id": "FA3",
+  "question": "What is the setting?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "ID",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "ID",
+  "question_id": "U04",
+  "question": "How many people are in the image?",
+  "value": "3-5",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "ID",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "IN",
+  "question_id": "FA1",
+  "question": "How many people are in the image?",
+  "value": "3-4",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "IN",
+  "question_id": "FA2",
+  "question": "Are multiple generations visible?",
+  "value": "yes",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "IN",
+  "question_id": "FA3",
+  "question": "What is the setting?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "IN",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "IN",
+  "question_id": "U04",
+  "question": "How many people are in the image?",
+  "value": "3-5",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "IN",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "JP",
+  "question_id": "FA1",
+  "question": "How many people are in the image?",
+  "value": "3-4",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "JP",
+  "question_id": "FA2",
+  "question": "Are multiple generations visible?",
+  "value": "yes",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "JP",
+  "question_id": "U04",
+  "question": "How many people are in the image?",
+  "value": "3-5",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "JP",
+  "question_id": "U06",
+  "question": "Are any people wearing headwear?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "JP",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "JP",
+  "question_id": "U11",
+  "question": "Does the setting look wealthy, average, or poor?",
+  "value": "average",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "NG",
+  "question_id": "FA1",
+  "question": "How many people are in the image?",
+  "value": "3-4",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "NG",
+  "question_id": "FA2",
+  "question": "Are multiple generations visible?",
+  "value": "yes",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "NG",
+  "question_id": "FA3",
+  "question": "What is the setting?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "NG",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "NG",
+  "question_id": "U04",
+  "question": "How many people are in the image?",
+  "value": "3-5",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "NG",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "RU",
+  "question_id": "FA1",
+  "question": "How many people are in the image?",
+  "value": "3-4",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "RU",
+  "question_id": "FA2",
+  "question": "Are multiple generations visible?",
+  "value": "yes",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "RU",
+  "question_id": "U04",
+  "question": "How many people are in the image?",
+  "value": "3-5",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "RU",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "US",
+  "question_id": "FA1",
+  "question": "How many people are in the image?",
+  "value": "3-4",
+  "tier": "secondary"
+ },
+ {
+  "situation": "family",
+  "variant": "US",
+  "question_id": "FA2",
+  "question": "Are multiple generations visible?",
+  "value": "yes",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "US",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "US",
+  "question_id": "U04",
+  "question": "How many people are in the image?",
+  "value": "3-5",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "US",
+  "question_id": "U05b",
+  "question": "Is the clothing traditional or modern?",
+  "value": "modern",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "US",
+  "question_id": "U06",
+  "question": "Are any people wearing headwear?",
+  "value": "no",
+  "tier": "secondary"
+ },
+ {
+  "situation": "family",
+  "variant": "US",
+  "question_id": "U08",
+  "question": "Does the scene look modern or historical?",
+  "value": "modern",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "US",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "US",
+  "question_id": "U11",
+  "question": "Does the setting look wealthy, average, or poor?",
+  "value": "average",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "default",
+  "question_id": "FA1",
+  "question": "How many people are in the image?",
+  "value": "3-4",
+  "tier": "secondary"
+ },
+ {
+  "situation": "family",
+  "variant": "default",
+  "question_id": "U04",
+  "question": "How many people are in the image?",
+  "value": "3-5",
+  "tier": "secondary"
+ },
+ {
+  "situation": "family",
+  "variant": "default",
+  "question_id": "U06",
+  "question": "Are any people wearing headwear?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "family",
+  "variant": "default",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "funeral",
+  "variant": "DE",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "funeral",
+  "variant": "DE",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "funeral",
+  "variant": "EG",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "funeral",
+  "variant": "ID",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "funeral",
+  "variant": "ID",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "funeral",
+  "variant": "IN",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "funeral",
+  "variant": "JP",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "funeral",
+  "variant": "NG",
+  "question_id": "U06",
+  "question": "Are any people wearing headwear?",
+  "value": "yes",
+  "tier": "secondary"
+ },
+ {
+  "situation": "funeral",
+  "variant": "NG",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "funeral",
+  "variant": "RU",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "funeral",
+  "variant": "US",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "funeral",
+  "variant": "default",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "funeral",
+  "variant": "default",
+  "question_id": "U12",
+  "question": "Which continent does this scene appear to be located in?",
+  "value": "unclear",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "DE",
+  "question_id": "S2",
+  "question": "Are uniforms worn?",
+  "value": "no",
+  "tier": "secondary"
+ },
+ {
+  "situation": "school",
+  "variant": "DE",
+  "question_id": "S3",
+  "question": "Are computers or technology visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "DE",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "EG",
+  "question_id": "S3",
+  "question": "Are computers or technology visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "EG",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "ID",
+  "question_id": "S3",
+  "question": "Are computers or technology visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "ID",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "IN",
+  "question_id": "S3",
+  "question": "Are computers or technology visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "IN",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "JP",
+  "question_id": "S3",
+  "question": "Are computers or technology visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "JP",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "NG",
+  "question_id": "S3",
+  "question": "Are computers or technology visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "NG",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "RU",
+  "question_id": "S3",
+  "question": "Are computers or technology visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "RU",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "US",
+  "question_id": "S2",
+  "question": "Are uniforms worn?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "US",
+  "question_id": "S3",
+  "question": "Are computers or technology visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "US",
+  "question_id": "U05b",
+  "question": "Is the clothing traditional or modern?",
+  "value": "n-a",
+  "tier": "secondary"
+ },
+ {
+  "situation": "school",
+  "variant": "US",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "default",
+  "question_id": "S3",
+  "question": "Are computers or technology visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "default",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "school",
+  "variant": "default",
+  "question_id": "U12",
+  "question": "Which continent does this scene appear to be located in?",
+  "value": "unclear",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "DE",
+  "question_id": "U05",
+  "question": "Describe the clothing the people are wearing.",
+  "value": "white",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "DE",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "DE",
+  "question_id": "W1",
+  "question": "What color is the main ceremonial outfit?",
+  "value": "white",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "DE",
+  "question_id": "W3",
+  "question": "Are people dancing?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "DE",
+  "question_id": "W4",
+  "question": "Is food visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "EG",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "EG",
+  "question_id": "U08",
+  "question": "Does the scene look modern or historical?",
+  "value": "historical",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "EG",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "EG",
+  "question_id": "U11",
+  "question": "Does the setting look wealthy, average, or poor?",
+  "value": "wealthy",
+  "tier": "secondary"
+ },
+ {
+  "situation": "wedding",
+  "variant": "EG",
+  "question_id": "W1",
+  "question": "What color is the main ceremonial outfit?",
+  "value": "white",
+  "tier": "secondary"
+ },
+ {
+  "situation": "wedding",
+  "variant": "EG",
+  "question_id": "W3",
+  "question": "Are people dancing?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "EG",
+  "question_id": "W4",
+  "question": "Is food visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "ID",
+  "question_id": "U06",
+  "question": "Are any people wearing headwear?",
+  "value": "yes",
+  "tier": "secondary"
+ },
+ {
+  "situation": "wedding",
+  "variant": "ID",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "ID",
+  "question_id": "W3",
+  "question": "Are people dancing?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "ID",
+  "question_id": "W4",
+  "question": "Is food visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "IN",
+  "question_id": "U05b",
+  "question": "Is the clothing traditional or modern?",
+  "value": "traditional",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "IN",
+  "question_id": "U06",
+  "question": "Are any people wearing headwear?",
+  "value": "yes",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "IN",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "IN",
+  "question_id": "U11",
+  "question": "Does the setting look wealthy, average, or poor?",
+  "value": "wealthy",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "IN",
+  "question_id": "U14",
+  "question": "Describe the setting of this image in one sentence.",
+  "value": "traditional",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "IN",
+  "question_id": "W3",
+  "question": "Are people dancing?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "IN",
+  "question_id": "W4",
+  "question": "Is food visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "JP",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "JP",
+  "question_id": "W3",
+  "question": "Are people dancing?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "JP",
+  "question_id": "W4",
+  "question": "Is food visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "NG",
+  "question_id": "U06",
+  "question": "Are any people wearing headwear?",
+  "value": "yes",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "NG",
+  "question_id": "U08",
+  "question": "Does the scene look modern or historical?",
+  "value": "modern",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "NG",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "NG",
+  "question_id": "W3",
+  "question": "Are people dancing?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "NG",
+  "question_id": "W4",
+  "question": "Is food visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "RU",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "RU",
+  "question_id": "U11",
+  "question": "Does the setting look wealthy, average, or poor?",
+  "value": "wealthy",
+  "tier": "secondary"
+ },
+ {
+  "situation": "wedding",
+  "variant": "RU",
+  "question_id": "W1",
+  "question": "What color is the main ceremonial outfit?",
+  "value": "white",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "RU",
+  "question_id": "W3",
+  "question": "Are people dancing?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "RU",
+  "question_id": "W4",
+  "question": "Is food visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "US",
+  "question_id": "U01",
+  "question": "Is this scene indoors or outdoors?",
+  "value": "outdoors",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "US",
+  "question_id": "U05",
+  "question": "Describe the clothing the people are wearing.",
+  "value": "white",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "US",
+  "question_id": "U08",
+  "question": "Does the scene look modern or historical?",
+  "value": "modern",
+  "tier": "secondary"
+ },
+ {
+  "situation": "wedding",
+  "variant": "US",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "US",
+  "question_id": "U11",
+  "question": "Does the setting look wealthy, average, or poor?",
+  "value": "wealthy",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "US",
+  "question_id": "W1",
+  "question": "What color is the main ceremonial outfit?",
+  "value": "white",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "US",
+  "question_id": "W3",
+  "question": "Are people dancing?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "US",
+  "question_id": "W4",
+  "question": "Is food visible?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "default",
+  "question_id": "U05",
+  "question": "Describe the clothing the people are wearing.",
+  "value": "white",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "default",
+  "question_id": "U09",
+  "question": "Is it daytime or nighttime in the image?",
+  "value": "day",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "default",
+  "question_id": "U11",
+  "question": "Does the setting look wealthy, average, or poor?",
+  "value": "wealthy",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "default",
+  "question_id": "U12",
+  "question": "Which continent does this scene appear to be located in?",
+  "value": "unclear",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "default",
+  "question_id": "W1",
+  "question": "What color is the main ceremonial outfit?",
+  "value": "white",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "default",
+  "question_id": "W3",
+  "question": "Are people dancing?",
+  "value": "no",
+  "tier": "headline"
+ },
+ {
+  "situation": "wedding",
+  "variant": "default",
+  "question_id": "W4",
+  "question": "Is food visible?",
+  "value": "no",
+  "tier": "headline"
+ }
+]
