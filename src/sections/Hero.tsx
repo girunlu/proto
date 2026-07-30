@@ -75,7 +75,7 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
         >
-          What does Stable Diffusion
+          What do text-to-image models
           <br />
           <span className="italic text-amber-200">assume before you say anything?</span>
         </motion.h1>
@@ -116,7 +116,7 @@ export default function Hero() {
         >
           <p className="font-display text-xl leading-7 text-foreground/85 italic md:text-2xl">“{THESIS}”</p>
           <p className="mt-3 font-mono2 text-[11px] tracking-wider text-foreground/40 uppercase">
-            measured across 13,500 generated images · SD 2.1 · 6 situations × 9 variants × 50 seeds
+            6 situations × 9 prompt variants × 50 fixed seeds, run in full on seven text-to-image models · 33,676 generated images measured in total
           </p>
         </motion.div>
       </div>
@@ -128,7 +128,7 @@ export default function Hero() {
         transition={{ delay: 1.4, duration: 1 }}
       >
         <div className="flex flex-col items-center gap-2 text-foreground/40">
-          <span className="font-mono2 text-[10px] tracking-[0.3em] uppercase">scroll to begin · first, a calibration exercise</span>
+          <span className="font-mono2 text-[10px] tracking-[0.3em] uppercase">scroll to begin</span>
           <motion.span animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 1.8 }} className="text-amber-200/80">
             ↓
           </motion.span>

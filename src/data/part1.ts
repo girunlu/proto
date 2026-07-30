@@ -8,6 +8,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import chunk1 from './cultural/chunk1.json'
 import umap from './cultural/umap.json'
+import { VQA, Q_TEXT } from './uiv2'
 
 export type Sit = 'wedding' | 'funeral' | 'celebration' | 'family' | 'breakfast' | 'school'
 export type Code = 'US' | 'DE' | 'RU' | 'ID' | 'JP' | 'EG' | 'IN' | 'NG'
@@ -74,6 +75,29 @@ export const UMAP = umap.results as unknown as Record<
 
 // F5: silhouette range across situations (findings_summary.md: "0.10–0.27")
 export const SILHOUETTE_RANGE: [number, number] = [0.1, 0.27]
+
+// Scene 01 ("the unsaid"): what the plain wedding prompt leaves to the model, and
+// what the model supplies — from the wedding-default VQA battery (gemma4 + qwen3_vl,
+// 50 seeds). Kept in the data layer so the chips can't silently drift from the stats.
+/* scene 01: derived from the blind-VQA export at load time, so the chips can
+   never drift from the data again (they had: the hand-typed version said dress
+   colour 46/50 and wealth "average"; the export says 44/45 and "wealthy").
+   Top 8 closed questions by agreement, for whichever event is selected. */
+export interface Decision { attr: string; answer: string; stat: string; share: number }
+
+export const decisionsFor = (sit: Sit): Decision[] =>
+  Object.entries(VQA[`${sit}_default`]?.closed ?? {})
+    .map(([q, answers]) => {
+      const total = answers.reduce((s, a) => s + a.n, 0)
+      return {
+        attr: Q_TEXT[q] ?? q,
+        answer: answers[0].v,
+        stat: `${answers[0].n} of ${total} images, judged blind`,
+        share: total ? answers[0].n / total : 0,
+      }
+    })
+    .sort((a, b) => b.share - a.share)
+    .slice(0, 8)
 
 // image helpers
 export const seedImg = (sit: Sit, code: Code | 'default', seed: number) =>

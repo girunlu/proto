@@ -1,20 +1,31 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
-import { ZoomImage, Picker, BarRow, MetricToggle } from '../components/Viz'
+import { ZoomImage, BoxPicker, BarRow, MetricToggle } from '../components/Viz'
 import { rgb } from '../lib/colors'
-import { C8, COUNTRY8, SITS, CV_DEFAULT, cell, seedImg, type Sit, type Code } from '../data/part1'
-import { VENDI_CELL, ESCAPE_PAIRS, INTRASET_CLIP, key, controlImg } from '../data/uiv2'
-import { useModel, modelImg, modelSeeds, modelIntraset, isSd21, MODEL_NAME } from '../data/modelData'
+import { C8, COUNTRY8, SITS, CV_DEFAULT, cell, type Sit, type Code } from '../data/part1'
+import { VENDI_CELL, ESCAPE_PAIRS, key, controlImg } from '../data/uiv2'
+import { useModel, modelImg, modelSeeds, isSd21, MODEL_NAME } from '../data/modelData'
+import { intraset as xmIntraset, realityFor, vendiFor, dissimilarSeeds, RULER_MAX, type Ruler } from '../data/crossmodel'
 
 const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
-const CODE_OPTS = COUNTRY8.map((c) => ({ value: c.id, label: c.name }))
+const CODE_BOXES = COUNTRY8.map((c) => ({ value: c.id, label: c.name, cv: c.cv }))
 
 /* ── Scene 11 · the stereotyping inversion (F6) ──────────────────────────── */
 
+const MOSAIC_N = 20
+/* the tile wall in the variety meter shows the same count */
+const TILE_N = 20
+
 function CellMosaics({ situation, code }: { situation: Sit; code: Code }) {
   const { model } = useModel()
-  const picks = (c: Code | 'default') => modelSeeds(model, situation, c, 8)
+  /* Tier C: instead of the first 8 or a typicality spread, these are the 20 LEAST
+     alike images in the set (greedy farthest-point in DINOv3 space). It is the
+     fairest possible slice for this scene's claim: if even the 20 most different
+     pictures of "a celebration in Nigeria" look like each other, that is the
+     finding, and a curated-for-variety grid cannot be accused of hiding it. */
+  const picks = (c: Code | 'default') =>
+    dissimilarSeeds(model, situation, c, MOSAIC_N) ?? modelSeeds(model, situation, c, 8)
   const sides: { code: Code | 'default'; label: string; cv: string }[] = [
     { code: 'default', label: `“a ${situation}”`, cv: CV_DEFAULT },
     { code, label: `“a ${situation} in ${C8[code].name}”`, cv: C8[code].cv },
@@ -33,21 +44,20 @@ function CellMosaics({ situation, code }: { situation: Sit; code: Code }) {
                 </span>
               )}
             </div>
-            <div className="mt-3 grid grid-cols-4 gap-1.5">
-              {picks(s.code).map((seed) => (
+            <div className="mt-3 grid grid-cols-5 gap-1.5">
+              {picks(s.code).map((seed, i) => (
                 <ZoomImage
                   key={seed}
                   src={modelImg(model, situation, s.code, seed)}
                   alt={`${situation} ${s.code} seed ${seed}`}
-                  caption={`${s.label} · ${MODEL_NAME[model]} · seed ${seed}`}
+                  caption={`${s.label} · ${MODEL_NAME[model]} · seed ${seed} · ${i + 1}${i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'} most different of 50`}
                   imgClassName="aspect-square w-full cursor-zoom-in rounded-md border border-border object-cover"
                 />
               ))}
             </div>
-            <p className="mt-2 font-mono2 text-[9px] text-foreground/35">
-              {isSd21(model)
-                ? '8 seeds spread evenly across the whole 50-image set, most typical to most unusual'
-                : `${MODEL_NAME[model]}, its own seeds straight off the run, no curation`}
+            <p className="mt-2 font-mono2 text-[9px] leading-4 text-foreground/45">
+              the {MOSAIC_N} <em>least</em> alike pictures of the 50, chosen by the embeddings rather than by us —
+              picked most-different-first, so this is the most varied face this set has
             </p>
           </div>
         )
@@ -67,16 +77,21 @@ function DistinctMeter({ situation, code, setSituation, setCode }: {
   const { model } = useModel()
   const [side, setSide] = useState<'default' | 'country'>('country')
   const target: Code | 'default' = side === 'default' ? 'default' : code
-  const v = VENDI_CELL[key(situation, target)] ?? 0
-  const lit = Math.round(v)
+  /* Every model's own Vendi score, the plain prompt included — the reality-anchor
+     run computed it for all 54 cells of all seven models, so nothing is borrowed
+     from SD 2.1 here any more. */
+  const v = vendiFor(model, situation, target) ?? VENDI_CELL[key(situation, target)] ?? 0
   const cv = side === 'default' ? CV_DEFAULT : C8[code].cv
-  const t = cell(situation, target).typical_order
+  /* 20 tiles, not 50: fifty thumbnails of a collapsed set is a wall of the same
+     picture, and the count above already carries the measurement. These are the 20
+     least alike of the 50, so it is the most varied face the set has. */
+  const t = dissimilarSeeds(model, situation, target, TILE_N) ?? cell(situation, target).typical_order.slice(0, TILE_N)
 
   return (
     <div>
       <div className="flex flex-wrap items-end gap-4">
-        <Picker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} />
-        <Picker label="country" value={code} onChange={setCode} options={CODE_OPTS} accent={C8[code].cv} />
+        <BoxPicker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
+        <BoxPicker label="country" value={code} onChange={setCode} options={CODE_BOXES} size="sm" />
       </div>
       <div className="mt-5 flex w-fit overflow-hidden rounded-md border border-border font-mono2 text-xs">
         <button
@@ -111,32 +126,28 @@ function DistinctMeter({ situation, code, setSituation, setCode }: {
         <span className="text-sm leading-6 text-foreground/60">
           genuinely different pictures, out of 50 generated.
           <br />
-          <span className="text-foreground/40">The other {50 - lit} repeat what those already showed.</span>
+          <span className="text-foreground/40">The other {(50 - v).toFixed(0)} repeat what those already showed.</span>
         </span>
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-1">
-        {t.map((seed, rank) => (
-          <span key={seed} className="block" style={{ opacity: rank < lit ? 1 : 0.28 }}>
+      {/* 2 × 10: a fixed grid, so the 20 read as a set you can count rather than a
+          reflowing strip */}
+      <div className="mt-5 grid grid-cols-5 gap-1.5 sm:grid-cols-10">
+        {t.map((seed) => (
+          <span key={seed} className="block">
             <ZoomImage
-              src={seedImg(situation, target, seed)}
+              src={modelImg(model, situation, target, seed)}
               alt={`${situation} ${target} seed ${seed}`}
-              caption={`“a ${situation}${target === 'default' ? '' : ` in ${C8[code].name}`}” · seed ${seed}`}
-              imgClassName="h-10 w-10 cursor-zoom-in rounded-sm border border-border object-cover"
+              caption={`“a ${situation}${target === 'default' ? '' : ` in ${C8[code].name}`}” · ${MODEL_NAME[model]} · seed ${seed}`}
+              imgClassName="aspect-square w-full cursor-zoom-in rounded-md border border-border object-cover"
             />
           </span>
         ))}
       </div>
-      {!isSd21(model) && (
-        <p className="mt-3 rounded-md border border-amber-300/30 bg-amber-300/5 px-3 py-2 font-mono2 text-[10px] leading-4 text-amber-200/90">
-          This count was computed on Stable Diffusion 2.1's full 50-seed run, so it stays on that model. The bar chart
-          below and the images above follow {MODEL_NAME[model]}.
-        </p>
-      )}
-      <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/40">
-        All 50 seeds are shown. The number of lit tiles is the measured count of effectively distinct
-        pictures (a Vendi score, computed on the image embeddings). The score says how many, not which
-        ones, so which specific tiles are lit here is arbitrary. The count is not.
+      <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/45">
+        The count is {MODEL_NAME[model]}'s own, measured over all 50 generated images (a Vendi score on the
+        embeddings). Shown here are the <strong className="text-foreground/65">{t.length} least alike</strong> of those
+        50, ordered most-different-first: if these look like each other, the other 30 do too.
       </p>
     </div>
   )
@@ -145,16 +156,20 @@ function DistinctMeter({ situation, code, setSituation, setCode }: {
 function InversionScene() {
   const [sit, setSit] = useState<Sit>('celebration')
   const [code, setCode] = useState<Code>('NG')
-  const [ruler, setRuler] = useState<'dinov3' | 'clip'>('dinov3')
+  const [ruler, setRuler] = useState<Ruler>('dinov3')
   const { model } = useModel()
   const onSd21 = isSd21(model)
-  const intra = (c: Code | 'default') =>
-    onSd21
-      ? (ruler === 'dinov3' ? cell(sit, c).intraset : INTRASET_CLIP[key(sit, c)])
-      : modelIntraset(model, sit, c, 'dinov3')!
+  /* Tier C: intra-set similarity now exists for all seven models under both rulers,
+     each with its own 10,000-resample interval, so this scene stopped being an
+     SD-2.1 chart with six read-only copies. */
+  const intra = (c: Code | 'default') => xmIntraset(model, sit, c, ruler)
   const defIntra = intra('default')
   const cIntra = intra(code)
-  const maxIntra = onSd21 && ruler === 'clip' ? 1 : 0.9
+  const maxIntra = RULER_MAX[ruler].intraset
+  /* "distinct pictures out of 50": SD 2.1 has a Vendi score per cell; the other six
+     models have theirs from the reality-anchor export. */
+  const distinct = (c: Code | 'default') =>
+    onSd21 ? VENDI_CELL[key(sit, c)] : c === 'default' ? undefined : realityFor(model, sit, c)?.gen_vendi
   return (
     <SceneShell
       number="11"
@@ -173,8 +188,8 @@ function InversionScene() {
       <Reveal delay={0.06}>
         <Panel className="mt-10">
           <div className="flex flex-wrap items-end gap-4">
-            <Picker label="event" value={sit} onChange={setSit} options={SIT_OPTS} />
-            <Picker label="country" value={code} onChange={setCode} options={CODE_OPTS} accent={C8[code].cv} />
+            <BoxPicker label="event" value={sit} onChange={setSit} options={SIT_OPTS} size="sm" />
+            <BoxPicker label="country" value={code} onChange={setCode} options={CODE_BOXES} size="sm" />
           </div>
           <div className="mt-6">
             <CellMosaics situation={sit} code={code} />
@@ -199,7 +214,7 @@ function InversionScene() {
             <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
               the same comparison for all nine prompts of “a {sit}”
             </div>
-            {onSd21 && <MetricToggle value={ruler} onChange={setRuler} />}
+            <MetricToggle value={ruler} onChange={setRuler} />
           </div>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-foreground/60">
             Each bar is how alike a prompt's 50 pictures are to each other. A short bar means every seed invented
@@ -213,7 +228,7 @@ function InversionScene() {
               ci={[defIntra.ci_low, defIntra.ci_high]}
               max={maxIntra}
               color={CV_DEFAULT}
-              right={onSd21 ? `${VENDI_CELL[key(sit, 'default')]?.toFixed(0)} distinct` : undefined}
+              right={distinct('default') != null ? `${distinct('default')!.toFixed(0)} distinct` : undefined}
             />
             <div className="h-px bg-border" />
             {COUNTRY8.map((c, i) => {
@@ -227,7 +242,7 @@ function InversionScene() {
                   max={maxIntra}
                   color={c.cv}
                   delay={i * 0.05}
-                  right={onSd21 ? `${VENDI_CELL[key(sit, c.id)]?.toFixed(0)} distinct` : undefined}
+                  right={distinct(c.id) != null ? `${distinct(c.id)!.toFixed(0)} distinct` : undefined}
                 />
               )
             })}
@@ -244,7 +259,7 @@ function InversionScene() {
           <div className="mt-6 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
             <TierNote
               tier="evidence"
-              text="Mean pairwise similarity inside each 50-seed set, with bootstrap confidence intervals shown as the short line under each bar. The direction of this effect replicates across all 7 models (Branch A)."
+              text={`Mean pairwise similarity inside each 50-seed set of ${MODEL_NAME[model]}, measured with ${ruler === 'dinov3' ? 'DINOv3' : 'CLIP'}, with 10,000-resample bootstrap intervals drawn through each bar. Both rulers and all seven models are real measurements here, not one model's numbers reused.`}
             />
             <p className="text-sm leading-6 text-foreground/60">
               {sit === 'funeral'
@@ -261,6 +276,30 @@ function InversionScene() {
 }
 
 /* ── Scene 12 · specifically cultural (F7) ───────────────────────────────── */
+
+/* the sign comes from the value: a hardcoded "+" printed "+-0.04" on the one row
+   (wedding × Germany) whose country qualifier makes the set MORE varied */
+const signed = (v: number) => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(2)}`
+
+/* The prose used to say the neutral qualifiers "sit on the line" full stop. One of
+   them does not — “in the rain” on the celebration rows — so the exception is
+   derived here and named on the page rather than rounded away. */
+const CTRL_DELTAS = Object.values(ESCAPE_PAIRS).flatMap((p) => {
+  const plain = p.levels.find((l) => l.id === 'default')?.intraset
+  if (plain == null) return []
+  return p.levels
+    .filter((l) => l.control && l.intraset != null)
+    .map((l) => ({ prompt: l.prompt, d: l.intraset! - plain }))
+})
+const COUNTRY_DELTAS = Object.values(ESCAPE_PAIRS).flatMap((p) => {
+  const plain = p.levels.find((l) => l.id === 'default')?.intraset
+  const country = p.levels.find((l) => l.id === 'L0')?.intraset
+  return plain == null || country == null ? [] : [country - plain]
+})
+const CTRL_SORTED = [...CTRL_DELTAS].sort((a, b) => b.d - a.d)
+const CTRL_WORST = CTRL_SORTED[0]
+const CTRL_NEXT = CTRL_SORTED.find((c) => c.d < CTRL_WORST.d)!
+const CTRL_WORST_BEATS = COUNTRY_DELTAS.filter((d) => d < CTRL_WORST.d).length
 
 const CTRL_LABEL: Record<string, string> = {
   ctrl_large: 'a large one',
@@ -281,12 +320,19 @@ function SpecificityRows() {
 
   return (
     <div>
-      {/* one shared zero line down the whole chart */}
+      {/* One shared zero line down the whole chart. It has to live inside a copy
+          of the row skeleton (label · gap · bar · value): pos() is a percentage,
+          and in a calc() on the outer container that percentage resolved against
+          the FULL row width instead of the bar's, so the line and the dots — which
+          are positioned inside the bar — did not agree. */}
       <div className="relative">
-        <div
-          className="pointer-events-none absolute top-5 bottom-8 w-px bg-foreground/30"
-          style={{ left: `calc(11rem + 0.75rem + ${pos(0)})` }}
-        />
+        <div className="pointer-events-none absolute inset-0 flex gap-3">
+          <span className="w-44 shrink-0" />
+          <div className="relative flex-1">
+            <span className="absolute top-5 bottom-8 w-px bg-foreground/30" style={{ left: pos(0) }} />
+          </div>
+          <span className="w-14 shrink-0" />
+        </div>
         <div className="space-y-3">
           <div className="flex items-center gap-3">
             <span className="w-44 shrink-0" />
@@ -339,7 +385,7 @@ function SpecificityRows() {
                   />
                 </div>
                 <span className="w-14 shrink-0 text-right font-mono2 text-xs" style={{ color: rgb(cv) }}>
-                  +{(country - plain).toFixed(2)}
+                  {signed(country - plain)}
                 </span>
               </div>
             )
@@ -359,7 +405,7 @@ function SpecificityRows() {
       <div className="mt-4 flex min-h-[18px] flex-wrap items-center gap-5 border-t border-border pt-3 font-mono2 text-[10px] text-foreground/50">
         {hover ? (
           <span className="text-foreground/80">
-            {hover.label}: {hover.d > 0 ? '+' : ''}{hover.d.toFixed(2)} against its own plain prompt
+            {hover.label}: {signed(hover.d)} against its own plain prompt
           </span>
         ) : (
           <>
@@ -403,9 +449,12 @@ function SpecificityScene() {
             <SpecificityRows />
           </div>
           <p className="mt-5 max-w-3xl text-sm leading-6 text-foreground/60">
-            The hollow dots are the neutral qualifiers, and they sit on the line: adding “a large”, “in the rain” or
-            “in 1985” leaves the variety roughly where it was. The filled dot is the country qualifier, and in seven of
-            the eight rows it has moved clearly right. Same length, same grammar, same model.
+            The hollow dots are the neutral qualifiers, and they sit on or beside the line: adding “a large”, “in the
+            rain” or “in 1985” leaves the variety roughly where it was, every one of them inside{' '}
+            {signed(CTRL_NEXT.d)} — with one exception, <em>{CTRL_WORST.prompt}</em> at {signed(CTRL_WORST.d)}, which
+            narrows the set further than the country name does in {CTRL_WORST_BEATS} of the eight rows. The filled dot
+            is the country qualifier, and in seven of the eight rows it has moved clearly right. Same length, same
+            grammar, same model.
           </p>
         </Panel>
       </Reveal>
@@ -416,11 +465,12 @@ function SpecificityScene() {
             <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
               what the neutral qualifiers actually drew
             </div>
-            <Picker
+            <BoxPicker
               label="event"
               value={which}
               onChange={setWhich}
               options={[{ value: 'wedding' as const, label: 'a wedding' }, { value: 'celebration' as const, label: 'a celebration' }]}
+              size="sm"
             />
           </div>
           <div className="mt-5 grid gap-3 md:grid-cols-3">
@@ -455,7 +505,7 @@ function SpecificityScene() {
           <div className="mt-6 border-t border-border pt-5">
             <TierNote
               tier="evidence"
-              text="Matched neutral qualifiers (“a large …”, “… in the rain”, “… in 1985”) on the same events, same 50-seed protocol, same measurement. The variety collapse is culture-specific; the extra assumption load that any qualifier brings is not, which is scene 18."
+              text="Matched neutral qualifiers (“a large …”, “… in the rain”, “… in 1985”) on the same events, same 50-seed protocol, same measurement. The variety collapse is culture-specific; the extra assumption load that any qualifier brings is not, which is scene 16."
             />
           </div>
         </Panel>

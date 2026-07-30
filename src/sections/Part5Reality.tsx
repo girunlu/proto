@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
-import { ZoomImage, Picker } from '../components/Viz'
+import { ZoomImage, BoxPicker } from '../components/Viz'
 import { rgb, rgba } from '../lib/colors'
-import { C8, COUNTRY8, SITS, cell, seedImg, type Sit, type Code } from '../data/part1'
-import { REALITY_ANCHOR, DISTORTION } from '../data/part5'
+import { C8, COUNTRY8, SITS, cell, type Sit, type Code } from '../data/part1'
+import { REALITY_ANCHOR, DISTORTION, REAL_PHOTOS_N, REAL_CELLS_N, REAL_PER_CELL } from '../data/part5'
 import { REALITY_ATTRS, REAL_CREDITS, VQA, realImg, key, Q_TEXT } from '../data/uiv2'
+import { useModel, modelImg, modelSeeds, MODEL_NAME as UI_MODEL_NAME, isSd21 } from '../data/modelData'
+import { realityFor } from '../data/crossmodel'
 
 const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
-const CODE_OPTS = COUNTRY8.map((c) => ({ value: c.id, label: c.name }))
+const CODE_OPTS = COUNTRY8.map((c) => ({ value: c.id, label: c.name, cv: c.cv }))
 const SLUG: Record<Code, string> = {
   US: 'united_states', DE: 'germany', RU: 'russia', ID: 'indonesia',
   JP: 'japan', EG: 'egypt', IN: 'india', NG: 'nigeria',
@@ -29,10 +31,15 @@ const MODEL_NAME: Record<string, string> = {
    animated CSS-translated dots, and the inline transform framer-motion writes
    replaced the centring translate, so every dot sat below its own line. */
 function HomogeneityDumbbells({ sit }: { sit: Sit }) {
+  const { model } = useModel()
+  /* Tier C: the generated side follows the model switch. The photographs do not —
+     they are the same 2,977 pictures whichever model is being judged, which is the
+     whole point of having a reality anchor. */
   const rows = COUNTRY8.map((c) => {
     const r = REALITY_ANCHOR[sit]?.[SLUG[c.id]]
-    return r?.real_intraset_sim
-      ? { name: c.name, cv: c.cv, generated: r.generated_intraset_sim, real: r.real_intraset_sim.value }
+    const own = realityFor(model, sit, c.id)
+    return r?.real_intraset_sim && own
+      ? { name: c.name, cv: c.cv, generated: own.gen_intra, real: r.real_intraset_sim.value }
       : null
   }).filter((r): r is NonNullable<typeof r> => r !== null)
 
@@ -148,9 +155,9 @@ function DistortionBars() {
         )
       })}
       <div className="flex flex-wrap items-center gap-5 pt-2 font-mono2 text-[10px] text-foreground/50">
-        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-red-400/70" /> wrong in the direction of its own default world</span>
-        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-400/55" /> wrong in the direction of the photographs</span>
-        <span className="text-foreground/35">a model with no pull either way would sit at 50/50</span>
+        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-red-400/70" /> leans toward its own default world</span>
+        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-400/55" /> leans toward the photographs</span>
+        <span className="text-foreground/45">a model with no pull either way would sit at 50/50</span>
       </div>
     </div>
   )
@@ -182,24 +189,32 @@ function ErrorExamples({ sit, code }: { sit: Sit; code: Code }) {
   return (
     <div className="mt-6 border-t border-border pt-5">
       <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-        what one of these errors looks like · “a {sit} in {C8[code].name}”
+        what one of these disagreements looks like · “a {sit} in {C8[code].name}”
       </div>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground/60">
-        Each row is one disagreement between the model and the photographs, with a third column added: what that same
-        model draws for the plain, country-less prompt. When the wrong answer and the plain-prompt answer are the same
-        word, the error has landed on the model's own default. That is what the bars above are counting.
+        Read a row left to right: the photographs, then the country prompt, then the same prompt with the country taken
+        out. When the country prompt's answer and the country-less answer are the <em>same word</em>, the model has
+        departed from the photographs in the direction of the thing it already draws by default — that is the red count
+        above. When it departs in some other direction, the prior is not what pulled it, so that row tells us nothing
+        either way.
       </p>
       <div className="mt-4 space-y-1.5">
-        <div className="flex items-center gap-2 font-mono2 text-[9px] tracking-wider text-foreground/35 uppercase">
-          <span className="w-40 shrink-0 text-right">question</span>
+        {/* the same px-2 the bordered rows below carry, plus a border-coloured
+            transparent edge: without them every value sat 8px right of its header */}
+        {/* one skeleton, used by the header and every row: the verdict column was
+            w-32, too narrow for its own heading, so both it and the values wrapped
+            onto a second line. Wider verdict column, left-aligned question, and the
+            same px-2 the bordered rows carry. */}
+        <div className="flex items-center gap-4 border border-transparent px-2 pb-1 font-mono2 text-[9px] leading-4 tracking-wider text-foreground/50 uppercase">
+          <span className="w-40 shrink-0">question</span>
           <span className="flex-1">the photographs say</span>
-          <span className="flex-1">the model draws</span>
-          <span className="flex-1">“a {sit}” alone draws</span>
-          <span className="w-32 shrink-0" />
+          <span className="flex-1">“a {sit} in {C8[code].name}” draws</span>
+          <span className="flex-1">“a {sit}” with no country</span>
+          <span className="w-44 shrink-0">which way does it lean?</span>
         </div>
         {rows.map((r) => (
-          <div key={r.q} className="flex items-center gap-2 rounded-md border border-border px-2 py-2">
-            <span className="w-40 shrink-0 truncate text-right font-mono2 text-[10px] text-foreground/50" title={Q_TEXT[r.q] ?? r.q}>
+          <div key={r.q} className="flex items-center gap-4 rounded-md border border-border px-2 py-2">
+            <span className="w-40 shrink-0 truncate font-mono2 text-[10px] text-foreground/50" title={Q_TEXT[r.q] ?? r.q}>
               {Q_TEXT[r.q] ?? r.q}
             </span>
             <span className="flex-1 font-mono2 text-[11px] text-emerald-300">
@@ -211,8 +226,8 @@ function ErrorExamples({ sit, code }: { sit: Sit; code: Code }) {
             <span className="flex-1 font-mono2 text-[11px] text-foreground/70">
               {r.plain} <span className="text-foreground/35">{Math.round(r.plainShare * 100)}%</span>
             </span>
-            <span className={`w-32 shrink-0 font-mono2 text-[10px] ${r.towardDefault ? 'text-red-300' : 'text-foreground/40'}`}>
-              {r.towardDefault ? '→ toward the default' : '→ its own mistake'}
+            <span className={`w-44 shrink-0 font-mono2 text-[10px] leading-4 ${r.towardDefault ? 'text-red-300' : 'text-foreground/55'}`}>
+              {r.towardDefault ? '→ toward its default' : '→ some other way'}
             </span>
           </div>
         ))}
@@ -222,6 +237,7 @@ function ErrorExamples({ sit, code }: { sit: Sit; code: Code }) {
 }
 
 export default function Part5Reality() {
+  const { model } = useModel()
   const [sit, setSit] = useState<Sit>('wedding')
   const [code, setCode] = useState<Code>('NG')
   const [showCredit, setShowCredit] = useState<number | null>(null)
@@ -234,37 +250,37 @@ export default function Part5Reality() {
 
   return (
     <SceneShell
-      number="16"
+      number="15"
       kicker="Part V · reality · findings 18–19"
       title={<>There are real photographs of these events, <em className="font-display italic text-red-300">and the model points the wrong way.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          Everything so far compares the model to itself. This part compares it to photographs. We collected about
-          4,400 real pictures of these events from Wikimedia Commons and put them through the identical blind
-          questionnaire, so the same 33 questions get answered about the model's world and about the world.
+          Everything so far compares the model to itself. This part compares it to photographs. We measured{' '}
+          {REAL_PHOTOS_N.toLocaleString()} real pictures of these events from Wikimedia Commons and put them through the
+          identical blind questionnaire, so the same questions get answered about the model's world and about the world.
         </p>
       </Reveal>
 
       <Reveal delay={0.06}>
         <Panel className="mt-10">
           <div className="flex flex-wrap items-end gap-4">
-            <Picker label="event" value={sit} onChange={setSit} options={SIT_OPTS} />
-            <Picker label="country" value={code} onChange={setCode} options={CODE_OPTS} accent={C8[code].cv} />
+            <BoxPicker label="event" value={sit} onChange={setSit} options={SIT_OPTS} size="sm" />
+            <BoxPicker label="country" value={code} onChange={setCode} options={CODE_OPTS} size="sm" />
           </div>
 
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             <div>
               <div className="font-mono2 text-[11px] text-red-300">
-                generated · “a {sit} in {C8[code].name}”
+                generated · “a {sit} in {C8[code].name}” · {UI_MODEL_NAME[model]}
               </div>
               <div className="mt-3 grid grid-cols-4 gap-1.5">
-                {[seeds[0], seeds[12], seeds[25], seeds[40]].map((s) => (
+                {(isSd21(model) ? [seeds[0], seeds[12], seeds[25], seeds[40]] : modelSeeds(model, sit, code, 4)).map((s) => (
                   <ZoomImage
                     key={s}
-                    src={seedImg(sit, code, s)}
+                    src={modelImg(model, sit, code, s)}
                     alt={`generated ${sit} ${code} seed ${s}`}
-                    caption={`generated · “a ${sit} in ${C8[code].name}” · seed ${s}`}
+                    caption={`generated · “a ${sit} in ${C8[code].name}” · ${UI_MODEL_NAME[model]} · seed ${s}`}
                     imgClassName="aspect-square w-full cursor-zoom-in rounded-md border border-border object-cover"
                   />
                 ))}
@@ -366,7 +382,7 @@ export default function Part5Reality() {
           <div className="mt-5 border-t border-border pt-5">
             <TierNote
               tier="evidence"
-              text="Generated side: 50 seeds per cell, two independent annotators. Real side: about 4,400 Commons photographs across 48 cells, put through the same frozen questionnaire, roughly 20 photographs per cell. One caveat we can measure and do not hide: a few Commons categories are dominated by a single prolific photographer, which narrows those cells; it does not flip the direction of any comparison above."
+              text={`Generated side: 50 seeds per cell, two independent annotators. Real side: ${REAL_PHOTOS_N.toLocaleString()} Commons photographs across ${REAL_CELLS_N} cells, put through the same frozen questionnaire, about ${REAL_PER_CELL} photographs per cell (collected from ~4,700 candidates, then relevance-filtered). One caveat we can measure and do not hide: a few Commons categories are dominated by a single prolific photographer, which narrows those cells; it does not flip the direction of any comparison above.`}
             />
           </div>
         </Panel>
@@ -375,7 +391,7 @@ export default function Part5Reality() {
       <Reveal delay={0.08}>
         <Panel className="mt-6">
           <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-            the model is narrower than the world · “a {sit}”, generated against photographed
+            the model is narrower than the world · “a {sit}” · {UI_MODEL_NAME[model]} against photographs
           </div>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
             Each line is one country. The hollow dot is how alike real photographs of that event are to each other; the
@@ -395,13 +411,17 @@ export default function Part5Reality() {
       <Reveal delay={0.08}>
         <Panel className="mt-6">
           <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-            finding 19 · when the model and the photographs disagree, which way is it wrong?
+            finding 19 · when the model and the photographs disagree, which way does it lean?
           </div>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
-            Every time a model's answer contradicts the photographs, the error has a direction. Either it errs toward
-            what the photographs show, or toward what that same model draws for the plain, country-less prompt: its own
-            default world. We counted which, for every disagreeing question in every cell, across all seven models.
-            Bars are counts of questions.
+            Three answers exist for every question here: what the <strong>photographs</strong> show, what the model draws
+            for <strong>“a wedding in Nigeria”</strong>, and what the same model draws for <strong>“a wedding”</strong>{' '}
+            with no country in it — its own default. Whenever the country prompt disagrees with the photographs, that
+            disagreement has a direction: either toward the photographs, or toward the model's own default answer. We
+            classified every disagreeing question in every cell, in all seven models. Each bar below is one model's own
+            split as a percentage, and the figure on the right is how many disagreements it had in total. Note what this
+            is and is not: a disagreement with a photograph set is not by itself an error — a generated picture is not
+            obliged to match a Commons category — so this is read as a <em>tendency</em>, never as a failure count.
           </p>
           <div className="mt-6">
             <DistortionBars />
@@ -410,12 +430,18 @@ export default function Part5Reality() {
           <div className="mt-6 flex flex-wrap items-center gap-4 rounded-lg border border-red-400/25 bg-red-400/5 p-4">
             <span className="font-mono2 text-3xl text-red-300">{DISTORTION.pooled.ratio}×</span>
             <p className="max-w-xl text-sm leading-6 text-foreground/70">
-              Pooled over all seven models: <strong>{DISTORTION.pooled.toward_default}</strong> errors lean toward the
-              model's own default world against <strong>{DISTORTION.pooled.toward_reality}</strong> that lean toward
-              the photographs. The mistakes are not noise scattered in every direction. They have a home to fall back
-              towards.
+              Pooled over all seven models: <strong>{DISTORTION.pooled.toward_default}</strong> disagreements lean
+              toward the model's own default world against <strong>{DISTORTION.pooled.toward_reality}</strong> that
+              lean toward the photographs. The departures are not scattered evenly in every direction. They have a home
+              to fall back towards.
             </p>
           </div>
+          <p className="mt-3 max-w-3xl font-mono2 text-[10px] leading-4 text-foreground/50">
+            Where that pooled figure comes from matters: Stable Diffusion 2.1's own split is close to even (
+            {DISTORTION.sd21.toward_default} against {DISTORTION.sd21.toward_reality}, and none of its{' '}
+            {DISTORTION.sd21.n_questions_tested} tested questions is individually significant). The lean is carried by
+            the six newer models, each of which sits well above an even split on its own row.
+          </p>
           <div className="mt-5 border-t border-border pt-5">
             <TierNote
               tier="evidence"

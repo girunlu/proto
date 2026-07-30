@@ -1,4 +1,5 @@
 import Hero from '../sections/Hero'
+import Overview from '../sections/Overview'
 import Part1Default from '../sections/Part1Default'
 import Part2Mechanism from '../sections/Part2Mechanism'
 import Part3Override from '../sections/Part3Override'
@@ -31,6 +32,9 @@ export default function Home() {
       <ModelBar />
       <NavRail />
       <Hero />
+      <div id="start">
+        <Overview />
+      </div>
       <PartDivider label="Part I · the default" sub="the unqualified prompt already has a nationality · real seeds, real geometry" />
       <div id="p1">
         <Part1Default />
@@ -43,11 +47,11 @@ export default function Home() {
       <div id="p3">
         <Part3Override />
       </div>
-      <PartDivider label="Part IV · the assumptions, named" sub="375 verified cards, each paired with the real 50-seed distribution it summarizes" />
+      <PartDivider label="Part IV · the assumptions, named" sub="every named assumption paired with the real 50-seed distribution it summarizes" />
       <div id="p4">
         <Part4Assumptions />
       </div>
-      <PartDivider label="Part V · reality" sub="the same blind questionnaire on ~4,400 real photographs of the same events" />
+      <PartDivider label="Part V · reality" sub="the same blind questionnaire on 2,977 real photographs of the same events" />
       <div id="p5">
         <Part5Reality />
       </div>
@@ -55,7 +59,7 @@ export default function Home() {
       <div id="p6">
         <Part6Escape />
       </div>
-      <PartDivider violet label="Branch A · is it just this model?" sub="the identical frozen instrument, run in full on six more models · all real data" />
+      <PartDivider violet label="Part VII · is it just this model?" sub="the identical frozen instrument, run in full on six more models · all real data" />
       <div id="xa">
         <BranchAModels />
       </div>

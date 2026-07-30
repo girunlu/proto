@@ -2,17 +2,17 @@ import { useState } from 'react'
 import { SceneShell, Reveal, Panel } from '../components/Scene'
 import { CountUp } from '../components/CountUp'
 import { STATS } from '../data/research'
-import { AUDITS } from '../data/part5'
-import { qLabel } from '../data/part4'
+import { AUDITS, REAL_PHOTOS_N } from '../data/part5'
+import { qLabel, CARDS_HEADLINE, CARDS_TOTAL } from '../data/part4'
 import type { AuditAssumption } from '../data/part5'
 
 const STAT_CELLS = [
   { v: STATS.images, label: 'generated images analyzed' },
   { v: STATS.prompts, label: 'frozen prompts · 6 situations × 9 variants' },
   { v: STATS.seeds, label: 'seeds per prompt, fixed across all variants' },
-  { v: 7, label: 'models audited · 3 training lineages, 2 architectures' },
+  { v: 7, label: 'models audited · 5 developers, 2 architecture families' },
   { v: 36, label: 'of 36 model×situation cells replicate the Western default' },
-  { v: 375, label: 'verified headline named assumptions (693 total)' },
+  { v: CARDS_HEADLINE, label: `verified headline named assumptions (${CARDS_TOTAL} total)` },
 ]
 
 /* F25: the auditor, on prompts it has never seen */
@@ -76,31 +76,8 @@ function AuditBrowser() {
 export default function Closing() {
   return (
     <>
-      <SceneShell number="∴" kicker="Closing" title={<>Every image is a negotiation.</>}>
-        <Reveal>
-          <p className="prose-scene max-w-2xl">
-            Between what was requested and what the model already believes. The prior cannot be disabled, guidance
-            cannot tune it away, and additional words rarely purchase an exit. What is possible, right now, is{' '}
-            <strong>knowing where to look</strong>: generate more than one seed, ask what never varies, and treat the
-            first third of denoising as the moment at which the decision is actually made.
-          </p>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-3">
-            {STAT_CELLS.map((s) => (
-              <div key={s.label} className="bg-card p-6">
-                <div className="font-mono2 text-3xl text-amber-200">
-                  <CountUp to={s.v} />
-                </div>
-                <div className="mt-2 font-mono2 text-[11px] leading-4 text-foreground/50">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </Reveal>
-      </SceneShell>
-
       <SceneShell
-        number="18"
+        number="17"
         kicker="the instrument as a deliverable · finding 25"
         title={<>The Auditor works on prompts it has <em className="font-display italic text-amber-200">never seen.</em></>}
       >
@@ -177,7 +154,7 @@ export default function Closing() {
               <div className="mt-4 space-y-3 text-sm leading-6 text-foreground/70">
                 <p>
                   Every comparison up to Part V is the model against itself. Part V is the model against photographs:
-                  about <strong className="text-foreground">4,400 reference pictures</strong> from Wikimedia Commons,
+                  <strong className="text-foreground">{REAL_PHOTOS_N.toLocaleString()} reference photographs</strong> from Wikimedia Commons,
                   put through the same metrics and the same blind questionnaire as the generated ones.
                 </p>
                 <p>
@@ -196,10 +173,33 @@ export default function Closing() {
         </div>
       </SceneShell>
 
+      <SceneShell number="∴" kicker="Closing" title={<>Every image is a negotiation.</>}>
+        <Reveal>
+          <p className="prose-scene max-w-2xl">
+            Between what was requested and what the model already believes. The prior cannot be disabled, guidance
+            cannot tune it away, and additional words rarely purchase an exit. What is possible, right now, is{' '}
+            <strong>knowing where to look</strong>: generate more than one seed, ask what never varies, and treat the
+            first third of denoising as the moment at which the decision is actually made.
+          </p>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-3">
+            {STAT_CELLS.map((s) => (
+              <div key={s.label} className="bg-card p-6">
+                <div className="font-mono2 text-3xl text-amber-200">
+                  <CountUp to={s.v} />
+                </div>
+                <div className="mt-2 font-mono2 text-[11px] leading-4 text-foreground/50">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </SceneShell>
+
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-5xl flex-col gap-3 px-6 py-10 md:flex-row md:items-center md:justify-between">
           <div className="font-mono2 text-[11px] leading-5 text-foreground/40">
-            <span className="text-foreground/70">promptswontsaveyou.dev</span> · interactive XAI explorable prototype.
+            <span className="text-foreground/70">promptswontsaveyou.dev</span> · an interactive XAI explorable.
             <br />
             Stable Diffusion 2.1 · DDIM 30 steps · 768² · DINOv3-7B embeddings · VQA annotators: gemma4 + qwen3_vl.
           </div>

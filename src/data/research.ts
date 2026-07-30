@@ -79,8 +79,11 @@ export const LOCKIN = {
     step: 9.6,
     ci: [8.4, 11.3] as [number, number],
     totalSteps: 30,
-    // logistic curve consistent with the fit (crossing 9.6, steepness ~1.1)
-    steepness: 1.05,
+    // the fit's own parameters, not an eyeballed curve: lockin_logistic_fit.json
+    // wedding_NG_to_US → crossing_step_mle 9.618, logistic_slope 0.6503,
+    // crossing_step_ci [8.425, 11.293]. Was 1.05 here, which drew the curve
+    // steeper than the fit the caption says it is.
+    steepness: 0.6503,
   },
   breakfastRange: [9.2, 16.7] as [number, number],
   note: 'Commitment timing is early for all 24 directions, including visually close pairs (Japan↔Russia). What varies is the size of the visual gap, not when it closes.',
@@ -127,7 +130,7 @@ export const REALITY = {
 // Assumption Auditor (Phase A1): VQA-named assumptions, 2 annotators, κ ≥ 0.4
 export const AUDITOR = {
   total: 693,
-  headline: 308,
+  headline: 375, // recounted from attribute_summary.json 2026-07-30; 308 was stale
   imagesAudited: 2700,
   cards: [
     { prompt: 'a wedding', attribute: 'dress color', value: 'white', count: 46, n: 50, tier: 'headline' as const },
@@ -194,7 +197,12 @@ export const STATS = {
   permutation: 'p < 0.0001 for every headline gap (10k shuffles)',
   knn: 'k-NN separability AUC 0.96–0.99 even where centroid cosine looks weak (school, celebration)',
   splitHalf: 'split-half seed reliability holds (seeds 0–24 vs 25–49), so n=50 suffices',
-  images: 13500,
+  // every final_image.png under materials/generated, counted 2026-07-30:
+  // 13,530 SD 2.1 (the 54-prompt grid at five guidance values + 30 empty-prompt)
+  // + 17,190 across the six other models + 1,650 escape-ladder + 750 paraphrase
+  // + 400 second-degree + 156 auditor = 33,676. The old 13,500 here counted only
+  // SD 2.1's own sweep while the label beside it said "7 models".
+  images: 33676,
   seeds: 50,
   prompts: 54,
 }
