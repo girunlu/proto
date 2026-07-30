@@ -1,19 +1,20 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
-import { ZoomImage, Picker, BarRow, MetricToggle } from '../components/Viz'
+import { ZoomImage, BoxPicker } from '../components/Viz'
 import { rgb, rgba } from '../lib/colors'
 import { C8, COUNTRY8, SITS, CV_DEFAULT, cell, seedImg, type Sit, type Code } from '../data/part1'
-import { cardsFor, CARDS_TOTAL, CARDS_HEADLINE, BLIND_SPOT, bridgeFor, CLIP_DIST } from '../data/part4'
+import { cardsFor, CARDS_TOTAL, CARDS_HEADLINE, BLIND_SPOT } from '../data/part4'
 import {
-  VQA, DAAM_INDEX, daamImg, key, Q_TEXT, Q_FAMILY, type Answer,
+  VQA, DAAM_INDEX, daamImg, key, Q_TEXT, type Answer,
 } from '../data/uiv2'
-import { useModel, modelImg, modelSeeds, modelVqa, isSd21, MODEL_NAME, CROSS_MODEL_NOTE } from '../data/modelData'
+import { useModel, modelImg, modelSeeds, seedCount, modelVqa, isSd21, MODEL_NAME, CROSS_MODEL_NOTE } from '../data/modelData'
+import { openForModel, shiftFor, type ShiftRow } from '../data/crossmodel'
 
 const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
 const CODE_OPTS = [
-  { value: 'default' as const, label: 'no country (plain)' },
-...COUNTRY8.map((c) => ({ value: c.id, label: c.name })),
+  { value: 'default' as const, label: 'no country' },
+...COUNTRY8.map((c) => ({ value: c.id, label: c.name, cv: c.cv })),
 ]
 
 /* ── Scene 13 · the assumptions, named (F14 + F15) ───────────────────────── */
@@ -23,7 +24,7 @@ const STRIP_N = 10
 function DistributionStrip({ sit, code }: { sit: Sit; code: Code | 'default' }) {
   const { model } = useModel()
   const [showAll, setShowAll] = useState(false)
-  const t = isSd21(model) ? cell(sit, code).typical_order : modelSeeds(model, sit, code, 9)
+  const t = isSd21(model) ? cell(sit, code).typical_order : modelSeeds(model, sit, code, seedCount(model))
   const picks = useMemo(
     () => modelSeeds(model, sit, code, Math.min(STRIP_N, t.length)).map((seed, i) => ({ seed, rank: i })),
     [model, sit, code, t.length]
@@ -37,7 +38,7 @@ function DistributionStrip({ sit, code }: { sit: Sit; code: Code | 'default' }) 
             key={p.seed}
             src={modelImg(model, sit, code, p.seed)}
             alt={`${sit} ${code} seed ${p.seed}`}
-            caption={`${label} · seed ${p.seed} · ${p.rank + 1}th most typical of 50`}
+            caption={`${label} · ${MODEL_NAME[model]} · seed ${p.seed} · ${p.rank + 1}th most typical of 50`}
             imgClassName="aspect-square w-full cursor-zoom-in rounded-md border border-border object-cover"
           />
         ))}
@@ -137,14 +138,16 @@ function BatteryList({ sit, code }: { sit: Sit; code: Code | 'default' }) {
 
       <div className="border-t border-border pt-5">
         <div className="flex flex-wrap items-baseline gap-x-3">
-          <span className="font-mono2 text-sm text-foreground/45">the other {open.length}</span>
-          <span className="font-mono2 text-[11px] text-foreground/45">genuinely vary from image to image.</span>
+          <span className="font-mono2 text-sm text-foreground/70">the other {open.length}</span>
+          <span className="font-mono2 text-[11px] text-foreground/60">genuinely vary from image to image.</span>
         </div>
-        <p className="mt-1 max-w-2xl font-mono2 text-[10px] leading-4 text-foreground/35">
+        <p className="mt-1 max-w-2xl font-mono2 text-[10px] leading-4 text-foreground/50">
           Shown so you can see the contrast: this is what an unsettled question looks like, and it is the shape the
           settled rows above would have if the model had no opinion.
         </p>
-        <div className="mt-4 space-y-1.5 opacity-60">
+        {/* was opacity-60 on top of already-muted colours, which made this whole
+            block unreadable on the light theme */}
+        <div className="mt-4 space-y-1.5 opacity-85">
           {open.map((r) => <QuestionRow key={r.q} {...r} cv={CV_DEFAULT} />)}
         </div>
       </div>
@@ -156,8 +159,12 @@ function BatteryList({ sit, code }: { sit: Sit; code: Code | 'default' }) {
    from a list. When 50 free sentences collapse into one phrase, that phrase is
    the assumption in the model's own terms. */
 function OpenAnswers({ sit, code }: { sit: Sit; code: Code | 'default' }) {
-  const v = VQA[key(sit, code)]
-  const open = Object.entries(v?.open ?? {}) as [string, Answer[]][]
+  const { model } = useModel()
+  /* Tier C: the categorised free-text answers were exported for all six other
+     models too. One annotator there against SD 2.1's two, which the scene says. */
+  const open = Object.entries(
+    (isSd21(model) ? VQA[key(sit, code)]?.open : openForModel(model, sit, code)) ?? {}
+  ) as [string, Answer[]][]
   const cv = code === 'default' ? CV_DEFAULT : C8[code].cv
   if (!open.length) {
     return (
@@ -280,8 +287,9 @@ function NamedScene() {
         <p className="prose-scene max-w-2xl">
           Distances establish <em>that</em> the unspecified gets supplied. This establishes <em>with what</em>. Every
           generated image is shown to a vision-language model that never sees the prompt behind it, and asked the same
-          frozen list of 33 questions: indoors or outdoors, how many people, what are they wearing, what kind of
-          building. When 50 blind answers agree, the model has an assumption. That yields{' '}
+          frozen questionnaire: 15 questions put to every image — indoors or outdoors, how many people, what are they
+          wearing, what kind of building — plus three or four written for the event itself, 38 distinct questions across
+          the study. When 50 blind answers agree, the model has an assumption. That yields{' '}
           <strong>{CARDS_HEADLINE} firm assumptions across the 54 prompts ({CARDS_TOTAL} counting the weaker
           tier)</strong>.
         </p>
@@ -289,15 +297,11 @@ function NamedScene() {
 
       <Reveal delay={0.08}>
         <Panel className="mt-10">
-          <div className="flex flex-wrap items-end gap-4">
-            <Picker label="event" value={sit} onChange={setSit} options={SIT_OPTS} />
-            <Picker
-              label="country"
-              value={code}
-              onChange={setCode}
-              options={CODE_OPTS}
-              accent={code === 'default' ? undefined : C8[code].cv}
-            />
+          {/* two rows of boxes rather than two dropdowns: the whole 6 × 9 grid of
+              prompts is visible, and moving along one row is a single click */}
+          <div className="flex flex-col gap-2.5">
+            <BoxPicker label="event" value={sit} onChange={setSit} options={SIT_OPTS} size="sm" />
+            <BoxPicker label="country" value={code} onChange={setCode} options={CODE_OPTS} size="sm" />
             {isSd21(model) && (
               <label className="flex cursor-pointer items-center gap-2 self-end pb-1.5 font-mono2 text-[10px] text-foreground/50">
                 <input type="checkbox" checked={showDaam} onChange={(e) => setShowDaam(e.target.checked)} className="accent-amber-300" />
@@ -307,9 +311,10 @@ function NamedScene() {
           </div>
           {!isSd21(model) && (
             <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/50">
-              Showing <span className="text-amber-200">{MODEL_NAME[model]}</span>: its own images and its own answers
-              to the same frozen questionnaire. {CROSS_MODEL_NOTE} The open-question wording and the attention maps
-              below were only produced for Stable Diffusion 2.1.
+              Showing <span className="text-amber-200">{MODEL_NAME[model]}</span>: its own images, its own closed
+              answers and its own free-text answers to the same frozen questionnaire. {CROSS_MODEL_NOTE} The attention
+              maps are the one thing here that exists only for Stable Diffusion 2.1 — they read that model's own
+              cross-attention, so there is nothing to switch.
             </p>
           )}
 
@@ -352,19 +357,13 @@ function NamedScene() {
               and in the annotator's own words
             </div>
             <p className="mt-2 max-w-3xl text-[13px] leading-5 text-foreground/50">
-              Four of the 33 questions have no answer list at all: the annotator writes a sentence. Those sentences
+              Three of the questions have no answer list at all — the clothing, the objects, the setting — so the
+              annotator writes a sentence instead of picking. Those sentences
               are where the assumption stops being a checkbox and becomes a description. When 50 independent
               descriptions of 50 different images converge on one phrase, that phrase is the stereotype, written out in full.
             </p>
             <div className="mt-5">
-              {isSd21(model) ? (
-                <OpenAnswers sit={sit} code={code} />
-              ) : (
-                <p className="font-mono2 text-[11px] leading-5 text-foreground/45">
-                  The free-text questions were only transcribed for Stable Diffusion 2.1. Switch back to it to read
-                  the sentences.
-                </p>
-              )}
+              <OpenAnswers sit={sit} code={code} />
             </div>
           </div>
 
@@ -403,101 +402,166 @@ function NamedScene() {
 
 /* ── Scene 14 · cards carry the geometry (F16) ───────────────────────────── */
 
+/* one attribute's contribution to the plain→country movement. The plain answer is
+   shown next to the country answer on every row, because the single most useful
+   thing a reader can see here is how often they are the same. */
+function ShiftBar({ r, i, maxShare, cv, muted }: {
+  r: ShiftRow
+  i: number
+  maxShare: number
+  cv: string
+  muted?: boolean
+}) {
+  const same = r.plain === r.value
+  return (
+    <div className="flex items-center gap-3">
+      <span className="w-40 shrink-0 text-right font-mono2 text-[11px] leading-4 text-foreground/70">
+        {Q_TEXT[r.q] ?? r.q}
+      </span>
+      <div className="relative h-6 flex-1 rounded-sm bg-foreground/[0.05]">
+        <motion.div
+          className="absolute inset-y-0 left-0 rounded-sm"
+          style={{
+            background: muted
+              ? rgba(cv, 0.22)
+              : `linear-gradient(90deg, ${rgba(cv, 0.3)}, ${rgb(cv)})`,
+          }}
+          initial={{ width: 0 }}
+          whileInView={{ width: `${Math.max(0, (r.share / maxShare)) * 100}%` }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: i * 0.04 }}
+        />
+      </div>
+      <span
+        className="w-12 shrink-0 text-right font-mono2 text-[11px]"
+        style={{ color: muted ? undefined : rgb(cv) }}
+      >
+        {r.share.toFixed(2)}
+      </span>
+      <span className="w-52 shrink-0 font-mono2 text-[10px] leading-4 text-foreground/45">
+        {same ? (
+          <>
+            <span className="text-foreground/70">{r.value}</span> in both
+          </>
+        ) : (
+          <>
+            {r.plain} <span className="text-foreground/30">→</span>{' '}
+            <span className="text-foreground/80">{r.value}</span>
+          </>
+        )}
+      </span>
+    </div>
+  )
+}
+
 function BridgeScene() {
+  const { model } = useModel()
   const [sit, setSit] = useState<Sit>('wedding')
   const [code, setCode] = useState<Code>('NG')
-  const data = bridgeFor(sit, code)
-  const v = VQA[key(sit, code)]
-
-  /* group the per-question weights into the handful of families a reader can
-     actually hold in their head, and carry a real example into each label */
-  const families = useMemo(() => {
-    if (!data) return []
-    const m = new Map<string, { share: number; qs: { q: string; eta2: number; value?: string }[] }>()
-    data.rows.forEach((r) => {
-      const fam = Q_FAMILY[r.q] ?? 'other'
-      const cur = m.get(fam) ?? { share: 0, qs: [] }
-      const top = v?.closed?.[r.q]?.[0]?.v ?? v?.open?.[r.q]?.[0]?.v
-      cur.share += r.eta2
-      cur.qs.push({ q: r.q, eta2: r.eta2, value: top })
-      m.set(fam, cur)
-    })
-    const rows = [...m.entries()].map(([fam, x]) => ({ fam,...x, qs: x.qs.sort((a, b) => b.eta2 - a.eta2) }))
-    return rows.sort((a, b) => b.share - a.share)
-  }, [data, v])
-  const maxShare = families[0]?.share ?? 1
+  /* Rebuilt 2026-07-30 on the between-cell measure. What this scene drew before was
+     η²: within the country cell, how much of the seed-to-seed variation in distance
+     an attribute's answer explained. That never compared the two prompts' answers,
+     so an attribute with the SAME answer in both could top the chart off two stray
+     seeds — and one that was constant across all 50 seeds was dropped entirely.
+     `share` here is the fraction of the plain→country movement that the attribute's
+     answers actually changing accounts for, so "no change" reads as ~0. */
+  const data = shiftFor(model, sit, code)
+  const rows = data?.rows ?? []
+  /* the tautological rows are separated out rather than hidden: when a country prompt
+     moves apparent continent from Europe to Africa, that attribute's answer groups ARE
+     the two prompts, so its share is forced toward 1 and it evidences nothing */
+  const real = rows.filter((r) => !r.sep)
+  const tautological = rows.filter((r) => r.sep)
+  const moved = real.filter((r) => r.plain !== r.value)
+  const still = real.filter((r) => r.plain === r.value)
+  const maxShare = Math.max(1, ...rows.map((r) => r.share))
 
   return (
     <SceneShell
       number="14"
       kicker="Part IV · the assumptions, named · finding 16"
-      title={<>The named assumptions <em className="font-display italic text-amber-200">are</em> the distance.</>}
+      title={<>The assumptions that <em className="font-display italic text-amber-200">change</em> are the distance.</>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
           Two separate instruments have been used so far: a geometric one that measures how far apart two sets of
-          pictures sit, and a linguistic one that names what is in them. Do they agree? Take the measured gap and ask
-          how much of it each named attribute accounts for. The words and the geometry turn out to be describing the
-          same thing.
+          pictures sit, and a linguistic one that names what is in them. Do they agree? Here is the honest way to ask.
+          Take every attribute in the questionnaire and check how its answers are distributed for the plain prompt and
+          for the country prompt. Then ask how much of the measured movement between the two you would predict from
+          that change in answers alone. An attribute that answers the same way in both predicts nothing, and should
+          score nothing — which is the whole test.
         </p>
       </Reveal>
       <Reveal delay={0.08}>
         <Panel className="mt-10">
           <div className="flex flex-wrap items-end gap-4">
-            <Picker label="event" value={sit} onChange={setSit} options={SIT_OPTS} />
-            <Picker label="country" value={code} onChange={setCode} options={CODE_OPTS.slice(1) as { value: Code; label: string }[]} accent={C8[code].cv} />
+            <BoxPicker label="event" value={sit} onChange={setSit} options={SIT_OPTS} size="sm" />
+            <BoxPicker label="country" value={code} onChange={setCode} options={CODE_OPTS.slice(1) as { value: Code; label: string; cv: string }[]} size="sm" />
           </div>
+          {!data && (
+            <p className="mt-4 font-mono2 text-[11px] leading-5 text-foreground/50">
+              No decomposition for “a {sit} in {C8[code].name}” on {MODEL_NAME[model]} — no annotator's answers
+              survived the mapping gate for this cell. Pick another cell, or another model.
+            </p>
+          )}
           {data && (
             <>
-              <div className="mt-6 font-mono2 text-[11px] text-foreground/50">
-                the gap being explained: <strong className="text-foreground">{data.distance.toFixed(3)}</strong>{' '}
-                between “a {sit}” and “a {sit} in {C8[code].name}”
+              <div className="mt-6 font-mono2 text-[11px] leading-5 text-foreground/50">
+                the movement being explained: <strong className="text-foreground">{data.distance.toFixed(3)}</strong>{' '}
+                between “a {sit}” and “a {sit} in {C8[code].name}”. Each bar is the share of that movement you would
+                predict from one attribute's answers changing.
               </div>
-              <div className="mt-5 space-y-5">
-                {families.map((f, i) => (
-                  <div key={f.fam}>
-                    <div className="flex items-center gap-3">
-                      <span className="w-44 shrink-0 text-right font-mono2 text-[12px] leading-4 text-foreground/75">
-                        {f.fam}
-                      </span>
-                      <div className="relative h-7 flex-1">
-                        <motion.div
-                          className="absolute inset-y-0 left-0 rounded"
-                          style={{ background: `linear-gradient(90deg, ${rgba(C8[code].cv, 0.25)}, ${rgb(C8[code].cv)})` }}
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${(f.share / maxShare) * 100}%` }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.7, delay: i * 0.06 }}
-                        />
-                      </div>
-                      <span className="w-28 shrink-0 text-right font-mono2 text-[12px]" style={{ color: rgb(C8[code].cv) }}>
-                        {(f.share * data.distance).toFixed(2)}
-                        <span className="text-foreground/35"> of {data.distance.toFixed(2)}</span>
-                      </span>
-                    </div>
-                    {/* the actual answers, as readable chips rather than a grey run-on line */}
-                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5 pl-[12.5rem]">
-                      {f.qs.filter((q) => q.value).slice(0, 3).map((q) => (
-                        <span
-                          key={q.q}
-                          className="rounded-md border px-2 py-1 font-mono2 text-[11px]"
-                          style={{ borderColor: rgba(C8[code].cv, 0.35), background: rgba(C8[code].cv, 0.07) }}
-                        >
-                          <span className="text-foreground/45">{Q_TEXT[q.q] ?? q.q}</span>
-                          <span className="text-foreground/30"> → </span>
-                          <span className="text-foreground/90">{q.value}</span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+
+              <div className="mt-6 font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
+                attributes whose answer changed · {moved.length} of {real.length}
+              </div>
+              <div className="mt-3 space-y-2.5">
+                {moved.map((r, i) => (
+                  <ShiftBar key={r.q} r={r} i={i} maxShare={maxShare} cv={C8[code].cv} />
                 ))}
               </div>
+
+              <div className="mt-7 font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
+                attributes whose answer did not change · {still.length} of {real.length}
+              </div>
+              <div className="mt-3 space-y-2.5">
+                {still.map((r, i) => (
+                  <ShiftBar key={r.q} r={r} i={i} maxShare={maxShare} cv={C8[code].cv} muted />
+                ))}
+              </div>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
+                This is the part the previous version of this chart got wrong, and it is worth dwelling on. These
+                attributes are named assumptions of “a {sit} in {C8[code].name}” — they are in the pictures, held at
+                high consistency, and already true of “a {sit}” too. They are not what the country word changed. An
+                attribute can be an assumption the model is making and still account for almost none of the distance.
+                A few here are not quite at zero: the majority answer held, but the minority split underneath it moved,
+                and the measure reads the whole distribution rather than only the winner.
+              </p>
+
+              {tautological.length > 0 && (
+                <>
+                  <div className="mt-7 font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
+                    true but circular · {tautological.length}
+                  </div>
+                  <div className="mt-3 space-y-2.5">
+                    {tautological.map((r, i) => (
+                      <ShiftBar key={r.q} r={r} i={i} maxShare={maxShare} cv={C8[code].cv} muted />
+                    ))}
+                  </div>
+                  <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
+                    Here the two prompts share almost no answers at all, so the answer groups simply <em>are</em> the
+                    two sets of pictures and the share is forced towards 1. It is not surprising that a prompt naming
+                    Nigeria produces pictures a model reads as African. Scored high, evidences nothing, kept visible
+                    rather than quietly dropped.
+                  </p>
+                </>
+              )}
             </>
           )}
           <div className="mt-8 border-t border-border pt-5">
             <TierNote
               tier="evidence"
-              text="For each question we measure how much of the seed-to-seed variation in distance it accounts for, then group the questions into the families above and scale by the measured gap. This attributes the gap; it is not a second, independent measurement of it."
+              text={`Pool the plain prompt's 50 images and this cell's 50, give every answer its own centre over that pooled set, and predict the movement from the change in answer proportions alone; the bar is that prediction's share of the actual movement. DINOv3 embeddings, ${MODEL_NAME[model]}'s own answers${isSd21(model) ? '' : `, from the cross-model run — ${CROSS_MODEL_NOTE.charAt(0).toLowerCase()}${CROSS_MODEL_NOTE.slice(1)}`}. Shares are per attribute and deliberately do not sum to 1: each attribute splits the same movement its own way, so this is not a pie. It attributes the gap; it is not a second, independent measurement of it.`}
             />
           </div>
         </Panel>
@@ -506,65 +570,11 @@ function BridgeScene() {
   )
 }
 
-/* ── Scene 15 · not a single-ruler artifact (F17) ────────────────────────── */
-
-function RulerScene() {
-  const [sit, setSit] = useState<Sit>('wedding')
-  const [ruler, setRuler] = useState<'dinov3' | 'clip'>('dinov3')
-  const max = 0.7
-  return (
-    <SceneShell
-      number="15"
-      kicker="Part IV · the assumptions, named · finding 17"
-      title={<>Not an artefact of <em className="font-display italic text-amber-200">one measuring stick.</em></>}
-    >
-      <Reveal>
-        <p className="prose-scene max-w-2xl">
-          Every distance so far came from one vision model, DINOv3. A reasonable worry is that the pattern lives in
-          that measuring stick rather than in the pictures. So we measured everything again with CLIP, a completely
-          differently trained model, and the ordering survives. Flip the switch below.
-        </p>
-      </Reveal>
-      <Reveal delay={0.08}>
-        <Panel className="mt-10">
-          <div className="flex flex-wrap items-end gap-4">
-            <Picker label="event" value={sit} onChange={setSit} options={SIT_OPTS} />
-            <MetricToggle value={ruler} onChange={setRuler} />
-          </div>
-          <div className="mt-8 space-y-2.5">
-            {COUNTRY8.map((c, i) => {
-              const d = ruler === 'dinov3' ? cell(sit, c.id).dist! : CLIP_DIST[sit][c.id]
-              return (
-                <BarRow
-                  key={c.id}
-                  label={c.name}
-                  value={d.mean}
-                  ci={[d.ci_low, d.ci_high]}
-                  max={max}
-                  color={c.cv}
-                  delay={i * 0.04}
-                />
-              )
-            })}
-            <div className="flex items-center gap-3 pt-1">
-              <span className="w-32 shrink-0" />
-              <span className="flex-1 font-mono2 text-[10px] text-foreground/35">
-                distance from “a {sit}” · the bracket through each bar is the range the true value very likely falls in
-              </span>
-              <span className="w-14 shrink-0" />
-            </div>
-          </div>
-          <div className="mt-6 border-t border-border pt-5">
-            <TierNote
-              tier="evidence"
-              text="Same 50 seeds, same protocol, same confidence intervals, measured once with each of the two vision models. Both the Western-default gradient and the variety collapse hold under either one."
-            />
-          </div>
-        </Panel>
-      </Reveal>
-    </SceneShell>
-  )
-}
+/* ── Scene 15 (F17, "not one measuring stick") was cut on 2026-07-30 ───────────
+   Every distance chart now carries its own DINOv3 / CLIP toggle, so a whole scene
+   whose only job was to flip that switch once was saying nothing the reader could
+   not already do in place. The claim itself survives in the Closing methods panel
+   ("nothing rests on one measuring stick"). */
 
 /* ── Part IV ─────────────────────────────────────────────────────────────── */
 
@@ -573,7 +583,6 @@ export default function Part4Assumptions() {
     <>
       <NamedScene />
       <BridgeScene />
-      <RulerScene />
     </>
   )
 }

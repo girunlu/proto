@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 
 const STOPS = [
+  { id: 'start', label: '— · what this is' },
   { id: 'p1', label: 'I · the default' },
   { id: 'p2', label: 'II · the mechanism' },
   { id: 'p3', label: 'III · the override' },
   { id: 'p4', label: 'IV · assumptions' },
   { id: 'p5', label: 'V · reality' },
   { id: 'p6', label: 'VI · the escape' },
-  { id: 'xa', label: 'A · across models' },
+  { id: 'xa', label: 'VII · across models' },
   { id: 'closing', label: '∴ · closing' },
 ]
 

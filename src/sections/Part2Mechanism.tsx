@@ -1,18 +1,20 @@
 import { Fragment, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
-import { ZoomImage, Picker, HowItWorks, useMagnet } from '../components/Viz'
+import { ZoomImage, Picker, BoxPicker, MetricToggle, HowItWorks, useMagnet } from '../components/Viz'
+import { Sd21Only } from '../components/ModelBar'
 import { rgb, rgba } from '../lib/colors'
-import { C8, COUNTRY8, SITS, cell, seedImg, type Sit, type Code } from '../data/part1'
+import { C8, COUNTRY8, SITS, seedImg, type Sit, type Code } from '../data/part1'
 import {
   LOCKUP, LOCKUP_STEPS, stepKey, DIRECTIONS, HERO_DIRECTION, HERO_FIT,
-  COMMITMENT, CFG, CFG_VALUES, MANTEL, NATIVE_MANTEL, MATRICES, LAION,
+  COMMITMENT, CFG, CFG_VALUES, NATIVE_MANTEL, LAION,
 } from '../data/part2'
 import { swapImgSeed, cfgImgCell } from '../data/uiv2'
+import { lockFit, fitCurve, matrix, dist as xmDist, intraset as xmIntraset, type Ruler } from '../data/crossmodel'
+import { useModel, MODEL_NAME, isSd21 } from '../data/modelData'
 
 const MONO = 'JetBrains Mono'
 const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
-const CODE_OPTS = COUNTRY8.map((c) => ({ value: c.id, label: c.name }))
 
 /* ── Scene 6 · the scene is settled early (F9) ───────────────────────────── */
 
@@ -20,8 +22,6 @@ function parseDirection(d: string): { sit: Sit; a: Code; b: Code } {
   const m = d.match(/^([a-z]+)_([A-Z]+)_to_([A-Z]+)$/)!
   return { sit: m[1] as Sit, a: m[2] as Code, b: m[3] as Code }
 }
-
-const pFlip = (k: number) => 1 / (1 + Math.exp(HERO_FIT.steepness * (k - HERO_FIT.step)))
 
 function LockupCurve({ direction, activeStep, onPick }: {
   direction: string
@@ -37,21 +37,29 @@ function LockupCurve({ direction, activeStep, onPick }: {
   const y = (p: number) => padT + (1 - p) * (H - padT - padB)
   const pts = LOCKUP_STEPS.map((s) => ({ s,...LOCKUP[direction].curve[stepKey(s)] }))
   const isHero = direction === HERO_DIRECTION
+  /* Tier C: every direction's own logistic fit is exported now, so the curve is no
+     longer one hardcoded hero line. Two of the 24 did not converge (family EG→RU,
+     funeral IN→RU) and simply get no curve, which is the honest outcome. */
+  const fit = lockFit(direction)
 
   const fitPath = useMemo(() => {
-    if (!isHero) return ''
+    if (!fit) return ''
     const out: string[] = []
-    for (let s = 1; s <= 30; s += 0.25) out.push(`${out.length === 0 ? 'M' : 'L'}${x(s).toFixed(1)},${y(pFlip(s)).toFixed(1)}`)
+    for (let s = 1; s <= 30; s += 0.25) {
+      const p = fitCurve(direction, s)
+      if (p == null) return ''
+      out.push(`${out.length === 0 ? 'M' : 'L'}${x(s).toFixed(1)},${y(p).toFixed(1)}`)
+    }
     return out.join(' ')
-  }, [isHero])
+  }, [direction, fit])
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
-      {isHero && (
+      {fit && (
         <>
-          <rect x={x(HERO_FIT.ci[0])} y={padT} width={x(HERO_FIT.ci[1]) - x(HERO_FIT.ci[0])} height={H - padT - padB} fill={rgba('--c-amber', 0.08)} />
-          <text x={(x(HERO_FIT.ci[0]) + x(HERO_FIT.ci[1])) / 2} y={padT + 11} textAnchor="middle" fontSize="9" fill={rgba('--c-amber-t', 0.85)} fontFamily={MONO}>
-            the switchover: step {HERO_FIT.step} (95% CI {HERO_FIT.ci[0]}–{HERO_FIT.ci[1]})
+          <rect x={x(fit.ci[0])} y={padT} width={x(fit.ci[1]) - x(fit.ci[0])} height={H - padT - padB} fill={rgba('--c-amber', 0.08)} />
+          <text x={(x(fit.ci[0]) + x(fit.ci[1])) / 2} y={padT + 11} textAnchor="middle" fontSize="9" fill={rgba('--c-amber-t', 0.85)} fontFamily={MONO}>
+            the switchover: step {fit.step} (95% CI {fit.ci[0]}–{fit.ci[1]})
           </text>
         </>
       )}
@@ -72,13 +80,29 @@ function LockupCurve({ direction, activeStep, onPick }: {
       <text x={W / 2} y={H - 2} textAnchor="middle" fontSize="9" fill="hsl(var(--svg-fg))" fontFamily={MONO}>
         the step at which we swapped the prompt (of 30)
       </text>
-      {isHero && (
-        <motion.path d={fitPath} fill="none" stroke={rgb('--c-amber')} strokeWidth="2.5" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 1.6 }} />
+      {fitPath && (
+        <motion.path
+          key={direction}
+          d={fitPath}
+          fill="none"
+          stroke={rgb('--c-amber')}
+          strokeWidth="2.5"
+          strokeDasharray={fit && fit.type === 'strong' ? undefined : '5 4'}
+          initial={{ pathLength: 0 }}
+          whileInView={{ pathLength: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.6 }}
+        />
+      )}
+      {!fit && (
+        <text x={W / 2} y={padT + 12} textAnchor="middle" fontSize="9" fill="hsl(var(--svg-fg))" fontFamily={MONO}>
+          no clean logistic fit for this direction — the five measured points are all there is
+        </text>
       )}
       {pts.map((p, i) => (
         <motion.g key={p.s} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 + i * 0.12 }} onClick={() => onPick(p.s)} className="cursor-pointer">
-          <line x1={x(p.s)} x2={x(p.s)} y1={y(p.ci_low)} y2={y(p.ci_high)} stroke={isHero ? rgb('--c-amber') : 'hsl(var(--foreground) / 0.6)'} strokeWidth="1.5" />
-          <circle cx={x(p.s)} cy={y(p.p_closer_B)} r={p.s === activeStep ? 7 : 4.5} fill={isHero ? rgb('--c-amber') : 'hsl(var(--foreground) / 0.7)'} stroke={rgb('--bg')} strokeWidth="2" />
+          <line x1={x(p.s)} x2={x(p.s)} y1={y(p.ci_low)} y2={y(p.ci_high)} stroke="hsl(var(--foreground) / 0.6)" strokeWidth="1.5" />
+          <circle cx={x(p.s)} cy={y(p.p_closer_B)} r={p.s === activeStep ? 7 : 4.5} fill={isHero ? rgb('--c-amber') : 'hsl(var(--foreground) / 0.75)'} stroke={rgb('--bg')} strokeWidth="2" />
         </motion.g>
       ))}
       <line x1={x(activeStep)} x2={x(activeStep)} y1={padT} y2={H - padB} stroke="hsl(var(--foreground) / 0.3)" />
@@ -98,6 +122,8 @@ function CommitEarlyScene() {
     setDirection(dirsFor(s)[0])
   }
   const { a, b } = parseDirection(direction)
+  const fit = lockFit(direction)
+  const fit_failed_note = 'family Egypt → Russia and funeral India → Russia'
   const pt = LOCKUP[direction].curve[stepKey(step)]
   const committed = pt.p_closer_B < 0.5
   const dirOpts = dirsFor(sit).map((d) => {
@@ -118,13 +144,20 @@ function CommitEarlyScene() {
           like the first country, the cultural identity had already been decided before we intervened. Pick an event
           and a direction, then drag the step slider and watch the middle image change.
         </p>
+        <p className="mt-4 max-w-2xl font-mono2 text-[11px] leading-5 text-foreground/50">
+          Interrupting generation means re-running it 30 steps at a time with the prompt exchanged mid-flight, so this
+          experiment — and scenes 07 and 08 with it — was run on <strong className="text-foreground/70">Stable
+          Diffusion 2.1 only</strong>. The model switcher above moves the rest of the page; these three scenes stay
+          here.
+        </p>
+        <Sd21Only />
       </Reveal>
 
       <Reveal delay={0.06}>
         <Panel className="mt-10">
-          <div className="flex flex-wrap items-end gap-4">
-            <Picker label="event" value={sit} onChange={setSituation} options={SIT_OPTS} />
-            <Picker label="swap direction" value={direction} onChange={setDirection} options={dirOpts} width="w-56" />
+          <div className="flex flex-col gap-2.5">
+            <BoxPicker label="event" value={sit} onChange={setSituation} options={SIT_OPTS} size="sm" />
+            <BoxPicker label="swap direction" value={direction} onChange={setDirection} options={dirOpts} size="sm" />
             <Picker
               label="seed"
               value={String(seed)}
@@ -206,7 +239,7 @@ function CommitEarlyScene() {
                 </button>
               ))}
             </div>
-            <div className="mt-1.5 flex justify-between font-mono2 text-[10px] text-foreground/35">
+            <div className="mt-1.5 flex justify-between font-mono2 text-[10px] text-foreground/50">
               <span>swap early: the new prompt still gets its way</span>
               <span>swap late: the identity is already fixed</span>
             </div>
@@ -218,15 +251,15 @@ function CommitEarlyScene() {
               <div className="grid grid-cols-3 gap-1 overflow-hidden rounded-lg border border-border font-mono2 text-[10px]">
                 <div className={`px-3 py-2 text-center transition ${step <= 10 ? 'bg-amber-300/15 text-amber-200' : 'text-foreground/40'}`}>
                   steps 1–10 · composition<br />
-                  <span className="text-foreground/35">layout, setting, cultural content</span>
+                  <span className="text-foreground/55">layout, setting, cultural content</span>
                 </div>
                 <div className={`px-3 py-2 text-center transition ${step > 10 && step <= 20 ? 'bg-amber-300/15 text-amber-200' : 'text-foreground/40'}`}>
                   steps 10–20 · structure<br />
-                  <span className="text-foreground/35">objects, people, poses</span>
+                  <span className="text-foreground/55">objects, people, poses</span>
                 </div>
                 <div className={`px-3 py-2 text-center transition ${step > 20 ? 'bg-amber-300/15 text-amber-200' : 'text-foreground/40'}`}>
                   steps 20–30 · texture<br />
-                  <span className="text-foreground/35">fabric, skin, detail</span>
+                  <span className="text-foreground/55">fabric, skin, detail</span>
                 </div>
               </div>
               <div className="mt-5">
@@ -250,11 +283,22 @@ function CommitEarlyScene() {
           </div>
 
           <p className="mt-6 border-t border-border pt-5 text-sm leading-6 text-foreground/60">
-            For wedding · Nigeria → USA the crossover lands at step <strong>{HERO_FIT.step} of 30</strong>: the orange
-            curve is the fitted prediction, the dots are the twelve-seed measurements it was fitted to. By the time the
-            picture has any recognisable shape at all, the question of which country it depicts has been answered.
-            Timing is early in all 24 tested directions; what varies between them is the size of the visual gap, not
-            when it closes.
+            {fit ? (
+              <>
+                For {sit} · {C8[a].name} → {C8[b].name} the crossover lands at step{' '}
+                <strong>{fit.step} of 30</strong> (95% CI {fit.ci[0]}–{fit.ci[1]}): the orange curve is that
+                direction's own fitted prediction, the dots are the twelve-seed measurements it was fitted to
+                {fit.type === 'strong' ? '' : ', drawn dashed because this pair separates only weakly to begin with'}.
+              </>
+            ) : (
+              <>
+                This is one of the two directions ({fit_failed_note}) where the logistic fit did not converge, so no
+                curve is drawn — the five measured points stand on their own.
+              </>
+            )}{' '}
+            By the time the picture has any recognisable shape at all, the question of which country it depicts has
+            been answered. Timing is early in all 24 tested directions; what varies between them is the size of the
+            visual gap, not when it closes.
           </p>
         </Panel>
       </Reveal>
@@ -265,6 +309,11 @@ function CommitEarlyScene() {
 /* ── Scene 7 · coarse to fine (F10) ──────────────────────────────────────── */
 
 function CoarseFineScene() {
+  /* one mapping for the marks AND the axis labels. They used to disagree: the
+     marks were placed at step/30 (so step 1 sat 3% in) while the labels were
+     laid out with justify-between (step 1 flush at 0%), which is why the lines
+     read as dislocated against their own axis. */
+  const pos = (s: number) => ((s - 1) / 29) * 100
   const lanes = [
     { label: 'the whole scene', step: COMMITMENT.scene.mean, cv: '--c-sky', ex: 'indoors or outdoors, the setting, the architecture', n: `${COMMITMENT.scene.n} attributes` },
     { label: 'cultural identity', step: HERO_FIT.step, cv: '--c-amber', ex: 'which country the picture reads as', n: 'wedding · Nigeria → USA' },
@@ -283,8 +332,9 @@ function CoarseFineScene() {
           ({COMMITMENT.nLogistic} clean fits, {COMMITMENT.nFallback} estimated from intervals): the model settles{' '}
           <strong>where and what kind of event</strong> around step {COMMITMENT.scene.mean}, and{' '}
           <strong>what people are wearing</strong> around step {COMMITMENT.texture.mean}. Both are done before the
-          image is half-drawn.
+          image is half-drawn. Stable Diffusion 2.1 only, for the same reason as scene 06.
         </p>
+        <Sd21Only />
       </Reveal>
       <Reveal delay={0.08}>
         <Panel className="mt-10">
@@ -301,7 +351,7 @@ function CoarseFineScene() {
                   <div className="absolute inset-y-0 left-0 rounded-l-md bg-gradient-to-r from-foreground/10 to-transparent" style={{ width: '15%' }} />
                   <motion.div
                     className="absolute top-1/2 h-6 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full"
-                    style={{ left: `${(m.step / 30) * 100}%`, background: rgb(m.cv) }}
+                    style={{ left: `${pos(m.step)}%`, background: rgb(m.cv) }}
                     initial={{ opacity: 0, scaleY: 0 }}
                     whileInView={{ opacity: 1, scaleY: 1 }}
                     viewport={{ once: true }}
@@ -309,7 +359,7 @@ function CoarseFineScene() {
                   />
                   <motion.span
                     className="absolute top-1/2 -translate-y-1/2 font-mono2 text-[11px]"
-                    style={{ left: `calc(${(m.step / 30) * 100}% + 10px)`, color: rgb(m.cv) }}
+                    style={{ left: `calc(${pos(m.step)}% + 10px)`, color: rgb(m.cv) }}
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
@@ -318,19 +368,20 @@ function CoarseFineScene() {
                     step {m.step}
                   </motion.span>
                 </div>
-                <span className="w-56 shrink-0 font-mono2 text-[10px] leading-4 text-foreground/45">
+                <span className="w-56 shrink-0 font-mono2 text-[10px] leading-4 text-foreground/60">
                   {m.ex}
                   <br />
-                  <span className="text-foreground/30">{m.n}</span>
+                  <span className="text-foreground/45">{m.n}</span>
                 </span>
               </div>
             ))}
             <div className="flex items-center gap-3 pt-1">
               <span className="w-36 shrink-0" />
-              <div className="flex flex-1 justify-between font-mono2 text-[10px] text-foreground/35">
-                <span>step 1 · pure noise</span>
-                <span>step 15</span>
-                <span>step 30 · finished image</span>
+              {/* the same pos() as the marks, so each label sits under its own step */}
+              <div className="relative h-4 flex-1 font-mono2 text-[10px] text-foreground/55">
+                <span className="absolute left-0">step 1 · pure noise</span>
+                <span className="absolute -translate-x-1/2" style={{ left: `${pos(15)}%` }}>step 15</span>
+                <span className="absolute right-0">step 30 · finished image</span>
               </div>
               <span className="w-56 shrink-0" />
             </div>
@@ -349,9 +400,20 @@ function CoarseFineScene() {
 
 /* ── Scene 8 · the knob that doesn't help (F11) ──────────────────────────── */
 
-function CfgChart({ situation, highlight }: { situation: Sit; highlight: Code | null }) {
-  const W = 900
-  const H = 340
+function CfgChart({ situation, highlight, onHover, onPick }: {
+  situation: Sit
+  highlight: Code | null
+  /* hovering a line previews that country; clicking pins it. Same two gestures the
+     legend below the chart uses, so either entry point behaves identically. */
+  onHover: (c: Code | null) => void
+  onPick: (c: Code) => void
+}) {
+  /* 900 × 340 at full panel width pushed the legend, the picture strip and the
+     caveat below the fold; 900 × 250 fixed the height but left a 3.6:1 letterbox
+     that read as stretched. 780 × 265 is close to 3:1, and the narrower viewBox
+     also makes the axis labels relatively larger. */
+  const W = 780
+  const H = 265
   const padL = 40
   const padB = 30
   const padT = 12
@@ -383,22 +445,49 @@ function CfgChart({ situation, highlight }: { situation: Sit; highlight: Code | 
         const pts = CFG_VALUES.map((v) => ({ cfg: v, d: CFG[situation][c.id][String(v)].mean }))
         const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(p.cfg)},${y(p.d)}`).join(' ')
         const on = highlight === null || c.id === highlight
+        const sole = highlight === c.id
         return (
           <g key={c.id}>
             <motion.path
               d={path}
               fill="none"
               stroke={rgb(c.cv)}
-              strokeWidth={on ? 2.5 : 1.25}
-              strokeOpacity={on ? 1 : 0.3}
+              strokeWidth={sole ? 3 : on ? 2.5 : 1.25}
+              strokeOpacity={on ? 1 : 0.22}
               initial={{ pathLength: 0 }}
               whileInView={{ pathLength: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 1.1, delay: ci * 0.06 }}
+              pointerEvents="none"
             />
             {pts.map((p) => (
-              <circle key={p.cfg} cx={x(p.cfg)} cy={y(p.d)} r={on ? 4 : 2} fill={rgb(c.cv)} fillOpacity={on ? 1 : 0.3} />
+              <circle
+                key={p.cfg}
+                cx={x(p.cfg)}
+                cy={y(p.d)}
+                r={sole ? 5 : on ? 4 : 2}
+                fill={rgb(c.cv)}
+                fillOpacity={on ? 1 : 0.22}
+                pointerEvents="none"
+              />
             ))}
+            {/* an invisible fat stroke along the same path: a 2.5px line is too thin
+                to hit with a pointer, so this is the actual hit target */}
+            <path
+              d={path}
+              fill="none"
+              stroke="transparent"
+              strokeWidth={16}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              pointerEvents="stroke"
+              className="cursor-pointer"
+              onMouseEnter={() => onHover(c.id)}
+              onMouseLeave={() => onHover(null)}
+              onClick={() => onPick(c.id)}
+            >
+              <title>{`${c.name} — click to keep it singled out`}</title>
+            </path>
           </g>
         )
       })}
@@ -416,7 +505,11 @@ function CfgScene() {
   const [situation, setSituation] = useState<Sit>('wedding')
   const [code, setCode] = useState<Code>('IN')
   // null = nothing singled out, every line drawn at equal weight
-  const [focus, setFocus] = useState<Code | null>('IN')
+  const [pinned, setPinned] = useState<Code | null>('IN')
+  // a transient hover, from either the lines or the legend; it never clears the pin
+  const [hoverC, setHoverC] = useState<Code | null>(null)
+  const focus = hoverC ?? pinned
+  const pick = (c: Code) => { setPinned(pinned === c ? null : c); setCode(c) }
   const shown = [1, 4, 12, 15]
   return (
     <SceneShell
@@ -429,15 +522,13 @@ function CfgScene() {
           Every image tool has a guidance slider: turn it up and the model is pushed harder to obey the words you
           typed. If the cultural gap were a matter of the model half-listening, pushing harder would close it. It does
           not. The gap opens almost entirely between guidance 1 and 4, then sits flat all the way to 15, in every one
-          of the six events.
+          of the six events. The guidance sweep was generated for Stable Diffusion 2.1 only.
         </p>
+        <Sd21Only />
       </Reveal>
       <Reveal delay={0.08}>
         <Panel className="mt-10">
-          <div className="flex flex-wrap items-end gap-4">
-            <Picker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} />
-            <Picker label="country" value={code} onChange={(v) => { setCode(v); setFocus(v) }} options={CODE_OPTS} accent={C8[code].cv} />
-          </div>
+          <BoxPicker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
 
           <div className="mt-6">
             <div className="flex flex-wrap items-baseline justify-between gap-3">
@@ -445,13 +536,15 @@ function CfgScene() {
                 distance from the plain prompt at each guidance level
               </div>
               <button
-                onClick={() => setFocus(null)}
-                className={`rounded border px-2 py-0.5 font-mono2 text-[10px] transition ${focus === null ? 'border-amber-300/50 text-amber-200' : 'border-border text-foreground/45 hover:text-foreground'}`}
+                onClick={() => { setPinned(null); setHoverC(null) }}
+                className={`rounded border px-2 py-0.5 font-mono2 text-[10px] transition ${pinned === null ? 'border-amber-300/50 text-amber-200' : 'border-border text-foreground/45 hover:text-foreground'}`}
               >
                 show all countries equally
               </button>
             </div>
-            <CfgChart situation={situation} highlight={focus} />
+            <div className="mx-auto max-w-2xl">
+              <CfgChart situation={situation} highlight={focus} onHover={setHoverC} onPick={pick} />
+            </div>
             {/* fixed legend column: the country labels used to sit at the line
                 ends and jumped around whenever the lines crossed */}
             <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-4">
@@ -461,7 +554,9 @@ function CfgScene() {
                 return (
                   <button
                     key={c.id}
-                    onClick={() => { setFocus(focus === c.id ? null : c.id); setCode(c.id) }}
+                    onMouseEnter={() => setHoverC(c.id)}
+                    onMouseLeave={() => setHoverC(null)}
+                    onClick={() => pick(c.id)}
                     className={`flex items-center justify-between gap-2 rounded px-1.5 py-0.5 font-mono2 text-[10px] transition ${focus === c.id ? 'bg-foreground/10' : on ? '' : 'opacity-45 hover:opacity-100'}`}
                   >
                     <span className="flex items-center gap-1.5" style={{ color: rgb(c.cv) }}>
@@ -473,8 +568,10 @@ function CfgScene() {
                 )
               })}
             </div>
-            <p className="mt-2 font-mono2 text-[10px] text-foreground/35">
-              click a country to single it out, click it again (or the button above) to bring every line back to equal weight
+            <p className="mt-2 font-mono2 text-[10px] text-foreground/55">
+              hover a line in the chart or a country here to single it out · click either to keep it that way — the
+              picture strip below follows the same choice. Click again, or use the button above, to bring every line
+              back to equal weight
             </p>
           </div>
 
@@ -524,12 +621,12 @@ function CfgScene() {
    larger spread wash the text grid out to near-blank, which is precisely the
    comparison the reader is being asked to make. */
 function BigMatrix({ m, kind, title, sub }: {
-  m: NonNullable<(typeof MATRICES)['wedding']>
+  m: NonNullable<ReturnType<typeof matrix>>
   kind: 'txt' | 'img'
   title: string
   sub: string
 }) {
-  const mat = kind === 'txt' ? m.txt_txt : m.img_img_collapsed
+  const mat = kind === 'txt' ? m.txt : m.img
   const labels = m.countries
   const [hover, setHover] = useState<{ i: number; j: number } | null>(null)
   const cv = kind === 'txt' ? '--c-sky' : '--c-red'
@@ -600,11 +697,19 @@ function BigMatrix({ m, kind, title, sub }: {
 }
 
 function TextEncoderScene() {
+  const { model } = useModel()
   const [sit, setSit] = useState<Sit>('wedding')
-  const m = MATRICES[sit]!
-  const mantelRows = SITS.map((s) => ({ sit: s,...MANTEL[s] }))
-  const best = Math.max(...mantelRows.map((r) => r.r))
+  /* Tier C: all seven models are here now. The text side is each model's own
+     encoder stack — the 2026-07-27 fix, since only SDXL is CLIP-family — and the
+     image side is that model's own 50-image sets. */
+  const m = matrix(model, sit)
+  const mantelRows = SITS.map((s) => {
+    const mm = matrix(model, s)
+    return { sit: s, r: mm?.r ?? null, p: mm?.p ?? null }
+  }).filter((r): r is { sit: Sit; r: number; p: number } => r.r != null && r.p != null)
+  const best = mantelRows.length ? Math.max(...mantelRows.map((r) => r.r)) : 0
   const sigCount = mantelRows.filter((r) => r.p < 0.05).length
+  if (!m) return null
   return (
     <SceneShell
       number="09"
@@ -638,15 +743,15 @@ function TextEncoderScene() {
             <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
               the same nine prompts, measured two ways
             </div>
-            <Picker
-              label="event"
-              value={sit}
-              onChange={setSit}
-              options={(Object.keys(MATRICES) as Sit[]).map((s) => ({ value: s, label: `a ${s}` }))}
-            />
+            <BoxPicker label="event" value={sit} onChange={setSit} options={SIT_OPTS} size="sm" />
           </div>
           <div className="mt-6 grid gap-8 lg:grid-cols-2">
-            <BigMatrix m={m} kind="txt" title="as sentences · before any image exists" sub="how far apart the nine prompts are, read as text" />
+            <BigMatrix
+              m={m}
+              kind="txt"
+              title="as sentences · before any image exists"
+              sub={`how far apart the nine prompts are, read by ${MODEL_NAME[model]}'s own text encoder`}
+            />
             <BigMatrix m={m} kind="img" title="as pictures · once they are drawn" sub="how far apart the nine 50-image sets are" />
           </div>
           <p className="mt-5 max-w-3xl text-sm leading-6 text-foreground/60">
@@ -702,11 +807,11 @@ function TextEncoderScene() {
           </div>
           <div className="mt-6 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
             <p className="text-sm leading-6 text-foreground/60">
-              Only {sigCount} of the six events show any relationship at all, and even in the strongest one the
-              sentence pattern accounts for roughly <strong>{Math.round(best * best * 100)}%</strong> of the picture
-              pattern. For the other events it is indistinguishable from no relationship, and “a wedding”, the case
-              this whole page is built on, is one of them. Most of what separates the countries is added <em>after</em>{' '}
-              the sentence has been read.
+              For <strong>{MODEL_NAME[model]}</strong>, {sigCount === 0 ? 'not one' : `only ${sigCount}`} of the six
+              events shows a relationship that clears significance, and even in the strongest one the sentence pattern
+              accounts for roughly <strong>{Math.round(best * best * 100)}%</strong> of the picture pattern. For the
+              rest it is indistinguishable from no relationship, and “a wedding”, the case this whole page is built on,
+              is one of them. Most of what separates the countries is added <em>after</em> the sentence has been read.
             </p>
             <div className="rounded-lg border border-emerald-300/25 bg-emerald-300/5 p-4">
               <div className="font-mono2 text-[10px] tracking-widest text-emerald-300/80 uppercase">
@@ -730,6 +835,22 @@ function TextEncoderScene() {
 
 /* ── Scene 10 · not copied from the data (F13) ───────────────────────────── */
 
+/* Two-sided p for a Spearman rho, normal approximation (z = rho*sqrt(n-1)). Checked
+   against scipy.stats.spearmanr on the real arrays: within 0.001 at n=54 for every
+   model and both rulers, which is well inside how precisely it is read here. */
+function rhoP(rho: number, n: number) {
+  if (n < 4) return 1
+  const z = Math.abs(rho) * Math.sqrt(n - 1)
+  // Abramowitz & Stegun 7.1.26 erf approximation
+  const t = 1 / (1 + 0.3275911 * (z / Math.SQRT2))
+  const erf =
+    1 -
+    ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) *
+      t *
+      Math.exp(-((z / Math.SQRT2) ** 2))
+  return Math.max(0, Math.min(1, 1 - erf))
+}
+
 function spearman(a: number[], b: number[]) {
   const rank = (xs: number[]) => {
     const order = xs.map((v, i) => [v, i] as const).sort((p, q) => p[0] - q[0])
@@ -745,14 +866,24 @@ function spearman(a: number[], b: number[]) {
   return num / den
 }
 
-function Scatter({ pts, xLabel, yLabel, rho, hover, setHover, accent }: {
+function Scatter({ pts, xLabel, yLabel, rho, n, hover, setHover, accent, focus, yDomain }: {
   pts: { x: number; y: number; cv: string; label: string }[]
   xLabel: string
   yLabel: string
   rho: number
+  /* how many prompts the correlation is over, so the reader can judge the p below */
+  n: number
   hover: number | null
   setHover: (i: number | null) => void
   accent: string
+  /* a country cv from the legend, or null: matching dots stay, the rest fade */
+  focus?: string | null
+  /* a shared [lo, hi] for the VERTICAL axis of both panels, wide enough to hold the
+     selected model and SD 2.1's published baseline. Without it each panel rescaled
+     itself on every switch, so a dot's height meant something different in each
+     plot and nothing could be compared. The horizontal axes keep their own ranges —
+     they measure different quantities. */
+  yDomain?: [number, number]
 }) {
   const W = 430
   const H = 330
@@ -761,13 +892,13 @@ function Scatter({ pts, xLabel, yLabel, rho, hover, setHover, accent }: {
   const padT = 16
   const padR = 14
   const xs = pts.map((p) => p.x); const ys = pts.map((p) => p.y)
-  const x0 = Math.min(...xs) - 0.02; const x1 = Math.max(...xs) + 0.02
-  const y0 = Math.min(...ys) - 0.02; const y1 = Math.max(...ys) + 0.02
+  const [x0, x1] = [Math.min(...xs) - 0.02, Math.max(...xs) + 0.02]
+  const [y0, y1] = yDomain ?? [Math.min(...ys) - 0.02, Math.max(...ys) + 0.02]
   const X = (v: number) => padL + ((v - x0) / (x1 - x0)) * (W - padL - padR)
   const Y = (v: number) => padT + (1 - (v - y0) / (y1 - y0)) * (H - padT - padB)
-  const n = pts.length
-  const mx = xs.reduce((a, b) => a + b, 0) / n
-  const my = ys.reduce((a, b) => a + b, 0) / n
+  const nPts = pts.length
+  const mx = xs.reduce((a, b) => a + b, 0) / nPts
+  const my = ys.reduce((a, b) => a + b, 0) / nPts
   const slope = xs.reduce((a, x, i) => a + (x - mx) * (ys[i] - my), 0) / xs.reduce((a, x) => a + (x - mx) ** 2, 0)
   const at = (x: number) => my + slope * (x - mx)
   const ticks = (lo: number, hi: number) => [0.25, 0.5, 0.75].map((f) => lo + f * (hi - lo))
@@ -788,33 +919,48 @@ function Scatter({ pts, xLabel, yLabel, rho, hover, setHover, accent }: {
         {ticks(x0, x1).map((v) => (
           <text key={`x${v}`} x={X(v)} y={H - padB + 16} textAnchor="middle" fontSize="9" fill="hsl(var(--svg-fg))" fontFamily={MONO}>{v.toFixed(2)}</text>
         ))}
-        <line x1={X(x0)} x2={X(x1)} y1={Y(at(x0))} y2={Y(at(x1))} stroke={rgb(accent)} strokeWidth="2.5" strokeDasharray="6 4" />
+        {/* drawn across the data's own span, so a shared frame never makes the fit
+            look like it predicts territory with no points in it */}
+        <line
+          x1={X(Math.min(...xs))}
+          x2={X(Math.max(...xs))}
+          y1={Y(at(Math.min(...xs)))}
+          y2={Y(at(Math.max(...xs)))}
+          stroke={rgb(accent)}
+          strokeWidth="2.5"
+          strokeDasharray="6 4"
+        />
         {hover !== null && pts[hover] && (
           <g pointerEvents="none">
             <line x1={padL} x2={W - padR} y1={Y(pts[hover].y)} y2={Y(pts[hover].y)} stroke="hsl(var(--foreground) / 0.18)" />
             <line x1={X(pts[hover].x)} x2={X(pts[hover].x)} y1={padT} y2={H - padB} stroke="hsl(var(--foreground) / 0.18)" />
           </g>
         )}
-        {pts.map((p, i) => (
-          <circle
-            key={i}
-            cx={X(p.x)} cy={Y(p.y)}
-            r={hover === i ? 7 : 4}
-            fill={rgb(p.cv)} fillOpacity={hover === i ? 1 : 0.6}
-            stroke={hover === i ? 'white' : 'none'}
-            pointerEvents="none"
-          />
-        ))}
+        {pts.map((p, i) => {
+          const dim = focus != null && focus !== p.cv
+          return (
+            <circle
+              key={i}
+              cx={X(p.x)} cy={Y(p.y)}
+              r={hover === i ? 7 : dim ? 2.5 : 4}
+              fill={rgb(p.cv)} fillOpacity={dim ? 0.12 : hover === i ? 1 : 0.6}
+              stroke={hover === i ? 'white' : 'none'}
+              pointerEvents="none"
+            />
+          )
+        })}
         <text x={(W + padL) / 2} y={H - 24} textAnchor="middle" fontSize="9.5" fill="hsl(var(--svg-fg))" fontFamily={MONO}>{xLabel}</text>
         <text x={14} y={(H - padB + padT) / 2} fontSize="9.5" fill="hsl(var(--svg-fg))" fontFamily={MONO}
           transform={`rotate(-90 14 ${(H - padB + padT) / 2})`} textAnchor="middle">{yLabel}</text>
       </svg>
       <div className="mt-1 flex items-baseline gap-3">
         <span className="font-mono2 text-2xl" style={{ color: rgb(accent) }}>{rho.toFixed(2)}</span>
-        <span className="font-mono2 text-[10px] leading-4 text-foreground/45">
-          {Math.abs(rho) < 0.2 ? 'no usable relationship' : 'a clear relationship'}
+        <span className="font-mono2 text-[10px] leading-4 text-foreground/50">
+          {rhoP(rho, n) < 0.05 ? 'a real relationship' : 'nothing that clears chance'}
           <br />
-          <span className="text-foreground/30">slope of the dashed line: {slope > 0 ? 'rising' : 'flat to falling'}</span>
+          <span className="text-foreground/40">
+            p = {rhoP(rho, n) < 0.001 ? '<0.001' : rhoP(rho, n).toFixed(3)} over {n} prompts
+          </span>
         </span>
       </div>
     </div>
@@ -822,22 +968,44 @@ function Scatter({ pts, xLabel, yLabel, rho, hover, setHover, accent }: {
 }
 
 function LaionScene() {
+  const { model } = useModel()
   const [hoverA, setHoverA] = useState<number | null>(null)
   const [hoverB, setHoverB] = useState<number | null>(null)
+  const [focus, setFocus] = useState<string | null>(null)
+  /* The output side can be re-measured with the second ruler; the LAION side
+     cannot follow the model switch at all, which the note below says outright. */
+  const [ruler, setRuler] = useState<Ruler>('dinov3')
 
+  /* The output side follows the model switch — that is each model's own homogeneity,
+     which is a real measurement for all seven. The retrieval side cannot follow it:
+     those neighbourhoods come from LAION, and only SD 2.1 (roughly SDXL) was trained
+     on it, so the x axis stays fixed and the note above says why. */
   const rows = LAION.rows.map((r) => {
     const code = (r.country === 'default' ? 'default' : r.country) as Code | 'default'
-    const c = cell(r.situation as Sit, code)
+    const sit = r.situation as Sit
+    const isSd = isSd21(model)
     return {
       label: `“a ${r.situation}${r.country === 'default' ? '' : ` in ${r.country}`}”`,
       cv: r.country === 'default' ? '--c-gray' : C8[r.country as Code]?.cv ?? '--c-gray',
       training: r.retrieval_intraset_sim,
-      output: r.output_intraset_sim,
-      moved: c?.dist?.mean ?? 0,
+      output: isSd && ruler === 'dinov3' ? r.output_intraset_sim : xmIntraset(model, sit, code, ruler).mean,
+      moved: code === 'default' ? 0 : xmDist(model, sit, code, ruler).mean,
     }
   })
   const ptsA = rows.map((r) => ({ x: r.training, y: r.output, cv: r.cv, label: r.label }))
   const ptsB = rows.map((r) => ({ x: r.moved, y: r.output, cv: r.cv, label: r.label }))
+  /* every value both panels draw, on one scale: the LAION neighbourhoods, this
+     model's output homogeneity, and how far its prompts moved */
+  const yDomain = useMemo(() => {
+    /* the selected model's homogeneity AND SD 2.1's published values, so the frame
+       holds both and switching model moves the dots inside a scale that stays put */
+    const all = [...rows.map((r) => r.output), ...LAION.rows.map((r) => r.output_intraset_sim)]
+    const lo = Math.min(...all)
+    const hi = Math.max(...all)
+    const pad = (hi - lo) * 0.06
+    return [lo - pad, hi + pad] as [number, number]
+  }, [rows])
+  const rhoA = isSd21(model) && ruler === 'dinov3' ? LAION.rho : spearman(rows.map((r) => r.training), rows.map((r) => r.output))
   const rhoB = spearman(rows.map((r) => r.moved), rows.map((r) => r.output))
 
   return (
@@ -868,21 +1036,31 @@ function LaionScene() {
 
       <Reveal delay={0.08}>
         <Panel className="mt-6">
+          <div className="flex flex-wrap items-end justify-between gap-4 pb-5">
+            <p className="max-w-lg font-mono2 text-[10px] leading-4 text-foreground/50">
+              LAION is Stable Diffusion 2.1's training source, so on any other model the left panel asks whether{' '}
+              <em>this</em> model's narrowness tracks <em>a different</em> model's training data.
+            </p>
+            <MetricToggle value={ruler} onChange={setRuler} />
+          </div>
           <div className="grid gap-8 lg:grid-cols-2">
             <div>
               <div className="font-mono2 text-[11px] text-foreground/70">the inheritance explanation</div>
-              <div className="font-mono2 text-[10px] leading-4 text-foreground/40">
+              <div className="font-mono2 text-[10px] leading-4 text-foreground/45">
                 if it held, narrow training neighbourhoods would produce narrow output
               </div>
               <div className="mt-3">
                 <Scatter
                   pts={ptsA}
-                  xLabel="how alike the training neighbours are →"
-                  yLabel="how alike the output is →"
-                  rho={LAION.rho}
+                  xLabel="how alike the LAION neighbours are →"
+                  yLabel="how alike this model's output is →"
+                  rho={rhoA}
+                  n={rows.length}
                   hover={hoverA}
                   setHover={setHoverA}
                   accent="--c-gray"
+                  focus={focus}
+                  yDomain={yDomain}
                 />
               </div>
               <p className="mt-2 min-h-[32px] font-mono2 text-[10px] leading-4 text-foreground/50">
@@ -900,12 +1078,15 @@ function LaionScene() {
               <div className="mt-3">
                 <Scatter
                   pts={ptsB}
-                  xLabel="how far the prompt moved the pictures →"
-                  yLabel="how alike the output is →"
+                  xLabel="how far the prompt moved this model's pictures →"
+                  yLabel="how alike this model's output is →"
                   rho={rhoB}
+                  n={rows.length}
                   hover={hoverB}
                   setHover={setHoverB}
                   accent="--c-amber"
+                  focus={focus}
+                  yDomain={yDomain}
                 />
               </div>
               <p className="mt-2 min-h-[32px] font-mono2 text-[10px] leading-4 text-foreground/50">
@@ -916,13 +1097,42 @@ function LaionScene() {
             </div>
           </div>
 
-          <div className="mt-6 border-t border-border pt-5">
+          {/* one legend for both panels: every dot is one of the 54 prompts, coloured
+              by the country in it, and hovering a country isolates it in both clouds */}
+          <div className="mt-5 flex flex-wrap gap-x-4 gap-y-1.5 border-t border-border pt-4">
+            {[{ id: 'default', name: 'no country', cv: '--c-gray' }, ...COUNTRY8.map((c) => ({ id: c.id as string, name: c.name, cv: c.cv }))].map((e) => {
+              const dim = focus != null && focus !== e.cv
+              return (
+                <button
+                  key={e.id}
+                  onMouseEnter={() => setFocus(e.cv)}
+                  onMouseLeave={() => setFocus(null)}
+                  onClick={() => setFocus(focus === e.cv ? null : e.cv)}
+                  className={`flex items-center gap-1.5 font-mono2 text-[10px] transition hover:text-foreground/80 ${dim ? 'text-foreground/25' : 'text-foreground/50'}`}
+                >
+                  <span className="h-2 w-2 rounded-full transition" style={{ background: rgb(e.cv), opacity: dim ? 0.3 : 1 }} />
+                  {e.name}
+                </button>
+              )
+            })}
+            <span className="font-mono2 text-[9px] text-foreground/30">
+              one dot = one of the 54 prompts · hover a country to isolate it in both panels
+            </span>
+          </div>
+
+          <div className="mt-5 border-t border-border pt-5">
             <p className="max-w-3xl text-sm leading-6 text-foreground/70">
+              Switching models moves the dots up and down, not sideways: the LAION neighbourhoods are one retrieval per
+              prompt, a property of the dataset, while the upward axis is whichever model you have selected. Both
+              panels share that upward scale, and it is wide enough to hold Stable Diffusion 2.1 as well, so a cloud
+              that shifts when you switch is telling you something real about that model rather than being redrawn.
+            </p>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/70">
               Both panels use the same 54 prompts and the same measure of output narrowness on the upward axis. Only
               the sideways axis differs. Whatever collapses these outputs is clearly measurable, since the right-hand
               panel finds it easily. It simply is not the narrowness of the training neighbourhood. The same null holds
-              on a second diversity measure ({LAION.vendiRho.toFixed(2)}), so it is not an artefact of how we counted
-              variety.
+              on a second diversity measure ({LAION.vendiRho.toFixed(2)}, computed on the DINOv3 side), so it is not an
+              artefact of how we counted variety.
             </p>
             <div className="mt-4">
               <TierNote tier="evidence" text={LAION.caveat} />

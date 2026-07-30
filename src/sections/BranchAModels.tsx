@@ -4,8 +4,11 @@ import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
 import { CountUp } from '../components/CountUp'
 import { rgb, rgba } from '../lib/colors'
 import branchA from '../data/branchA.json'
-import { ZoomImage, Picker, BarRow } from '../components/Viz'
+import { ZoomImage, BoxPicker, BarRow, MetricToggle } from '../components/Viz'
 import { XM, xmImgPath, Q_TEXT } from '../data/uiv2'
+import { dist as xmDist, RULER_MAX, type Ruler } from '../data/crossmodel'
+import type { ModelId } from '../data/modelData'
+import type { Sit, Code } from '../data/part1'
 
 // ─── real data: every number below is recomputed from the analysis JSONs at export
 // time (export_branch_a.py asserts 36/36, 286/288, 168/288 before writing) ───
@@ -39,7 +42,11 @@ const xmImg = (model: string, sit: string, code: string, s: number) =>
 function ModelStrip() {
   const [model, setModel] = useState<ModelKey>('flux_cultural')
   const [sit, setSit] = useState('wedding')
-  const d = (branchA.data as any)[model].distances[sit]
+  /* Tier C: both rulers now exist for every model here, so the "is this just how
+     DINOv3 sees things?" question is answerable on this scene too, not only in
+     Part I. */
+  const [ruler, setRuler] = useState<Ruler>('dinov3')
+  const dOf = (c: string) => xmDist(model as ModelId, sit as Sit, c as Code, ruler)
 
   return (
     <Panel>
@@ -47,6 +54,7 @@ function ModelStrip() {
         <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
           pick any model · pick any situation
         </div>
+        <MetricToggle value={ruler} onChange={setRuler} showLabel={false} />
         <div className="flex flex-wrap gap-1.5">
           {SITS.map((s) => (
             <button key={s} onClick={() => setSit(s)} className={`chip !px-2.5 !py-1 ${sit === s ? 'chip-active' : ''}`}>
@@ -74,8 +82,8 @@ function ModelStrip() {
           transition={{ duration: 0.3 }}
         >
           {/* the model's own unqualified default: first 9 seeds, no curation */}
-          <div className="mt-5 grid grid-cols-9 gap-1.5">
-            {Array.from({ length: 9 }, (_, s) => (
+          <div className="mt-5 grid grid-cols-10 gap-1.5">
+            {Array.from({ length: 20 }, (_, s) => (
               <div key={s} className="overflow-hidden rounded-md border border-border">
                 <img
                   src={xmImg(model, sit, 'default', s)}
@@ -87,27 +95,30 @@ function ModelStrip() {
             ))}
           </div>
           <p className="mt-2 font-mono2 text-[11px] text-foreground/50">
-            “a {sit}” · {(branchA.models as any)[model]}'s own default, seeds 00–08 straight off the run (no curation)
+            “a {sit}” · {(branchA.models as any)[model]}'s own default, seeds 00–19 straight off the run (no curation)
           </p>
 
           {/* distance bars, its own default as origin */}
           <div className="mt-6 space-y-2.5">
-            {CODES.map((c, i) => (
-              <BarRow
-                key={c}
-                label={`…in ${COUNTRY_NAME[c]}`}
-                value={d[c].mean}
-                ci={[d[c].lo, d[c].hi]}
-                max={0.8}
-                color={COUNTRY_CV[c]}
-                delay={i * 0.05}
-              />
-            ))}
+            {CODES.map((c, i) => {
+              const d = dOf(c)
+              return (
+                <BarRow
+                  key={c}
+                  label={`…in ${COUNTRY_NAME[c]}`}
+                  value={d.mean}
+                  ci={[d.ci_low, d.ci_high]}
+                  max={RULER_MAX[ruler].dist}
+                  color={COUNTRY_CV[c]}
+                  delay={i * 0.05}
+                />
+              )
+            })}
             <div className="flex items-center gap-3 pt-1">
               <span className="w-32 shrink-0" />
               <div className="flex flex-1 justify-between font-mono2 text-[10px] text-foreground/30">
                 <span>0 · its own default</span>
-                <span>0.8 ≈ a different event entirely</span>
+                <span>{RULER_MAX[ruler].dist} ≈ a different event entirely</span>
               </div>
               <span className="w-14 shrink-0" />
             </div>
@@ -191,20 +202,21 @@ function SharedWorldview() {
 
   return (
     <Panel className="mb-6">
-      <div className="flex flex-wrap items-end gap-4">
-        <Picker
+      <div className="flex flex-col gap-2.5">
+        <BoxPicker
           label="event"
           value={sit}
           onChange={setSit}
           options={SITS.map((s) => ({ value: s, label: `a ${s}` }))}
+          size="sm"
         />
-        <Picker
+        <BoxPicker
           label="country"
           value={code}
           onChange={setCode}
-          options={[{ value: 'default', label: 'no country (plain)' },
-...CODES.map((c) => ({ value: c, label: COUNTRY_NAME[c] }))]}
-          accent={code === 'default' ? undefined : COUNTRY_CV[code]}
+          options={[{ value: 'default' as const, label: 'no country' },
+...CODES.map((c) => ({ value: c, label: COUNTRY_NAME[c], cv: COUNTRY_CV[c] }))]}
+          size="sm"
         />
       </div>
 
@@ -425,8 +437,8 @@ export default function BranchAModels() {
   return (
     <>
       <SceneShell
-        number="A·1"
-        kicker="branch a · across the ecosystem"
+        number="VII·1"
+        kicker="part vii · across the ecosystem"
         title={
           <>
             Swap the model. <span className="text-amber-200">The default doesn't blink.</span>
@@ -447,8 +459,8 @@ export default function BranchAModels() {
       </SceneShell>
 
       <SceneShell
-        number="A·2"
-        kicker="branch a · zero exceptions"
+        number="VII·2"
+        kicker="part vii · zero exceptions"
         title={
           <>
             Thirty-six of thirty-six.
@@ -478,8 +490,8 @@ export default function BranchAModels() {
       </SceneShell>
 
       <SceneShell
-        number="A·3"
-        kicker="branch a · whose assumptions are they?"
+        number="VII·3"
+        kicker="part vii · whose assumptions are they?"
         title={
           <>
             A third of the worldview is <span className="text-emerald-300">inherited</span>.

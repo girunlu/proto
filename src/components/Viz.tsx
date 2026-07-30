@@ -67,6 +67,54 @@ export function Picker<T extends string>({
   )
 }
 
+/* ── box selector ─────────────────────────────────────────────────────────────
+   The same choice as Picker, laid out as one visible box per option. A dropdown
+   hides how many options there are and takes two clicks to compare two of them;
+   with six events or eight countries the whole set fits on one line, so the
+   reader can see the alternatives without opening anything. Each option can carry
+   its own accent colour, which the country row uses to match the charts. */
+
+export function BoxPicker<T extends string>({
+  label, value, onChange, options, size = 'md',
+}: {
+  label: string
+  value: T
+  onChange: (v: T) => void
+  options: { value: T; label: string; cv?: string }[]
+  size?: 'sm' | 'md'
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+      <span className="font-mono2 text-[10px] tracking-wider text-foreground/40 uppercase">{label}</span>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((o) => {
+          const on = o.value === value
+          return (
+            <button
+              key={o.value}
+              onClick={() => onChange(o.value)}
+              aria-pressed={on}
+              className={`rounded-md border font-mono2 transition ${
+                size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-[11px]'
+              } ${on ? 'bg-foreground/8' : 'border-border text-foreground/45 hover:border-foreground/40 hover:text-foreground/80'}`}
+              style={
+                on
+                  ? {
+                      color: o.cv ? rgb(o.cv) : rgb('--c-amber-t'),
+                      borderColor: o.cv ? rgba(o.cv, 0.6) : rgba('--c-amber', 0.6),
+                    }
+                  : undefined
+              }
+            >
+              {o.label}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 /* ── bars ─────────────────────────────────────────────────────────────────────
    One row = label column, track, and a fixed value column. The confidence
    interval is drawn as a bracket *below* the bar inside the track, so it can
@@ -124,10 +172,17 @@ export function BarRow({
 
 /* a two-option metric switch, used wherever a number can be recomputed with a
    second, independently trained vision model */
-export function MetricToggle({ value, onChange }: { value: 'dinov3' | 'clip'; onChange: (v: 'dinov3' | 'clip') => void }) {
+export function MetricToggle({ value, onChange, showLabel = true }: {
+  value: 'dinov3' | 'clip'
+  onChange: (v: 'dinov3' | 'clip') => void
+  /* off where the surrounding panel already makes the two buttons self-evident */
+  showLabel?: boolean
+}) {
   return (
     <label className="flex shrink-0 flex-col gap-1">
-      <span className="font-mono2 text-[10px] tracking-wider text-foreground/40 uppercase">measured with</span>
+      {showLabel && (
+        <span className="font-mono2 text-[10px] tracking-wider text-foreground/40 uppercase">measured with</span>
+      )}
       <div className="flex overflow-hidden rounded-md border border-border font-mono2 text-xs">
         {([['dinov3', 'DINOv3'], ['clip', 'CLIP']] as const).map(([k, lbl]) => (
           <button

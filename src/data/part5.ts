@@ -32,6 +32,18 @@ export interface RealityCell {
 }
 export const REALITY_ANCHOR = realityAnchor.results as unknown as Record<string, Record<string, RealityCell>>
 
+/* How many Commons photographs actually entered the measurement, summed from the
+   export rather than typed. The page used to say "about 4,400" (closer to the
+   ~4,700 collected before relevance filtering) and "roughly 20 per cell". */
+const REAL_CELL_COUNTS = Object.values(REALITY_ANCHOR).flatMap((cs) =>
+  Object.entries(cs)
+    .filter(([code, v]) => !code.startsWith('_') && code !== 'default' && (v?.n_real ?? 0) > 0)
+    .map(([, v]) => v.n_real)
+)
+export const REAL_PHOTOS_N = REAL_CELL_COUNTS.reduce((a, b) => a + b, 0)
+export const REAL_CELLS_N = REAL_CELL_COUNTS.length
+export const REAL_PER_CELL = Math.round(REAL_PHOTOS_N / Math.max(1, REAL_CELLS_N))
+
 export const BASE_RATES = baseRatesWedding as unknown as Record<
   string,
   Record<string, { majority: string; share: number; n: number }>

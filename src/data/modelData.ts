@@ -3,9 +3,9 @@
 // provider so that file exports components only.
 // ─────────────────────────────────────────────────────────────────────────────
 import ui from './cultural/ui_v2.json'
-import branchA from './branchA.json'
 import { cell, seedImg, type Sit, type Code } from './part1'
-import { VQA, INTRASET_CLIP, key, type CellVqa } from './uiv2'
+import { VQA, key, type CellVqa } from './uiv2'
+import { dist as xmDist, intraset as xmIntraset } from './crossmodel'
 import { type ModelId } from './modelContext'
 
 export { ModelProvider, useModel, MODELS, MODEL_NAME, type ModelId } from './modelContext'
@@ -16,8 +16,10 @@ const XM_VQA = ui.models as unknown as Record<string, Record<string, CellVqa>>
 
 export const isSd21 = (m: ModelId) => m === 'sd21'
 
-/** how many seeds of this model are on the page (SD 2.1 has the full run) */
-export const seedCount = (m: ModelId) => (isSd21(m) ? 50 : 9)
+/** how many seeds of this model have published thumbnails. The Tier-C export
+    raised the cross-model strips from 9 to 20; the statistics behind every number
+    on the page have always used all 50 seeds for every model. */
+export const seedCount = (m: ModelId) => (isSd21(m) ? 50 : 20)
 
 export function modelImg(m: ModelId, sit: Sit, code: Code | 'default', seed: number) {
   return isSd21(m) ? seedImg(sit, code, seed) : `/images/xm/${m}_${sit}_${code}_s${seed}.webp`
@@ -33,20 +35,14 @@ export function modelSeeds(m: ModelId, sit: Sit, code: Code | 'default', n: numb
   return Array.from({ length: Math.min(n, total) }, (_, i) => Math.round((i * (total - 1)) / (Math.min(n, total) - 1)))
 }
 
-export function modelDist(m: ModelId, sit: Sit, code: Code, ruler: 'dinov3' | 'clip') {
-  if (isSd21(m) && ruler === 'dinov3') return cell(sit, code).dist!
-  if (isSd21(m)) return null // CLIP tables exist for SD 2.1 only; caller falls back
-  const d = (branchA.data as Record<string, { distances: Record<string, Record<string, { mean: number; lo: number; hi: number }>> }>)[m]
-    ?.distances?.[sit]?.[code]
-  return d ? { mean: d.mean, ci_low: d.lo, ci_high: d.hi } : null
-}
+/* Superseded by src/data/crossmodel.ts, which has both rulers for all seven
+   models with real bootstrap CIs. Kept as thin wrappers so nothing that still
+   imports them breaks. */
+export const modelDist = (m: ModelId, sit: Sit, code: Code, ruler: 'dinov3' | 'clip') =>
+  xmDist(m, sit, code, ruler)
 
-export function modelIntraset(m: ModelId, sit: Sit, code: Code | 'default', ruler: 'dinov3' | 'clip') {
-  if (isSd21(m)) return ruler === 'dinov3' ? cell(sit, code).intraset : INTRASET_CLIP[key(sit, code)]
-  const v = (branchA.data as Record<string, { intraset: Record<string, Record<string, number>> }>)[m]
-    ?.intraset?.[sit]?.[code]
-  return v == null ? null : { mean: v, ci_low: v, ci_high: v }
-}
+export const modelIntraset = (m: ModelId, sit: Sit, code: Code | 'default', ruler: 'dinov3' | 'clip') =>
+  xmIntraset(m, sit, code, ruler)
 
 export function modelVqa(m: ModelId, sit: Sit, code: Code | 'default'): CellVqa | null {
   if (isSd21(m)) return VQA[key(sit, code)] ?? null
