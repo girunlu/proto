@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { THESIS } from '../data/research'
+import { THESIS, STATS } from '../data/research'
+import { AUTHOR } from '../data/references'
 import { useTheme } from '../hooks/useTheme'
 import { canvasColor } from '../lib/colors'
 
@@ -14,11 +15,19 @@ function LatentNoise() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
+    /* B6: this loop used to run forever, including after the reader had scrolled
+       past it, and ignored prefers-reduced-motion entirely. A CSS media query
+       cannot stop a RAF loop, so both are handled here: draw one static frame and
+       stop if reduced motion is requested, and pause whenever the hero is
+       off-screen or the tab is hidden. */
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+
     let w = (canvas.width = canvas.offsetWidth)
     let h = (canvas.height = canvas.offsetHeight)
     const cell = 26
     let raf = 0
     let t = 0
+    let visible = true
 
     const onResize = () => {
       w = canvas.width = canvas.offsetWidth
@@ -44,11 +53,26 @@ function LatentNoise() {
           ctx.fillRect(x * cell + 1, y * cell + 1, cell - 2, cell - 2)
         }
       }
-      raf = requestAnimationFrame(draw)
+      if (!reduced && visible) raf = requestAnimationFrame(draw)
     }
     draw()
+
+    // pause off-screen; an animation nobody can see is pure battery drain
+    const io = new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting
+      if (visible && !reduced) { cancelAnimationFrame(raf); draw() }
+    })
+    io.observe(canvas)
+    const onVis = () => {
+      visible = !document.hidden
+      if (visible && !reduced) { cancelAnimationFrame(raf); draw() }
+    }
+    document.addEventListener('visibilitychange', onVis)
+
     return () => {
       cancelAnimationFrame(raf)
+      io.disconnect()
+      document.removeEventListener('visibilitychange', onVis)
       window.removeEventListener('resize', onResize)
     }
   }, [theme])
@@ -108,6 +132,17 @@ export default function Hero() {
           when it locks in, and what it costs to override.
         </motion.p>
 
+        <motion.p
+          className="mt-8 font-mono2 text-[11px] leading-5 tracking-wider text-foreground/45"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.75 }}
+        >
+          {AUTHOR.name}
+          {AUTHOR.affiliation && <span className="text-foreground/35"> · {AUTHOR.affiliation}</span>}
+          <span className="text-foreground/35"> · {AUTHOR.date}</span>
+        </motion.p>
+
         <motion.div
           className="mt-14 max-w-2xl border-l-2 border-amber-300/50 pl-5"
           initial={{ opacity: 0 }}
@@ -116,7 +151,9 @@ export default function Hero() {
         >
           <p className="font-display text-xl leading-7 text-foreground/85 italic md:text-2xl">“{THESIS}”</p>
           <p className="mt-3 font-mono2 text-[11px] tracking-wider text-foreground/40 uppercase">
-            6 situations × 9 prompt variants × 50 fixed seeds, run in full on seven text-to-image models · 33,676 generated images measured in total
+            6 situations × 9 prompt variants × 50 fixed seeds, run in full on seven text-to-image models — that grid is
+            18,900 images; with the guidance sweep, the counter-specification ladders and the empty-prompt runs,{' '}
+            {STATS.images.toLocaleString()} were generated and measured in total
           </p>
         </motion.div>
       </div>

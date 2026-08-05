@@ -1,0 +1,31 @@
+{
+ "method": "R4a_H1_permutation_and_bootstrap",
+ "note": "Two-sided permutation on the difference of mean crossing steps (coarse/scene vs fine/texture), labels shuffled. Bootstrap CI resamples each group independently. Only converged logistic fits are used, the same 21 and 31 the page's two means were computed from.",
+ "scene": {
+  "n": 21,
+  "mean": 11.41,
+  "median": 8.69,
+  "sd": 8.139,
+  "min": 0.93,
+  "max": 24.69
+ },
+ "texture": {
+  "n": 31,
+  "mean": 12.235,
+  "median": 10.93,
+  "sd": 7.984,
+  "min": 1.27,
+  "max": 26.08
+ },
+ "observed_diff": 0.825,
+ "permutation": {
+  "n_perm": 20000,
+  "p_two_sided": 0.7244
+ },
+ "bootstrap_ci_diff": [
+  -3.639,
+  5.344
+ ],
+ "separable_from_zero": false,
+ "verdict": "H1 NOT SUPPORTED: the gap is not separable from zero. The scene must stop asserting an ordering between coarse and fine attributes; what the data supports is that BOTH are settled well before the end of denoising."
+}

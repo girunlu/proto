@@ -7,7 +7,7 @@ import branchA from '../data/branchA.json'
 import { ZoomImage, BoxPicker, BarRow, MetricToggle } from '../components/Viz'
 import { XM, xmImgPath, Q_TEXT } from '../data/uiv2'
 import { dist as xmDist, RULER_MAX, type Ruler } from '../data/crossmodel'
-import type { ModelId } from '../data/modelData'
+import { useModel, modelSeeds, type ModelId } from '../data/modelData'
 import type { Sit, Code } from '../data/part1'
 
 // ─── real data: every number below is recomputed from the analysis JSONs at export
@@ -40,7 +40,10 @@ const xmImg = (model: string, sit: string, code: string, s: number) =>
   `images/xm/${model}_${sit}_${code}_s${s}.webp`
 
 function ModelStrip() {
-  const [model, setModel] = useState<ModelKey>('flux_cultural')
+  /* R3b: this used to hold its own `useState('flux_cultural')`, so the global bar
+     could read "showing Qwen-Image" while the strip below showed Flux. The chips
+     now drive the global selection, which is what a reader assumes they do. */
+  const { model, setModel } = useModel()
   const [sit, setSit] = useState('wedding')
   /* Tier C: both rulers now exist for every model here, so the "is this just how
      DINOv3 sees things?" question is answerable on this scene too, not only in
@@ -81,9 +84,11 @@ function ModelStrip() {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3 }}
         >
-          {/* the model's own unqualified default: first 9 seeds, no curation */}
+          {/* The model's own unqualified default, uncurated. Seeds come from that
+              cell's published list rather than 0..19: the thumbnail set is a
+              selected 24 of the 50, so counting from zero 404'd half this grid. */}
           <div className="mt-5 grid grid-cols-10 gap-1.5">
-            {Array.from({ length: 20 }, (_, s) => (
+            {modelSeeds(model as ModelId, sit as Sit, 'default', 20).map((s) => (
               <div key={s} className="overflow-hidden rounded-md border border-border">
                 <img
                   src={xmImg(model, sit, 'default', s)}
@@ -95,7 +100,8 @@ function ModelStrip() {
             ))}
           </div>
           <p className="mt-2 font-mono2 text-[11px] text-foreground/50">
-            “a {sit}” · {(branchA.models as any)[model]}'s own default, seeds 00–19 straight off the run (no curation)
+            “a {sit}” · {(branchA.models as any)[model]}'s own default, 20 seeds spread across the published set,
+            typical to unusual (no curation)
           </p>
 
           {/* distance bars, its own default as origin */}
@@ -178,9 +184,17 @@ function ReplicationWall() {
               </Fragment>
             ))}
           </div>
+          {/* B9: "3 training lineages (Western, Chinese-language, mixed)" deleted.
+              "Mixed" is unfalsifiable, and the project elsewhere relies on the fact
+              that Kolors', Qwen-Image's and Hunyuan-DiT's corpora are NOT public
+              (that is why scene 10's LAION correlation is undefined for them) — we
+              cannot call the training data unknown and then sort it into lineages.
+              5 developers is checkable and says more. B12: the denominators. */}
           <p className="mt-3 font-mono2 text-[11px] leading-5 text-foreground/50">
-            zero exceptions, across 3 training lineages (Western, Chinese-language, mixed) and 2
-            architecture families (UNet, DiT). The distance gap is individually significant in{' '}
+            Zero exceptions, across <strong className="text-foreground/80">5 developers</strong> and 2 architecture
+            families (UNet, DiT); three of the seven models were developed in China. This wall counts the six models
+            being compared <em>against</em> Stable Diffusion 2.1, hence 36; the panel below counts all seven, hence 42.
+            The distance gap is individually significant in{' '}
             <strong className="text-foreground/80">{branchA.dist_sig}/{branchA.n_cells}</strong> cells
             (permutation test, p&lt;0.05).
           </p>
@@ -370,8 +384,12 @@ function PersistenceChart() {
       <div className="grid gap-8 lg:grid-cols-2">
         <div>
           <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-            each of SD 2.1's 708 named assumptions, checked in all 6 other models
+            each of SD 2.1's {branchA.persistence.total} named assumptions, checked in all 6 other models
           </div>
+          {/* B3a used to carry a caveat here: Part IV reported SD 2.1's two-annotator
+              table (641) while this panel used the gemma4-matched one (708), and the
+              page had to say they differed. gemma4 became the sole annotator on
+              2026-07-31, so both numbers are now the same table and the caveat is gone. */}
           <div className="mt-6 flex items-end gap-2" style={{ height: 180 }}>
             {Object.entries(hist).map(([k, v]) => {
               const highlight = k === '6' ? '--c-em' : k === '0' ? '--c-red' : '--c-gray'
@@ -480,18 +498,45 @@ export default function BranchAModels() {
           <StrongerClaims />
         </Reveal>
         <Reveal delay={0.15}>
+          {/* R8: 168 counts significance in EITHER direction, and was being cited for a
+              directional claim. The direction-filtered count is 134/288 (46.5%), recorded
+              in a7_build_plan.md. Both are stated; the directional sentence uses 134. And
+              the pooled number hid a 2× per-model spread, which is now printed. */}
           <p className="mt-4 font-mono2 text-[11px] leading-5 text-foreground/45">
-            the stereotyping inversion (country-qualified narrower than default) also travels: the
-            homogeneity gap is significant in {branchA.intraset_sig}/{branchA.n_cells} cells. A spread
-            statistic is inherently noisier than a distance; the direction is broadly confirmed, and we
-            say exactly that rather than more.
+            The stereotyping inversion also travels, but less cleanly than the distance does. The homogeneity gap is
+            significant in <strong className="text-foreground/70">{branchA.intraset_sig}/{branchA.n_cells}</strong>{' '}
+            cells counting significance in <em>either</em> direction; filtered to the predicted direction
+            (country-qualified narrower than the default) it is{' '}
+            <strong className="text-foreground/70">{branchA.fdr.intraset_directional.raw}/{branchA.n_cells}</strong>, or{' '}
+            {Math.round((branchA.fdr.intraset_directional.raw / branchA.n_cells) * 100)}%. The pooled figure also hides
+            a wide per-model spread — qwen-image 18 of 48, kolors 26, hunyuan-dit 27, flux 28, sdxl 33, sd35 36,
+            SD 2.1 36. A spread statistic is inherently noisier than a distance; the direction holds in most models
+            and is weak in one, and we say exactly that rather than more.
+          </p>
+          {/* R8 / review 10 · C-4: no correction existed anywhere in the project — a grep for
+              bonferroni|fdr|benjamini over master_docs and scripts returned nothing. Now run,
+              and reported whichever way it came out. It survived. */}
+          <p className="mt-2 font-mono2 text-[10px] leading-4 text-foreground/35">
+            These are {branchA.n_cells} simultaneous tests, so at α = 0.05 roughly 14 false positives are expected by
+            chance alone. Benjamini–Hochberg, at a 5% false-discovery rate:{' '}
+            <strong className="text-foreground/60">
+              {branchA.fdr.distance.survivors} of {branchA.fdr.distance.n}
+            </strong>{' '}
+            distance results survive (from {branchA.fdr.distance.raw} uncorrected — the distance claim is untouched),
+            the either-direction homogeneity count falls{' '}
+            {branchA.fdr.intraset_any.raw} → <strong className="text-foreground/60">{branchA.fdr.intraset_any.survivors}</strong>,
+            and the directional count — the one this paragraph rests on — falls{' '}
+            {branchA.fdr.intraset_directional.raw} →{' '}
+            <strong className="text-foreground/60">{branchA.fdr.intraset_directional.survivors}</strong> of{' '}
+            {branchA.fdr.intraset_directional.n} cells that narrow in the predicted direction. The claim is weaker
+            after correction and it is still there.
           </p>
         </Reveal>
       </SceneShell>
 
       <SceneShell
         number="VII·3"
-        kicker="part vii · whose assumptions are they?"
+        kicker="part vii · whose assumptions are they? · SD 2.1's own, checked elsewhere"
         title={
           <>
             A third of the worldview is <span className="text-emerald-300">inherited</span>.

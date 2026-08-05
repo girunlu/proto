@@ -1,10 +1,9 @@
-import { useState } from 'react'
 import { SceneShell, Reveal, Panel } from '../components/Scene'
 import { CountUp } from '../components/CountUp'
 import { STATS } from '../data/research'
-import { AUDITS, REAL_PHOTOS_N } from '../data/part5'
-import { qLabel, CARDS_HEADLINE, CARDS_TOTAL } from '../data/part4'
-import type { AuditAssumption } from '../data/part5'
+import { REAL_PHOTOS_N, REAL_QUESTIONNAIRE_N } from '../data/part5'
+import { CARDS_HEADLINE, CARDS_TOTAL } from '../data/part4'
+import { REFERENCES, ANNOTATORS, AUTHOR } from '../data/references'
 
 const STAT_CELLS = [
   { v: STATS.images, label: 'generated images analyzed' },
@@ -15,109 +14,11 @@ const STAT_CELLS = [
   { v: CARDS_HEADLINE, label: `verified headline named assumptions (${CARDS_TOTAL} total)` },
 ]
 
-/* F25: the auditor, on prompts it has never seen */
-function AuditBrowser() {
-  const [i, setI] = useState(0)
-  const audit = AUDITS[i]
-  const r = audit.report
-  const headline = r.named_assumptions.filter((a) => a.tier === 'headline')
-  const steerable = r.named_assumptions.filter((a) => a.steerability_detail?.steerable)
-
-  return (
-    <div>
-      <div className="flex flex-wrap gap-1.5">
-        {AUDITS.map((a, ai) => (
-          <button key={a.id} onClick={() => setI(ai)} className={`chip !px-2.5 !py-1 ${i === ai ? 'chip-active' : ''}`}>
-            {a.id}
-            {a.novel && <span className="ml-1.5 rounded border border-sky-300/40 bg-sky-300/10 px-1 text-[9px] text-sky-300">novel</span>}
-          </button>
-        ))}
-      </div>
-      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 font-mono2 text-[11px] text-foreground/50">
-        <span>“{r.prompt}”</span>
-        <span>model: {r.model}</span>
-        <span>{r.n_seeds} seeds</span>
-        <span>
-          {headline.length} headline assumptions · {steerable.length} counter-steerable
-        </span>
-        {audit.novel && (
-          <span className="rounded border border-sky-300/40 bg-sky-300/10 px-2 py-0.5 text-sky-300">
-            out of the 54-prompt coverage · audited cold, no tuning
-          </span>
-        )}
-      </div>
-      <div className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {r.named_assumptions.slice(0, 6).map((a: AuditAssumption) => (
-          <div key={a.question_id} className="rounded-lg border border-border bg-card/60 p-4">
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-mono2 text-[10px] tracking-wider text-foreground/45 uppercase">{qLabel({ question_id: a.question_id, question: a.question } as never)}</span>
-              {a.tier === 'headline' && (
-                <span className="rounded border border-amber-300/40 bg-amber-300/10 px-1.5 py-0.5 font-mono2 text-[9px] text-amber-200">headline</span>
-              )}
-            </div>
-            <div className="font-display mt-2 text-lg font-light">
-              → <span className="text-amber-200">“{a.assumed_value}”</span>
-              <span className="ml-2 font-mono2 text-[11px] text-foreground/50">{Math.round(a.consistency * 100)}%</span>
-            </div>
-            {a.steerability_detail && (
-              <div className={`mt-3 rounded-md border px-2.5 py-1.5 font-mono2 text-[10px] leading-4 ${a.steerability_detail.steerable ? 'border-emerald-400/25 bg-emerald-400/10 text-emerald-300' : 'border-red-400/25 bg-red-400/10 text-red-300'}`}>
-                {a.steerability_detail.steerable
-                  ? `counter-spec flips it → “${a.steerability_detail.majority_value_after}” (${Math.round(a.steerability_detail.consistency_after_counter_spec * 100)}%)`
-                  : 'homogeneity trap: resists counter-specification'}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
+/* One condition of the instrument check: how the annotator's answer moved (or did
+   not) when the prompt gained a clause and nothing else changed. */
 export default function Closing() {
   return (
     <>
-      <SceneShell
-        number="17"
-        kicker="the instrument as a deliverable · finding 25"
-        title={<>The Auditor works on prompts it has <em className="font-display italic text-amber-200">never seen.</em></>}
-      >
-        <Reveal>
-          <p className="prose-scene max-w-2xl">
-            The Assumption Auditor is not bound to the 54 prompts of this study. Below are six cached audit reports,
-            including two deliberately novel prompts (<em>a birthday party</em>, <em>a graduation ceremony in
-            Mexico</em>) outside the study's coverage. Where coverage ends, the instrument says so instead of guessing.
-          </p>
-        </Reveal>
-        <Reveal delay={0.08}>
-          <Panel className="mt-10">
-            <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-              cached audit reports · no live inference on this page
-            </div>
-            <div className="mt-5">
-              <AuditBrowser />
-            </div>
-          </Panel>
-        </Reveal>
-
-        <Reveal delay={0.15}>
-          <Panel className="mt-6">
-            <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">what the auditor cannot see</div>
-            <div className="mt-4 grid gap-4 text-sm leading-6 text-foreground/70 md:grid-cols-2">
-              <p>
-                <strong className="text-foreground">The blind spot, restated.</strong> Prompts close to the default
-                surface fewer named assumptions, because collapsed output clears the agreement bar more easily than a
-                varied one. Fewer names never means fewer assumptions (Part IV).
-              </p>
-              <p>
-                <strong className="text-foreground">The empty prompt's lean is not readable off the pixels.</strong>{' '}
-                It exists in the measurement; an annotator looking at those 30 images cannot reliably name it (Part I).
-                Both facts are stated wherever the instrument speaks.
-              </p>
-            </div>
-          </Panel>
-        </Reveal>
-      </SceneShell>
-
       <SceneShell
         number="M"
         kicker="ending notes"
@@ -155,7 +56,9 @@ export default function Closing() {
                 <p>
                   Every comparison up to Part V is the model against itself. Part V is the model against photographs:
                   <strong className="text-foreground">{REAL_PHOTOS_N.toLocaleString()} reference photographs</strong> from Wikimedia Commons,
-                  put through the same metrics and the same blind questionnaire as the generated ones.
+                  put through the same metrics as the generated ones, and{' '}
+                  <strong className="text-foreground">{REAL_QUESTIONNAIRE_N.toLocaleString()}</strong> of them through
+                  the same blind questionnaire.
                 </p>
                 <p>
                   It places the plain prompt closest to real US weddings and farthest from real Indian ones, and it
@@ -176,10 +79,25 @@ export default function Closing() {
       <SceneShell number="∴" kicker="Closing" title={<>Every image is a negotiation.</>}>
         <Reveal>
           <p className="prose-scene max-w-2xl">
-            Between what was requested and what the model already believes. The prior cannot be disabled, guidance
-            cannot tune it away, and additional words rarely purchase an exit. What is possible, right now, is{' '}
-            <strong>knowing where to look</strong>: generate more than one seed, ask what never varies, and treat the
-            first third of denoising as the moment at which the decision is actually made.
+            Between what was requested and what the model already believes. This page has now shown the same wall from
+            four directions: guidance cannot reach the prior, clauses relocate assumptions rather than remove them,
+            even the grammar of a fix changes which prior you get, and the strongest prompt-free move available —
+            keeping only the most different of fifty images — buys back about a sixth of the distance to real
+            photographs and never more.
+          </p>
+          <p className="prose-scene mt-4 max-w-2xl">
+            Which points at one conclusion rather than a list of tips.{' '}
+            <strong className="text-foreground/90">The prompt is the wrong control surface.</strong> It is the layer a
+            user has, and it is not the layer the assumption lives on.
+          </p>
+          <p className="prose-scene mt-4 max-w-2xl">
+            Two things follow that are worth a reader's time. The first is available today and this page is a
+            demonstration of it: <strong>sample the distribution, not the sample</strong> — generate many seeds, ask
+            what never varies across them, and treat the first third of denoising as the moment the decision is
+            actually made. That is what the Auditor above automates. The second is not at the interface at all —
+            fine-tuning, retrieval augmentation, dataset curation, post-hoc diversity sampling. Those are cited here,
+            not tested, and deliberately out of scope: this study measures what a prompt can and cannot do, and the
+            honest end of that measurement is knowing where its edge is.
           </p>
         </Reveal>
         <Reveal delay={0.1}>
@@ -196,12 +114,80 @@ export default function Closing() {
         </Reveal>
       </SceneShell>
 
+      <SceneShell number="§" kicker="Sources" title={<>What this stands on.</>}>
+        <Reveal>
+          <p className="prose-scene max-w-2xl">
+            Everything above is measured, but almost nothing above is new on its own. The country-qualifier method,
+            the mid-generation swap, the diversity score, the agreement statistic and the training-set filter are all
+            borrowed, and the trailing clause on each entry says what it is doing here. Where this page departs from
+            its sources is stated in the entry, not left for you to infer.
+          </p>
+        </Reveal>
+        <Reveal delay={0.06}>
+          <ol className="mt-8 max-w-3xl space-y-3.5">
+            {REFERENCES.map((r, i) => (
+              <li key={r.id} className="grid grid-cols-[1.75rem_1fr] gap-2 text-sm leading-6">
+                <span className="pt-0.5 font-mono2 text-[11px] text-foreground/30">[{i + 1}]</span>
+                <span className="text-foreground/70">
+                  {r.authors} ({r.year}).{' '}
+                  <a
+                    href={r.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-foreground/90 underline decoration-border underline-offset-2 hover:decoration-amber-200"
+                  >
+                    {r.title}
+                  </a>
+                  . <span className="text-foreground/45 italic">{r.venue}.</span>
+                  <span className="mt-0.5 block font-mono2 text-[10px] leading-4 text-foreground/40">{r.role}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <Panel className="mt-10">
+            <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">credits</div>
+            <div className="mt-4 space-y-3 text-sm leading-6 text-foreground/65">
+              <p>
+                The {REAL_PHOTOS_N.toLocaleString()} reference photographs in Part V are the work of Wikimedia Commons
+                photographers, reused under their individual licences — each photograph carries its author and licence
+                inline in that scene.
+              </p>
+              <p>
+                Model weights, all run locally:{' '}
+                {ANNOTATORS.map((a, i) => (
+                  <span key={a.label}>
+                    {i > 0 && ' · '}
+                    <a
+                      href={a.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline decoration-border underline-offset-2 hover:decoration-amber-200"
+                    >
+                      {a.label}
+                    </a>
+                  </span>
+                ))}
+                . Interface built with shadcn/ui, Radix primitives and Google Fonts.
+              </p>
+            </div>
+          </Panel>
+        </Reveal>
+      </SceneShell>
+
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-5xl flex-col gap-3 px-6 py-10 md:flex-row md:items-center md:justify-between">
           <div className="font-mono2 text-[11px] leading-5 text-foreground/40">
-            <span className="text-foreground/70">promptswontsaveyou.dev</span> · an interactive XAI explorable.
+            <span className="text-foreground/70">promptswontsaveyou.dev</span> · an interactive XAI explorable by{' '}
+            <span className="text-foreground/70">{AUTHOR.name}</span>
+            {AUTHOR.affiliation && `, ${AUTHOR.affiliation}`} ·{' '}
+            <a href={`mailto:${AUTHOR.email}`} className="underline decoration-border underline-offset-2">
+              {AUTHOR.email}
+            </a>{' '}
+            · {AUTHOR.date}
             <br />
-            Stable Diffusion 2.1 · DDIM 30 steps · 768² · DINOv3-7B embeddings · VQA annotators: gemma4 + qwen3_vl.
+            Stable Diffusion 2.1 · DDIM 30 steps · 768² · DINOv3-7B embeddings · VQA annotator: gemma4.
           </div>
           <div className="font-mono2 text-[11px] text-foreground/30">
             XAI × HCI · thesis explorable · cultural assumptions scope

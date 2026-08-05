@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { MODELS, useModel } from '../data/modelData'
 
 /* The one control that changes which model every switchable chart on the page
@@ -7,23 +7,65 @@ export function ModelBar() {
   const { model, setModel } = useModel()
   const [open, setOpen] = useState(false)
   const current = MODELS.find((m) => m.id === model)!
+  const box = useRef<HTMLDivElement>(null)
+
+  /* B6: the dropdown had no Escape, no outside-click and no aria state, so on a
+     keyboard it opened and then trapped you. */
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    const onDown = (e: MouseEvent) => {
+      if (!box.current?.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
+    document.addEventListener('mousedown', onDown)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.removeEventListener('mousedown', onDown)
+    }
+  }, [open])
+
+  /* Review 06 §5d: the bar sat over prose for the whole page with no scroll-away
+     behaviour. It now sheds its label once the reader is past the hero, which is the
+     cheapest of the two fixes that file proposed and keeps the control always reachable. */
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 160)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   return (
-    <div className="fixed top-4 left-1/2 z-40 -translate-x-1/2">
-      <div className="rounded-xl border border-border bg-background/90 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.6)] backdrop-blur">
+    /* max-width keeps the bar clear of the ThemeToggle (fixed top-5 right-5): centred
+       and unconstrained, a long model name like "Stable Diffusion 3.5 Large" ran under
+       the toggle below ~400px. 8rem, not 7: the toggle occupies right-5 + w-10 = 60px,
+       and a 7rem cap centred leaves 56px gutters — 4px short, so the bar's right edge
+       slid under the toggle exactly when the cap started binding (~390px and below).
+       At 768 and 1024 the bar is content-width and nowhere near either gutter. */
+    <div className="fixed top-4 left-1/2 z-40 max-w-[calc(100vw-8rem)] -translate-x-1/2">
+      <div ref={box} className="rounded-xl border border-border bg-background/90 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.6)] backdrop-blur">
         <button
           onClick={() => setOpen(!open)}
-          className="flex items-center gap-3 px-4 py-2"
+          aria-expanded={open}
+          aria-haspopup="listbox"
+          aria-label={`Model: ${current.name}. Change which model the page shows.`}
+          className={`flex items-center gap-3 py-2 transition-all ${scrolled ? 'px-3' : 'px-4'}`}
         >
-          <span className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">showing</span>
-          <span className="font-mono2 text-xs text-amber-200">{current.name}</span>
+          {/* the label is the first thing to go once the reader knows what the bar is */}
+          {!scrolled && (
+            <span className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">showing</span>
+          )}
+          <span className="truncate font-mono2 text-xs text-amber-200">{current.name}</span>
           <span className={`font-mono2 text-[10px] text-foreground/40 transition-transform ${open ? 'rotate-180' : ''}`}>▾</span>
         </button>
         {open && (
-          <div className="border-t border-border p-2">
+          <div role="listbox" aria-label="text-to-image model" className="border-t border-border p-2">
             {MODELS.map((m) => (
               <button
                 key={m.id}
+                role="option"
+                aria-selected={m.id === model}
                 onClick={() => { setModel(m.id); setOpen(false) }}
                 className={`block w-full rounded-md px-3 py-2 text-left transition ${m.id === model ? 'bg-amber-300/10' : 'hover:bg-foreground/5'}`}
               >

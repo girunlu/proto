@@ -27,6 +27,13 @@ export const COUNTRY8: { id: Code; name: string; cv: string }[] = [
   { id: 'IN', name: 'India', cv: '--c-in' },
   { id: 'NG', name: 'Nigeria', cv: '--c-ng' },
 ]
+/* Adjectival forms. Deriving them as `${name}n` printed "Germanyn", "Japann"
+   and "Egyptn" — it only happened to work for India/Russia/Indonesia/Nigeria. */
+export const DEMONYM: Record<Code, string> = {
+  US: 'American', DE: 'German', RU: 'Russian', ID: 'Indonesian',
+  JP: 'Japanese', EG: 'Egyptian', IN: 'Indian', NG: 'Nigerian',
+}
+
 export const CV_DEFAULT = '--c-gray'
 export const C8 = Object.fromEntries(COUNTRY8.map((c) => [c.id, c])) as Record<Code, (typeof COUNTRY8)[number]>
 
@@ -77,16 +84,19 @@ export const UMAP = umap.results as unknown as Record<
 export const SILHOUETTE_RANGE: [number, number] = [0.1, 0.27]
 
 // Scene 01 ("the unsaid"): what the plain wedding prompt leaves to the model, and
-// what the model supplies — from the wedding-default VQA battery (gemma4 + qwen3_vl,
-// 50 seeds). Kept in the data layer so the chips can't silently drift from the stats.
+// what the model supplies — from the wedding-default VQA battery (gemma4, 50 seeds). Kept in the data layer so the chips can't silently drift from the stats.
 /* scene 01: derived from the blind-VQA export at load time, so the chips can
    never drift from the data again (they had: the hand-typed version said dress
    colour 46/50 and wealth "average"; the export says 44/45 and "wealthy").
    Top 8 closed questions by agreement, for whichever event is selected. */
 export interface Decision { attr: string; answer: string; stat: string; share: number }
 
-export const decisionsFor = (sit: Sit): Decision[] =>
-  Object.entries(VQA[`${sit}_default`]?.closed ?? {})
+/** Scene 01's "what the model decided anyway" list. `closed` comes from whichever
+    model is selected — the cross-model VQA is exported for all seven, so this scene
+    follows the switcher instead of silently staying on SD 2.1 while the prose said
+    "Stable Diffusion". Callers pass `modelVqa(model, sit, 'default')?.closed`. */
+export const decisionsFrom = (closed: Record<string, { v: string; n: number }[]>): Decision[] =>
+  Object.entries(closed ?? {})
     .map(([q, answers]) => {
       const total = answers.reduce((s, a) => s + a.n, 0)
       return {
@@ -98,6 +108,10 @@ export const decisionsFor = (sit: Sit): Decision[] =>
     })
     .sort((a, b) => b.share - a.share)
     .slice(0, 8)
+
+/** SD 2.1's own list, kept for callers that have no model in scope. */
+export const decisionsFor = (sit: Sit): Decision[] =>
+  decisionsFrom(VQA[`${sit}_default`]?.closed ?? {})
 
 // image helpers
 export const seedImg = (sit: Sit, code: Code | 'default', seed: number) =>

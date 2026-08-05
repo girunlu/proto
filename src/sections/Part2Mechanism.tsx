@@ -1,17 +1,18 @@
-import { Fragment, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
 import { ZoomImage, Picker, BoxPicker, MetricToggle, HowItWorks, useMagnet } from '../components/Viz'
 import { Sd21Only } from '../components/ModelBar'
 import { rgb, rgba } from '../lib/colors'
+import { niceTicks } from '../lib/utils'
 import { C8, COUNTRY8, SITS, seedImg, type Sit, type Code } from '../data/part1'
 import {
-  LOCKUP, LOCKUP_STEPS, stepKey, DIRECTIONS, HERO_DIRECTION, HERO_FIT,
-  COMMITMENT, CFG, CFG_VALUES, NATIVE_MANTEL, LAION,
+  LOCKUP, LOCKUP_STEPS, stepKey, DIRECTIONS, HERO_DIRECTION,
+  CFG, CFG_VALUES, LAION,
 } from '../data/part2'
 import { swapImgSeed, cfgImgCell } from '../data/uiv2'
-import { lockFit, fitCurve, matrix, dist as xmDist, intraset as xmIntraset, type Ruler } from '../data/crossmodel'
-import { useModel, MODEL_NAME, isSd21 } from '../data/modelData'
+import { lockFit, fitCurve, dist as xmDist, intraset as xmIntraset, type Ruler } from '../data/crossmodel'
+import { useModel, isSd21 } from '../data/modelData'
 
 const MONO = 'JetBrains Mono'
 const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
@@ -147,8 +148,9 @@ function CommitEarlyScene() {
         <p className="mt-4 max-w-2xl font-mono2 text-[11px] leading-5 text-foreground/50">
           Interrupting generation means re-running it 30 steps at a time with the prompt exchanged mid-flight, so this
           experiment — and scenes 07 and 08 with it — was run on <strong className="text-foreground/70">Stable
-          Diffusion 2.1 only</strong>. The model switcher above moves the rest of the page; these three scenes stay
-          here.
+          Diffusion 2.1 only</strong>, and on <strong className="text-foreground/70">12 seeds</strong> per swap point
+          rather than the 50 the rest of the page uses: 24 directions × 5 step points × 12 seeds is already 1,440
+          interrupted generations. The model switcher above moves the rest of the page; these three scenes stay here.
         </p>
         <Sd21Only />
       </Reveal>
@@ -307,98 +309,6 @@ function CommitEarlyScene() {
 }
 
 /* ── Scene 7 · coarse to fine (F10) ──────────────────────────────────────── */
-
-function CoarseFineScene() {
-  /* one mapping for the marks AND the axis labels. They used to disagree: the
-     marks were placed at step/30 (so step 1 sat 3% in) while the labels were
-     laid out with justify-between (step 1 flush at 0%), which is why the lines
-     read as dislocated against their own axis. */
-  const pos = (s: number) => ((s - 1) / 29) * 100
-  const lanes = [
-    { label: 'the whole scene', step: COMMITMENT.scene.mean, cv: '--c-sky', ex: 'indoors or outdoors, the setting, the architecture', n: `${COMMITMENT.scene.n} attributes` },
-    { label: 'cultural identity', step: HERO_FIT.step, cv: '--c-amber', ex: 'which country the picture reads as', n: 'wedding · Nigeria → USA' },
-    { label: 'surface detail', step: COMMITMENT.texture.mean, cv: '--c-vio', ex: 'attire, headwear, fabric', n: `${COMMITMENT.texture.n} attributes` },
-    { label: 'how many people', step: COMMITMENT.peopleCount.mean, cv: '--c-gray', ex: 'rarely settles cleanly at all', n: 'reported separately' },
-  ]
-  return (
-    <SceneShell
-      number="07"
-      kicker="Part II · the mechanism · finding 10"
-      title={<>Settled <em className="font-display italic text-amber-200">coarse first, fine later.</em></>}
-    >
-      <Reveal>
-        <p className="prose-scene max-w-2xl">
-          Not everything is decided at once. Running the same interrupted-generation machinery attribute by attribute
-          ({COMMITMENT.nLogistic} clean fits, {COMMITMENT.nFallback} estimated from intervals): the model settles{' '}
-          <strong>where and what kind of event</strong> around step {COMMITMENT.scene.mean}, and{' '}
-          <strong>what people are wearing</strong> around step {COMMITMENT.texture.mean}. Both are done before the
-          image is half-drawn. Stable Diffusion 2.1 only, for the same reason as scene 06.
-        </p>
-        <Sd21Only />
-      </Reveal>
-      <Reveal delay={0.08}>
-        <Panel className="mt-10">
-          <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-            where each kind of decision lands on the 30-step trajectory
-          </div>
-          <div className="mt-8 space-y-3">
-            {lanes.map((m, i) => (
-              <div key={m.label} className="flex items-center gap-3">
-                <span className="w-36 shrink-0 text-right font-mono2 text-[11px] leading-4" style={{ color: rgb(m.cv) }}>
-                  {m.label}
-                </span>
-                <div className="relative h-9 flex-1 rounded-md bg-foreground/5">
-                  <div className="absolute inset-y-0 left-0 rounded-l-md bg-gradient-to-r from-foreground/10 to-transparent" style={{ width: '15%' }} />
-                  <motion.div
-                    className="absolute top-1/2 h-6 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full"
-                    style={{ left: `${pos(m.step)}%`, background: rgb(m.cv) }}
-                    initial={{ opacity: 0, scaleY: 0 }}
-                    whileInView={{ opacity: 1, scaleY: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.15 + i * 0.12 }}
-                  />
-                  <motion.span
-                    className="absolute top-1/2 -translate-y-1/2 font-mono2 text-[11px]"
-                    style={{ left: `calc(${pos(m.step)}% + 10px)`, color: rgb(m.cv) }}
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.35 + i * 0.12 }}
-                  >
-                    step {m.step}
-                  </motion.span>
-                </div>
-                <span className="w-56 shrink-0 font-mono2 text-[10px] leading-4 text-foreground/60">
-                  {m.ex}
-                  <br />
-                  <span className="text-foreground/45">{m.n}</span>
-                </span>
-              </div>
-            ))}
-            <div className="flex items-center gap-3 pt-1">
-              <span className="w-36 shrink-0" />
-              {/* the same pos() as the marks, so each label sits under its own step */}
-              <div className="relative h-4 flex-1 font-mono2 text-[10px] text-foreground/55">
-                <span className="absolute left-0">step 1 · pure noise</span>
-                <span className="absolute -translate-x-1/2" style={{ left: `${pos(15)}%` }}>step 15</span>
-                <span className="absolute right-0">step 30 · finished image</span>
-              </div>
-              <span className="w-56 shrink-0" />
-            </div>
-          </div>
-          <div className="mt-8 border-t border-border pt-5">
-            <TierNote
-              tier="evidence"
-              text="Per-attribute fits on the interrupted-generation data : scene-level attributes settle at a mean step of 11.41, texture-level ones at 12.23. People-count is shown greyed because it rarely produces a clean crossing at all. That reads as a general counting weakness rather than cultural commitment, so we report it separately rather than folding it into the average."
-            />
-          </div>
-        </Panel>
-      </Reveal>
-    </SceneShell>
-  )
-}
-
-/* ── Scene 8 · the knob that doesn't help (F11) ──────────────────────────── */
 
 function CfgChart({ situation, highlight, onHover, onPick }: {
   situation: Sit
@@ -620,224 +530,6 @@ function CfgScene() {
 /* Each grid is scaled to its OWN range. Sharing one scale let the image grid's
    larger spread wash the text grid out to near-blank, which is precisely the
    comparison the reader is being asked to make. */
-function BigMatrix({ m, kind, title, sub }: {
-  m: NonNullable<ReturnType<typeof matrix>>
-  kind: 'txt' | 'img'
-  title: string
-  sub: string
-}) {
-  const mat = kind === 'txt' ? m.txt : m.img
-  const labels = m.countries
-  const [hover, setHover] = useState<{ i: number; j: number } | null>(null)
-  const cv = kind === 'txt' ? '--c-sky' : '--c-red'
-
-  const dists = mat.flatMap((row, i) => row.map((v, j) => (i === j ? null : 1 - v))).filter((v): v is number => v !== null)
-  const lo = Math.min(...dists)
-  const hi = Math.max(...dists)
-  const norm = (d: number) => (hi === lo ? 0.5 : (d - lo) / (hi - lo))
-
-  return (
-    <div>
-      <div className="font-mono2 text-[11px]" style={{ color: rgb(cv) }}>{title}</div>
-      <div className="font-mono2 text-[10px] leading-4 text-foreground/40">{sub}</div>
-      <div className="mt-3 grid gap-[2px]" style={{ gridTemplateColumns: `52px repeat(${labels.length}, minmax(0,1fr))` }}>
-        <div />
-        {labels.map((l) => (
-          <div key={l} className="pb-1 text-center font-mono2 text-[9px] text-foreground/45">{l === 'default' ? 'plain' : l}</div>
-        ))}
-        {labels.map((rl, i) => (
-          <Fragment key={rl}>
-            <div className="pr-1.5 text-right font-mono2 text-[9px] leading-8 text-foreground/45">
-              {rl === 'default' ? 'plain' : rl}
-            </div>
-            {mat[i].map((sim, j) => {
-              const d = 1 - sim
-              const t = i === j ? 0 : norm(d)
-              const on = hover?.i === i && hover?.j === j
-              return (
-                <div
-                  key={`${rl}-${j}`}
-                  onMouseEnter={() => setHover({ i, j })}
-                  onMouseLeave={() => setHover(null)}
-                  className={`flex h-8 items-center justify-center rounded-sm font-mono2 text-[9px] transition ${on ? 'ring-1 ring-foreground/60' : ''}`}
-                  style={{
-                    background: i === j ? 'hsl(var(--grid))' : rgba(cv, 0.1 + 0.85 * t),
-                    color: t > 0.55 ? '#0b0b10' : 'hsl(var(--foreground) / 0.7)',
-                  }}
-                >
-                  {i === j ? '' : d.toFixed(2)}
-                </div>
-              )
-            })}
-          </Fragment>
-        ))}
-      </div>
-      {/* this grid's own scale, printed with its own end points */}
-      <div className="mt-3 flex items-center gap-2">
-        <span className="font-mono2 text-[9px] text-foreground/45">{lo.toFixed(2)}</span>
-        <span
-          className="h-2.5 flex-1 rounded-sm"
-          style={{ background: `linear-gradient(90deg, ${rgba(cv, 0.1)}, ${rgba(cv, 0.95)})` }}
-        />
-        <span className="font-mono2 text-[9px] text-foreground/45">{hi.toFixed(2)}</span>
-      </div>
-      <p className="mt-1 font-mono2 text-[9px] leading-4 text-foreground/35">
-        nearest and furthest pair in <em>this</em> grid. Each grid is shaded over its own range, so read the
-        <em> pattern</em> across the two, not the raw colour.
-      </p>
-      {hover && hover.i !== hover.j && (
-        <p className="mt-1.5 font-mono2 text-[10px] text-foreground/55">
-          {labels[hover.i] === 'default' ? 'the plain prompt' : labels[hover.i]} vs{' '}
-          {labels[hover.j] === 'default' ? 'the plain prompt' : labels[hover.j]}:{' '}
-          <strong className="text-foreground/80">{(1 - mat[hover.i][hover.j]).toFixed(3)}</strong> apart
-        </p>
-      )}
-    </div>
-  )
-}
-
-function TextEncoderScene() {
-  const { model } = useModel()
-  const [sit, setSit] = useState<Sit>('wedding')
-  /* Tier C: all seven models are here now. The text side is each model's own
-     encoder stack — the 2026-07-27 fix, since only SDXL is CLIP-family — and the
-     image side is that model's own 50-image sets. */
-  const m = matrix(model, sit)
-  const mantelRows = SITS.map((s) => {
-    const mm = matrix(model, s)
-    return { sit: s, r: mm?.r ?? null, p: mm?.p ?? null }
-  }).filter((r): r is { sit: Sit; r: number; p: number } => r.r != null && r.p != null)
-  const best = mantelRows.length ? Math.max(...mantelRows.map((r) => r.r)) : 0
-  const sigCount = mantelRows.filter((r) => r.p < 0.05).length
-  if (!m) return null
-  return (
-    <SceneShell
-      number="09"
-      kicker="Part II · the mechanism · finding 12"
-      title={<>The assumption is added <em className="font-display italic text-amber-200">while drawing</em>, not read off the prompt.</>}
-    >
-      <Reveal>
-        <p className="prose-scene max-w-2xl">
-          One more innocent explanation to rule out. Before any picture is drawn, the sentence you typed is turned into
-          numbers by a separate component, the text encoder. Perhaps that component already puts “a wedding” and “a
-          wedding in the USA” next to each other, and the image half is simply following orders. If so, the shape of
-          the two geometries should match.
-        </p>
-      </Reveal>
-
-      <Reveal delay={0.05}>
-        <div className="mt-8">
-          <HowItWorks
-            steps={[
-              { k: 'what we compared', v: 'For one event we take all nine prompts and measure how far apart they are, twice: once as sentences in the text encoder, once as the 50-image sets they actually produce.' },
-              { k: 'what would settle it', v: 'If the picture geometry were inherited from the sentence geometry, the two grids below would have the same shape: same pairs near, same pairs far.' },
-              { k: 'the test', v: 'A Mantel test compares two distance grids and returns r, from 0 (no shared shape) to 1 (identical shape). Its p-value comes from reshuffling the labels 10,000 times.' },
-            ]}
-          />
-        </div>
-      </Reveal>
-
-      <Reveal delay={0.08}>
-        <Panel className="mt-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-              the same nine prompts, measured two ways
-            </div>
-            <BoxPicker label="event" value={sit} onChange={setSit} options={SIT_OPTS} size="sm" />
-          </div>
-          <div className="mt-6 grid gap-8 lg:grid-cols-2">
-            <BigMatrix
-              m={m}
-              kind="txt"
-              title="as sentences · before any image exists"
-              sub={`how far apart the nine prompts are, read by ${MODEL_NAME[model]}'s own text encoder`}
-            />
-            <BigMatrix m={m} kind="img" title="as pictures · once they are drawn" sub="how far apart the nine 50-image sets are" />
-          </div>
-          <p className="mt-5 max-w-3xl text-sm leading-6 text-foreground/60">
-            Read one pair across both grids. In the sentence grid, “a {sit}” and “a {sit} in Nigeria” sit at a
-            moderate distance, because they are, after all, mostly the same words. In the picture grid the same pair is
-            dramatically farther apart. The separation is not carried in from the sentence. It is manufactured on the
-            way to the image.
-          </p>
-        </Panel>
-      </Reveal>
-
-      <Reveal delay={0.1}>
-        <Panel className="mt-6">
-          <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-            does the sentence pattern predict the picture pattern?
-          </div>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
-            Take the two grids above and ask a single question of them: <em>do they have the same shape?</em> Not
-            whether the numbers match, they are on different scales, but whether the pairs that are near each other in
-            one are the pairs that are near each other in the other. One bar per event. A long bar means the sentence
-            distances and the picture distances rise and fall together, so the picture pattern could have been read off
-            the prompt. A short bar means knowing the sentence pattern tells you nothing about the picture pattern.
-          </p>
-          <div className="mt-6 space-y-3">
-            {mantelRows.map((r, i) => (
-              <div key={r.sit} className="flex items-center gap-3">
-                <span className="w-28 shrink-0 text-right font-mono2 text-xs text-foreground/60">a {r.sit}</span>
-                <div className="relative h-5 flex-1 rounded-sm bg-foreground/5">
-                  <motion.div
-                    className="absolute inset-y-0 left-0 rounded-sm"
-                    style={{ background: r.p < 0.05 ? rgb('--c-amber') : 'hsl(var(--foreground) / 0.25)' }}
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${Math.max(0, r.r) * 100}%` }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8, delay: i * 0.07 }}
-                  />
-                </div>
-                <span className="w-14 shrink-0 text-right font-mono2 text-xs text-foreground/70">{r.r.toFixed(2)}</span>
-                <span className="w-24 shrink-0 font-mono2 text-[10px] text-foreground/45">
-                  {r.p < 0.05 ? `p = ${r.p}` : 'no relationship'}
-                </span>
-              </div>
-            ))}
-            <div className="flex items-center gap-3 pt-1">
-              <span className="w-28 shrink-0" />
-              <div className="flex flex-1 justify-between font-mono2 text-[10px] text-foreground/35">
-                <span>0 · knowing one tells you nothing about the other</span>
-                <span>1 · the same pattern exactly</span>
-              </div>
-              <span className="w-14 shrink-0" />
-              <span className="w-24 shrink-0" />
-            </div>
-          </div>
-          <div className="mt-6 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
-            <p className="text-sm leading-6 text-foreground/60">
-              For <strong>{MODEL_NAME[model]}</strong>, {sigCount === 0 ? 'not one' : `only ${sigCount}`} of the six
-              events shows a relationship that clears significance, and even in the strongest one the sentence pattern
-              accounts for roughly <strong>{Math.round(best * best * 100)}%</strong> of the picture pattern. For the
-              rest it is indistinguishable from no relationship, and “a wedding”, the case this whole page is built on,
-              is one of them. Most of what separates the countries is added <em>after</em> the sentence has been read.
-            </p>
-            <div className="rounded-lg border border-emerald-300/25 bg-emerald-300/5 p-4">
-              <div className="font-mono2 text-[10px] tracking-widest text-emerald-300/80 uppercase">
-                and it is not this model's encoder
-              </div>
-              <p className="mt-2 text-sm leading-6 text-foreground/70">
-                Re-run on six further models, each with its own, different text encoder:{' '}
-                <strong>{NATIVE_MANTEL.significant} of {NATIVE_MANTEL.total}</strong> event × model combinations show a
-                significant relationship. Whatever this is, it is not a quirk of one text encoder.
-              </p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <TierNote tier="evidence" text="Mantel permutation tests on the collapsed 9×9 distance grids , 10,000 shuffles." />
-          </div>
-        </Panel>
-      </Reveal>
-    </SceneShell>
-  )
-}
-
-/* ── Scene 10 · not copied from the data (F13) ───────────────────────────── */
-
-/* Two-sided p for a Spearman rho, normal approximation (z = rho*sqrt(n-1)). Checked
-   against scipy.stats.spearmanr on the real arrays: within 0.001 at n=54 for every
-   model and both rulers, which is well inside how precisely it is read here. */
 function rhoP(rho: number, n: number) {
   if (n < 4) return 1
   const z = Math.abs(rho) * Math.sqrt(n - 1)
@@ -901,7 +593,7 @@ function Scatter({ pts, xLabel, yLabel, rho, n, hover, setHover, accent, focus, 
   const my = ys.reduce((a, b) => a + b, 0) / nPts
   const slope = xs.reduce((a, x, i) => a + (x - mx) * (ys[i] - my), 0) / xs.reduce((a, x) => a + (x - mx) ** 2, 0)
   const at = (x: number) => my + slope * (x - mx)
-  const ticks = (lo: number, hi: number) => [0.25, 0.5, 0.75].map((f) => lo + f * (hi - lo))
+  const ticks = (lo: number, hi: number) => niceTicks(lo, hi, 3)
   const magnet = useMagnet(
     pts.map((p, i) => ({ x: X(p.x), y: Y(p.y), item: i })),
     (i) => setHover(i)
@@ -989,11 +681,18 @@ function LaionScene() {
       cv: r.country === 'default' ? '--c-gray' : C8[r.country as Code]?.cv ?? '--c-gray',
       training: r.retrieval_intraset_sim,
       output: isSd && ruler === 'dinov3' ? r.output_intraset_sim : xmIntraset(model, sit, code, ruler).mean,
-      moved: code === 'default' ? 0 : xmDist(model, sit, code, ruler).mean,
+      isDefault: code === 'default',
+      /* null, not 0, for the six no-country prompts. A default cell's "distance from
+         the default prompt" is not a measurement — it is the same prompt compared with
+         itself. Writing 0 put six points at exactly x=0 that were also the least
+         homogeneous, which inflated the correlation on the panel whose entire job is to
+         show what a real relationship looks like (review 01 · R5.2). Panel B is n=48. */
+      moved: code === 'default' ? null : xmDist(model, sit, code, ruler).mean,
     }
   })
   const ptsA = rows.map((r) => ({ x: r.training, y: r.output, cv: r.cv, label: r.label }))
-  const ptsB = rows.map((r) => ({ x: r.moved, y: r.output, cv: r.cv, label: r.label }))
+  const rowsB = rows.filter((r) => r.moved != null) as (typeof rows[number] & { moved: number })[]
+  const ptsB = rowsB.map((r) => ({ x: r.moved, y: r.output, cv: r.cv, label: r.label }))
   /* every value both panels draw, on one scale: the LAION neighbourhoods, this
      model's output homogeneity, and how far its prompts moved */
   const yDomain = useMemo(() => {
@@ -1006,7 +705,7 @@ function LaionScene() {
     return [lo - pad, hi + pad] as [number, number]
   }, [rows])
   const rhoA = isSd21(model) && ruler === 'dinov3' ? LAION.rho : spearman(rows.map((r) => r.training), rows.map((r) => r.output))
-  const rhoB = spearman(rows.map((r) => r.moved), rows.map((r) => r.output))
+  const rhoB = spearman(rowsB.map((r) => r.moved), rowsB.map((r) => r.output))
 
   return (
     <SceneShell
@@ -1028,7 +727,7 @@ function LaionScene() {
             steps={[
               { k: 'what we did', v: 'For each of the 54 prompts we searched a 503,000-image slice of LAION, the kind of web-scraped set these models learn from, and pulled the 50 nearest training images.' },
               { k: 'what we measured', v: "How alike those 50 training neighbours are to each other, and how alike the model's own 50 outputs are to each other. One dot below is one prompt." },
-              { k: 'how to read it', v: 'A number near 1 means the left quantity predicts the upward one. A number near 0 means it tells you nothing. To make that concrete, the second panel plots the same 54 outputs against something that does predict them.' },
+              { k: 'how to read it', v: 'A number near 1 means the left quantity predicts the upward one. A number near 0 means it tells you nothing. To make that concrete, the second panel plots the country prompts against something that does predict them.' },
             ]}
           />
         </div>
@@ -1073,7 +772,7 @@ function LaionScene() {
             <div>
               <div className="font-mono2 text-[11px] text-foreground/70">what a real relationship looks like here</div>
               <div className="font-mono2 text-[10px] leading-4 text-foreground/40">
-                the same 54 outputs, plotted against how far the prompt moved the pictures
+                the {rowsB.length} country prompts, plotted against how far the prompt moved the pictures
               </div>
               <div className="mt-3">
                 <Scatter
@@ -1081,7 +780,7 @@ function LaionScene() {
                   xLabel="how far the prompt moved this model's pictures →"
                   yLabel="how alike this model's output is →"
                   rho={rhoB}
-                  n={rows.length}
+                  n={rowsB.length}
                   hover={hoverB}
                   setHover={setHoverB}
                   accent="--c-amber"
@@ -1091,7 +790,7 @@ function LaionScene() {
               </div>
               <p className="mt-2 min-h-[32px] font-mono2 text-[10px] leading-4 text-foreground/50">
                 {hoverB !== null
-                  ? `${rows[hoverB].label} · moved ${rows[hoverB].moved.toFixed(2)} · output ${rows[hoverB].output.toFixed(2)}`
+                  ? `${rowsB[hoverB].label} · moved ${rowsB[hoverB].moved.toFixed(2)} · output ${rowsB[hoverB].output.toFixed(2)}`
                   : 'a cloud that climbs: the dashed line rises'}
               </p>
             </div>
@@ -1128,8 +827,10 @@ function LaionScene() {
               that shifts when you switch is telling you something real about that model rather than being redrawn.
             </p>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/70">
-              Both panels use the same 54 prompts and the same measure of output narrowness on the upward axis. Only
-              the sideways axis differs. Whatever collapses these outputs is clearly measurable, since the right-hand
+              Both panels use the same measure of output narrowness on the upward axis; only the sideways axis differs.
+              The left panel has all 54 prompts. The right has {rowsB.length}: a no-country prompt has no distance from
+              the no-country prompt, and leaving those six in at exactly zero would have flattered the very correlation
+              this panel is offered as a control for. Whatever collapses these outputs is clearly measurable, since the right-hand
               panel finds it easily. It simply is not the narrowness of the training neighbourhood. The same null holds
               on a second diversity measure ({LAION.vendiRho.toFixed(2)}, computed on the DINOv3 side), so it is not an
               artefact of how we counted variety.
@@ -1150,9 +851,7 @@ export default function Part2Mechanism() {
   return (
     <>
       <CommitEarlyScene />
-      <CoarseFineScene />
       <CfgScene />
-      <TextEncoderScene />
       <LaionScene />
     </>
   )

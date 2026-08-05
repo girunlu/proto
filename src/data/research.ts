@@ -127,10 +127,10 @@ export const REALITY = {
   },
 }
 
-// Assumption Auditor (Phase A1): VQA-named assumptions, 2 annotators, κ ≥ 0.4
+// Assumption Auditor (Phase A1): VQA-named assumptions, gemma4 alone (2026-07-31)
 export const AUDITOR = {
-  total: 693,
-  headline: 375, // recounted from attribute_summary.json 2026-07-30; 308 was stale
+  total: 708,
+  headline: 448, // attribute_summary.json, gemma4-only table 2026-07-31 (was 693/375)
   imagesAudited: 2700,
   cards: [
     { prompt: 'a wedding', attribute: 'dress color', value: 'white', count: 46, n: 50, tier: 'headline' as const },
@@ -186,23 +186,36 @@ export const ESCAPE = {
 }
 
 // Paraphrase keying finding (§2e)
-export const KEYING = {
-  locative: { prompt: 'a funeral in Egypt', dist: 0.207 },
-  adjective: { prompt: 'an Egyptian funeral', dist: 0.495 },
-  note: 'Ethnicity-as-adjective keys a qualitatively different, more exoticized prior than location-as-modifier: same country, same event, 2.4× the distance.',
-}
+/* KEYING was deleted 2026-07-31 (review 05 · F-b). It carried the funeral-Egypt
+   locative-vs-adjective numbers as hand-typed constants and no scene ever imported
+   it. Scene 16·e now renders all three pairs and all four phrasings from
+   `paraphrase_robustness.json` via remedy.json, with the bootstrap intervals — which
+   is what makes the 2.4× a finding rather than a pair of numbers. */
 
 // Statistical hardening
 export const STATS = {
   permutation: 'p < 0.0001 for every headline gap (10k shuffles)',
   knn: 'k-NN separability AUC 0.96–0.99 even where centroid cosine looks weak (school, celebration)',
   splitHalf: 'split-half seed reliability holds (seeds 0–24 vs 25–49), so n=50 suffices',
-  // every final_image.png under materials/generated, counted 2026-07-30:
+  // every final_image.png under materials/generated:
+  //   find materials/generated -name final_image.png | wc -l   ->  33936  (2026-07-31)
   // 13,530 SD 2.1 (the 54-prompt grid at five guidance values + 30 empty-prompt)
-  // + 17,190 across the six other models + 1,650 escape-ladder + 750 paraphrase
-  // + 400 second-degree + 156 auditor = 33,676. The old 13,500 here counted only
-  // SD 2.1's own sweep while the label beside it said "7 models".
-  images: 33676,
+  // + 17,190 across the six other models + 1,850 escape-ladder + 750 paraphrase
+  // + 400 second-degree + 156 auditor + 60 = 33,936. The escape-ladder line grew
+  // 1,650 -> 1,850 on 2026-07-31: Job 1 added wedding_NG rungs L4-L7 (200 images),
+  // taking that ladder from 4 clauses to 8. The trailing 60 is the SDXL and
+  // Hunyuan-DiT empty-prompt runs (30 each), added 2026-07-30 after the 33,676
+  // count. `audit_page.py` re-checks this against disk — do not hand-edit without
+  // re-running it.
+  // Job A completed 2026-08-02: 21,000 more images (7 models x 60 single-clause
+  // conditions x 50 seeds, plus SD 2.1's 15 pilot-only conditions). Flux's 3,030
+  // ran on a rented A40 and its files are on Hugging Face rather than this disk —
+  // audit_page.py's REMOTE_IMAGES accounts for them, which is why the disk walk
+  // reports 52,686 rather than this number.
+  // Job 5 completed 2026-08-03: 600 more local (sdxl + hunyuandit own-clause
+  // ladders, 2 pairs x 3 rungs x 50 seeds each), taking the own-clause table to
+  // 6 of 7 models.
+  images: 59016, // 56,016 local (incl. 30 pulled-back Flux empty-prior + 2,700 steer round 2 + 600 Job 5) + 3,000 Flux Job A still remote (A40)
   seeds: 50,
   prompts: 54,
 }

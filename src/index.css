@@ -279,3 +279,19 @@ input[type='range'].slider::-moz-range-thumb {
   box-shadow: 0 0 0 1px rgb(var(--c-amber));
   cursor: pointer;
 }
+
+/* Accessibility basics, not a preference (review B6). The only
+   prefers-reduced-motion rule in this codebase used to live in App.css, which is
+   Vite template boilerplate that nothing imports — so in practice there was none.
+   The hero canvas is handled separately in Hero.tsx: a CSS rule cannot stop a
+   requestAnimationFrame loop. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

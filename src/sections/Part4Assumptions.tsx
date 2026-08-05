@@ -3,10 +3,12 @@ import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
 import { ZoomImage, BoxPicker } from '../components/Viz'
 import { rgb, rgba } from '../lib/colors'
+import { ordinal } from '../lib/utils'
 import { C8, COUNTRY8, SITS, CV_DEFAULT, cell, seedImg, type Sit, type Code } from '../data/part1'
-import { cardsFor, CARDS_TOTAL, CARDS_HEADLINE, BLIND_SPOT } from '../data/part4'
+import { cardsFor, CARDS_TOTAL, CARDS_HEADLINE, CARDS_CANDIDATES, BLIND_SPOT } from '../data/part4'
 import {
-  VQA, DAAM_INDEX, daamImg, key, Q_TEXT, type Answer,
+  VQA, DAAM_INDEX, daamImg, key, Q_TEXT, BATTERY, tidyOpen, FORCED_CELLS, FORCED_U12,
+  type Answer, type ForcedQ,
 } from '../data/uiv2'
 import { useModel, modelImg, modelSeeds, seedCount, modelVqa, isSd21, MODEL_NAME, CROSS_MODEL_NOTE } from '../data/modelData'
 import { openForModel, shiftFor, type ShiftRow } from '../data/crossmodel'
@@ -24,11 +26,18 @@ const STRIP_N = 10
 function DistributionStrip({ sit, code }: { sit: Sit; code: Code | 'default' }) {
   const { model } = useModel()
   const [showAll, setShowAll] = useState(false)
-  const t = isSd21(model) ? cell(sit, code).typical_order : modelSeeds(model, sit, code, seedCount(model))
-  const picks = useMemo(
-    () => modelSeeds(model, sit, code, Math.min(STRIP_N, t.length)).map((seed, i) => ({ seed, rank: i })),
-    [model, sit, code, t.length]
-  )
+  const t = modelSeeds(model, sit, code, seedCount(model, sit, code))
+  /* rank is the seed's position in the cell's own typicality order, not its
+     position in this strip: the strip is a 10-wide spread across all of `t`, so
+     calling its 3rd tile "3rd most typical" was wrong for every model. */
+  const picks = useMemo(() => {
+    const k = Math.min(STRIP_N, t.length)
+    if (k < 2) return t.slice(0, k).map((seed, i) => ({ seed, rank: i }))
+    return Array.from({ length: k }, (_, i) => {
+      const rank = Math.round((i * (t.length - 1)) / (k - 1))
+      return { seed: t[rank], rank }
+    })
+  }, [t])
   const label = `“a ${sit}${code === 'default' ? '' : ` in ${C8[code].name}`}”`
   return (
     <div>
@@ -38,7 +47,7 @@ function DistributionStrip({ sit, code }: { sit: Sit; code: Code | 'default' }) 
             key={p.seed}
             src={modelImg(model, sit, code, p.seed)}
             alt={`${sit} ${code} seed ${p.seed}`}
-            caption={`${label} · ${MODEL_NAME[model]} · seed ${p.seed} · ${p.rank + 1}th most typical of 50`}
+            caption={`${label} · ${MODEL_NAME[model]} · seed ${p.seed} · ${ordinal(p.rank + 1)} most typical of ${t.length}${isSd21(model) ? '' : ' published'}`}
             imgClassName="aspect-square w-full cursor-zoom-in rounded-md border border-border object-cover"
           />
         ))}
@@ -59,12 +68,22 @@ function DistributionStrip({ sit, code }: { sit: Sit; code: Code | 'default' }) 
    version listed all 33 in one ramp with three tier words and no threshold
    shown, which asked the reader to infer the boundary themselves. */
 const SETTLED = 0.8
+/* how many open-answer clusters get their own bar before the tail is folded */
+const OPEN_SHOWN = 4
 
-function QuestionRow({ q, answers, total, cv }: { q: string; answers: Answer[]; total: number; cv: string }) {
+function QuestionRow({ q, answers, total, cv, settled }: { q: string; answers: Answer[]; total: number; cv: string; settled?: boolean }) {
   const top = answers[0]
   const share = top.n / total
   return (
     <div className="flex items-center gap-3">
+      {/* the settled/unsettled state is a mark on the row, not a change of position:
+          rows are in a fixed order so the same question is always in the same place
+          when you switch event or country. */}
+      <span
+        className={`h-1.5 w-1.5 shrink-0 rounded-full ${settled ? '' : 'opacity-0'}`}
+        style={settled ? { background: rgb(cv) } : undefined}
+        aria-hidden
+      />
       <span className="w-44 shrink-0 truncate text-right font-mono2 text-[10px] text-foreground/50" title={Q_TEXT[q] ?? q}>
         {Q_TEXT[q] ?? q}
       </span>
@@ -94,6 +113,17 @@ function QuestionRow({ q, answers, total, cv }: { q: string; answers: Answer[]; 
   )
 }
 
+/* Fixed row order, always. The list used to sort by agreement share, so the same
+   question sat in a different place for every event and country and nothing could be
+   compared by eye — switching the picker made every row jump. Q_TEXT's own declaration
+   order is the canonical one (the universal questions first, then the event-specific
+   module), so a shared question is always at the same index and only its bar changes. */
+const Q_ORDER = Object.keys(Q_TEXT)
+const qRank = (q: string) => {
+  const i = Q_ORDER.indexOf(q)
+  return i === -1 ? Q_ORDER.length : i
+}
+
 function BatteryList({ sit, code }: { sit: Sit; code: Code | 'default' }) {
   const { model } = useModel()
   const v = modelVqa(model, sit, code)
@@ -106,50 +136,32 @@ function BatteryList({ sit, code }: { sit: Sit; code: Code | 'default' }) {
         return { q, answers, total, share: total ? answers[0].n / total : 0 }
       })
       .filter((r) => r.total > 0)
-      .sort((a, b) => b.share - a.share)
+      .sort((a, b) => qRank(a.q) - qRank(b.q))
   }, [v])
-  const settled = rows.filter((r) => r.share >= SETTLED)
-  const open = rows.filter((r) => r.share < SETTLED)
+  const settledCount = rows.filter((r) => r.share >= SETTLED).length
 
   return (
-    <div className="space-y-6">
-      <div>
-        <div className="flex flex-wrap items-baseline gap-x-3">
-          <span className="font-mono2 text-sm" style={{ color: rgb(cv) }}>
-            {settled.length} of {rows.length} questions
-          </span>
-          <span className="font-mono2 text-[11px] text-foreground/55">
-            get the same answer in at least {Math.round(SETTLED * 100)} of every 100 images.
-          </span>
-        </div>
-        <p className="mt-1 max-w-2xl font-mono2 text-[10px] leading-4 text-foreground/40">
-          Nobody asked for these. They are what the prompt left open and the model filled in anyway, the same way,
-          nearly every time. This is the list the whole page is about.
-        </p>
-        <div className="mt-4 space-y-1.5">
-          {settled.map((r) => <QuestionRow key={r.q} {...r} cv={cv} />)}
-          {settled.length === 0 && (
-            <p className="font-mono2 text-[11px] text-foreground/40">
-              None. Every question this prompt raises is answered differently from image to image.
-            </p>
-          )}
-        </div>
+    <div>
+      <div className="flex flex-wrap items-baseline gap-x-3">
+        <span className="font-mono2 text-sm" style={{ color: rgb(cv) }}>
+          {settledCount} of {rows.length} questions
+        </span>
+        <span className="font-mono2 text-[11px] text-foreground/55">
+          get the same answer in at least {Math.round(SETTLED * 100)} of every 100 images.
+        </span>
       </div>
-
-      <div className="border-t border-border pt-5">
-        <div className="flex flex-wrap items-baseline gap-x-3">
-          <span className="font-mono2 text-sm text-foreground/70">the other {open.length}</span>
-          <span className="font-mono2 text-[11px] text-foreground/60">genuinely vary from image to image.</span>
-        </div>
-        <p className="mt-1 max-w-2xl font-mono2 text-[10px] leading-4 text-foreground/50">
-          Shown so you can see the contrast: this is what an unsettled question looks like, and it is the shape the
-          settled rows above would have if the model had no opinion.
-        </p>
-        {/* was opacity-60 on top of already-muted colours, which made this whole
-            block unreadable on the light theme */}
-        <div className="mt-4 space-y-1.5 opacity-85">
-          {open.map((r) => <QuestionRow key={r.q} {...r} cv={CV_DEFAULT} />)}
-        </div>
+      <p className="mt-1 max-w-2xl font-mono2 text-[10px] leading-4 text-foreground/40">
+        Nobody asked for these. They are what the prompt left open and the model filled in anyway, the same way,
+        nearly every time — those rows carry a dot. The rest genuinely vary from image to image, and are kept in
+        view so you can see the contrast. The order never changes, so the same question is always in the same place.
+      </p>
+      <div className="mt-4 space-y-1.5">
+        {rows.map((r) => (
+          <QuestionRow key={r.q} {...r} cv={r.share >= SETTLED ? cv : CV_DEFAULT} settled={r.share >= SETTLED} />
+        ))}
+        {rows.length === 0 && (
+          <p className="font-mono2 text-[11px] text-foreground/40">No answers recorded for this prompt.</p>
+        )}
       </div>
     </div>
   )
@@ -160,11 +172,16 @@ function BatteryList({ sit, code }: { sit: Sit; code: Code | 'default' }) {
    the assumption in the model's own terms. */
 function OpenAnswers({ sit, code }: { sit: Sit; code: Code | 'default' }) {
   const { model } = useModel()
-  /* Tier C: the categorised free-text answers were exported for all six other
-     models too. One annotator there against SD 2.1's two, which the scene says. */
-  const open = Object.entries(
+  /* Tier C: the categorised free-text answers were exported for all seven models.
+     One annotator throughout, since the second was retired. */
+  /* tidyOpen drops the annotator's non-answers and merges clusters that are the
+     same idea in different words — see uiv2.ts. Questions left with nothing after
+     that are dropped rather than shown as an empty row. */
+  const open = (Object.entries(
     (isSd21(model) ? VQA[key(sit, code)]?.open : openForModel(model, sit, code)) ?? {}
-  ) as [string, Answer[]][]
+  ) as [string, Answer[]][])
+    .map(([q, answers]) => [q, tidyOpen(answers)] as [string, Answer[]])
+    .filter(([, answers]) => answers.length > 0)
   const cv = code === 'default' ? CV_DEFAULT : C8[code].cv
   if (!open.length) {
     return (
@@ -175,8 +192,14 @@ function OpenAnswers({ sit, code }: { sit: Sit; code: Code | 'default' }) {
   }
   return (
     <div className="space-y-5">
-      {open.map(([q, answers]) => {
-        const total = answers.reduce((a, b) => a + b.n, 0) || 50
+      {open.map(([q, all]) => {
+        const total = all.reduce((a, b) => a + b.n, 0) || 50
+        /* Three open questions x every cluster was up to 16 bars a cell, on top of the
+           battery's 18 rows — a wall nobody reads. The long tail is folded into one
+           row so the count still adds up to 50 and nothing is quietly dropped. */
+        const answers = all.slice(0, OPEN_SHOWN)
+        const tail = all.slice(OPEN_SHOWN)
+        const tailN = tail.reduce((a, b) => a + b.n, 0)
         return (
           <div key={q}>
             <div className="font-mono2 text-[10px] tracking-wider text-foreground/40 uppercase">
@@ -201,10 +224,83 @@ function OpenAnswers({ sit, code }: { sit: Sit; code: Code | 'default' }) {
                   </span>
                 </div>
               ))}
+              {tail.length > 0 && (
+                <div className="flex items-start gap-3">
+                  <div className="relative min-h-[26px] flex-1 overflow-hidden rounded-sm bg-foreground/5">
+                    <div
+                      className="absolute inset-y-0 left-0"
+                      style={{ background: rgba(CV_DEFAULT, 0.14), width: `${(tailN / total) * 100}%` }}
+                    />
+                    <span className="relative block px-2 py-1 text-[12px] leading-4 text-foreground/45">
+                      {tail.length} smaller answers, none repeated more than {tail[0].n} times
+                    </span>
+                  </div>
+                  <span className="w-16 shrink-0 pt-1 text-right font-mono2 text-[10px] text-foreground/40">
+                    {tailN}/{total}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )
       })}
+    </div>
+  )
+}
+
+/* The forced-choice control, shown BESIDE the battery and never instead of it.
+   Only renders where the annotator actually refused something on this cell, and only
+   on SD 2.1 — the re-ask was run over the main run's images, so showing it under
+   another model's name would be the exact class of error UI_MAP §5 exists to stop. */
+function ForcedControl({ sit, code }: { sit: Sit; code: Code | 'default' }) {
+  const { model } = useModel()
+  if (!isSd21(model)) return null
+  const cellKey = key(sit, code)
+  const rows = Object.entries(FORCED_CELLS[cellKey] ?? {}) as [string, ForcedQ][]
+  if (!rows.length) return null
+  const asked = rows.reduce((a, [, v]) => a + v.n, 0)
+  const refused = rows.reduce((a, [, v]) => a + v.refused, 0)
+
+  return (
+    <div className="mt-8 rounded-lg border border-sky-300/25 bg-sky-300/[0.04] p-4">
+      <div className="font-mono2 text-[10px] tracking-widest text-sky-200/80 uppercase">
+        a second instrument · the same images, asked again without “unclear”
+      </div>
+      <p className="mt-2 max-w-3xl text-[13px] leading-5 text-foreground/60">
+        <strong>{asked}</strong> of the answers above were “unclear”. Asking again with that option deleted is a
+        different measurement, not a better one — taking away the escape hatch can only push agreement up, so these
+        never replace the numbers above. What they test is whether the model was being careful or merely quiet.{' '}
+        <strong className="text-foreground/80">
+          It refused again {refused} of {asked} times
+        </strong>
+        {refused > 0 && ', often by writing “n-a” — a reply that was never on the list'}.
+      </p>
+      <div className="mt-3 space-y-1">
+        {rows.map(([q, v]) => (
+          <div key={q} className="flex items-center gap-3 font-mono2 text-[10px]">
+            <span className="w-40 shrink-0 truncate text-right text-foreground/50" title={Q_TEXT[q] ?? q}>
+              {Q_TEXT[q] ?? q}
+            </span>
+            <span className="w-24 shrink-0 truncate text-foreground/35">was “{v.was ?? 'unclear'}”</span>
+            <span className="min-w-0 flex-1 truncate text-foreground/85">
+              → {v.top.map((t) => `${t.v} ${t.n}`).join(' · ')}
+            </span>
+            <span className="w-24 shrink-0 text-right text-foreground/40">
+              {v.refused}/{v.n} refused again
+            </span>
+          </div>
+        ))}
+      </div>
+      {FORCED_U12.plain && FORCED_U12.non_western && (
+        <p className="mt-3 border-t border-sky-300/20 pt-2.5 text-[12px] leading-5 text-foreground/55">
+          Across the whole study, the continent question is the one worth sitting with. Forced to name one, the
+          plain prompt says <strong className="text-foreground/80">Europe or North America</strong> in{' '}
+          {Math.round((FORCED_U12.plain.west_share_of_named ?? 0) * 100)}% of the answers that named a continent
+          at all — while prompts naming a non-Western country land on a non-Western continent{' '}
+          {100 - Math.round((FORCED_U12.non_western.west_share_of_named ?? 0) * 100)}% of the time. The model can
+          read the pictures; on the unqualified prompt what it reads is Western.
+        </p>
+      )}
     </div>
   )
 }
@@ -287,11 +383,14 @@ function NamedScene() {
         <p className="prose-scene max-w-2xl">
           Distances establish <em>that</em> the unspecified gets supplied. This establishes <em>with what</em>. Every
           generated image is shown to a vision-language model that never sees the prompt behind it, and asked the same
-          frozen questionnaire: 15 questions put to every image — indoors or outdoors, how many people, what are they
-          wearing, what kind of building — plus three or four written for the event itself, 38 distinct questions across
-          the study. When 50 blind answers agree, the model has an assumption. That yields{' '}
+          frozen questionnaire: {BATTERY.universal} questions put to every image — indoors or outdoors, how many
+          people, what are they wearing, what kind of building — plus a handful written for the event itself, so{' '}
+          {BATTERY.perCellMin}–{BATTERY.perCellMax} per prompt and {BATTERY.distinct} distinct questions across the
+          study. When 50 blind answers agree, the model has an assumption. That yields{' '}
           <strong>{CARDS_HEADLINE} firm assumptions across the 54 prompts ({CARDS_TOTAL} counting the weaker
-          tier)</strong>.
+          tier)</strong>. Nothing here was picked because it looked interesting: an answer only becomes an
+          assumption by clearing the same agreement floor, applied identically to all {CARDS_CANDIDATES} the
+          detector proposed.
         </p>
       </Reveal>
 
@@ -343,13 +442,16 @@ function NamedScene() {
               the frozen battery, answered blind over all 50 seeds
             </div>
             <p className="mt-2 max-w-3xl text-[13px] leading-5 text-foreground/50">
-              One row per question. The bar is the full spread of answers across the 50 images, widest answer first.
-              A row marked <span className="text-amber-200">named</span> is one where agreement is high enough to call
-              it an assumption rather than a tendency.
+              One row per question, always in the same order, so the same question stays in the same place when you
+              change the event or the country. The bar is the full spread of answers across the 50 images, widest
+              answer first. A dot marks the questions the model <span className="text-amber-200">settled</span> — same
+              answer in at least {Math.round(SETTLED * 100)} of every 100 images, which is what makes it an assumption
+              rather than a tendency. The unmarked rows genuinely vary, and are kept in view for the contrast.
             </p>
             <div className="mt-4">
               <BatteryList sit={sit} code={code} />
             </div>
+            <ForcedControl sit={sit} code={code} />
           </div>
 
           <div className="mt-8 border-t border-border pt-5">
@@ -391,7 +493,7 @@ function NamedScene() {
           <div className="mt-5 border-t border-border pt-4">
             <TierNote
               tier="evidence"
-              text="Answers come from two independent vision-language annotators over 50 seeds per cell, kept only where the two agree well enough to be worth reporting. The image strip is real seeds evenly spaced across the cell's typicality order: the honest spread, not a curated best-of."
+              text={`Answers come from one vision-language annotator over 50 seeds per cell, kept only where enough of the 50 agree to be worth reporting. The image strip is real seeds evenly spaced across the cell's typicality order: the honest spread, not a curated best-of.${isSd21(model) ? '' : " For the other six models the strip is spaced across the 24 seeds that have published thumbnails — the 20 least alike plus the 4 most typical — not across all 50."}`}
             />
           </div>
         </Panel>
@@ -405,6 +507,45 @@ function NamedScene() {
 /* one attribute's contribution to the plain→country movement. The plain answer is
    shown next to the country answer on every row, because the single most useful
    thing a reader can see here is how often they are the same. */
+/* Half of all rows sit under 0.1 — up to 15 in a single cell — and a stack of
+   near-empty bars made this scene long without making it clearer. They are drawn as a
+   bag of words instead: every attribute still named, with its own share, at the same
+   text weight as everything else. The point is saving vertical space, NOT demoting
+   them — a 10px muted line reads as hiding something, which is the opposite of what
+   this page does with small numbers. */
+const MINOR = 0.1
+
+function MinorRow({ rows, label, cv }: { rows: ShiftRow[]; label: string; cv: string }) {
+  if (!rows.length) return null
+  return (
+    <div className="mt-3">
+      <div className="font-mono2 text-[10px] leading-4 text-foreground/50">
+        <span className="text-foreground/70">{rows.length} under {Math.round(MINOR * 100)}%</span> · {label}
+      </div>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {rows.map((r) => (
+          <span
+            key={r.q}
+            className="inline-flex items-baseline gap-1.5 rounded-md border px-2 py-1 font-mono2 text-[11px]"
+            style={{ borderColor: rgba(cv, 0.3), background: rgba(cv, 0.06) }}
+          >
+            <span className="text-foreground/50">{Q_TEXT[r.q] ?? r.q}</span>
+            {/* the answer itself, not just the question — a bag of attribute NAMES
+                tells you what was measured, never what the model actually decided */}
+            {r.plain === r.value ? (
+              <span className="text-foreground/90">{r.value}</span>
+            ) : (
+              <span className="text-foreground/90">
+                <span className="text-foreground/40 line-through">{r.plain}</span> → {r.value}
+              </span>
+            )}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function ShiftBar({ r, i, maxShare, cv, muted }: {
   r: ShiftRow
   i: number
@@ -463,8 +604,12 @@ function BridgeScene() {
      an attribute's answer explained. That never compared the two prompts' answers,
      so an attribute with the SAME answer in both could top the chart off two stray
      seeds — and one that was constant across all 50 seeds was dropped entirely.
-     `share` here is the fraction of the plain→country movement that the attribute's
-     answers actually changing accounts for, so "no change" reads as ~0. */
+     `share` is the fraction of the plain→country movement predicted by this
+     attribute's ANSWER DISTRIBUTION changing — not by its majority label flipping.
+     Those are different things: 2,845 of the 3,597 rows whose top answer is identical
+     in both prompts still carry a share, one as high as 0.70, because the split
+     underneath the winner moved. Do not re-introduce the old comment claiming
+     "no change reads as ~0"; it is false and it is what made this chart confusing. */
   const data = shiftFor(model, sit, code)
   const rows = data?.rows ?? []
   /* the tautological rows are separated out rather than hidden: when a country prompt
@@ -472,8 +617,12 @@ function BridgeScene() {
      the two prompts, so its share is forced toward 1 and it evidences nothing */
   const real = rows.filter((r) => !r.sep)
   const tautological = rows.filter((r) => r.sep)
-  const moved = real.filter((r) => r.plain !== r.value)
-  const still = real.filter((r) => r.plain === r.value)
+  const moved = real.filter((r) => r.plain !== r.value && r.share >= MINOR)
+  const movedMinor = real.filter((r) => r.plain !== r.value && r.share < MINOR)
+  const still = real.filter((r) => r.plain === r.value && r.share >= MINOR)
+  const stillMinor = real.filter((r) => r.plain === r.value && r.share < MINOR)
+  const taut = tautological.filter((r) => r.share >= MINOR)
+  const tautMinor = tautological.filter((r) => r.share < MINOR)
   const maxShare = Math.max(1, ...rows.map((r) => r.share))
 
   return (
@@ -513,30 +662,32 @@ function BridgeScene() {
               </div>
 
               <div className="mt-6 font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-                attributes whose answer changed · {moved.length} of {real.length}
+                attributes whose answer changed · {moved.length + movedMinor.length} of {real.length}
               </div>
               <div className="mt-3 space-y-2.5">
                 {moved.map((r, i) => (
                   <ShiftBar key={r.q} r={r} i={i} maxShare={maxShare} cv={C8[code].cv} />
                 ))}
               </div>
+              <MinorRow rows={movedMinor} label="changed, but barely carry the movement" cv={C8[code].cv} />
 
               <div className="mt-7 font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-                attributes whose answer did not change · {still.length} of {real.length}
+                attributes whose answer did not change · {still.length + stillMinor.length} of {real.length}
               </div>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground/60">
+                <strong className="text-foreground/80">A bar here is not a contradiction.</strong> The measure reads
+                the whole answer distribution, not just the winner — so “outdoors” can stay the top answer in both
+                prompts while fifteen of the fifty images change sides underneath it, and that movement is real. These
+                attributes are named assumptions of “a {sit} in {C8[code].name}” that were already true of “a {sit}”:
+                the country word did not introduce them, it re-weighted them. An attribute can be an assumption the
+                model is making and still account for almost none of the distance.
+              </p>
               <div className="mt-3 space-y-2.5">
                 {still.map((r, i) => (
                   <ShiftBar key={r.q} r={r} i={i} maxShare={maxShare} cv={C8[code].cv} muted />
                 ))}
               </div>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
-                This is the part the previous version of this chart got wrong, and it is worth dwelling on. These
-                attributes are named assumptions of “a {sit} in {C8[code].name}” — they are in the pictures, held at
-                high consistency, and already true of “a {sit}” too. They are not what the country word changed. An
-                attribute can be an assumption the model is making and still account for almost none of the distance.
-                A few here are not quite at zero: the majority answer held, but the minority split underneath it moved,
-                and the measure reads the whole distribution rather than only the winner.
-              </p>
+              <MinorRow rows={stillMinor} label="same answer, and the split barely moved either" cv={C8[code].cv} />
 
               {tautological.length > 0 && (
                 <>
@@ -544,10 +695,11 @@ function BridgeScene() {
                     true but circular · {tautological.length}
                   </div>
                   <div className="mt-3 space-y-2.5">
-                    {tautological.map((r, i) => (
+                    {taut.map((r, i) => (
                       <ShiftBar key={r.q} r={r} i={i} maxShare={maxShare} cv={C8[code].cv} muted />
                     ))}
                   </div>
+                  <MinorRow rows={tautMinor} label="circular, and small anyway" cv={C8[code].cv} />
                   <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
                     Here the two prompts share almost no answers at all, so the answer groups simply <em>are</em> the
                     two sets of pictures and the share is forced towards 1. It is not surprising that a prompt naming

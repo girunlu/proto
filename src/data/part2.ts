@@ -35,10 +35,29 @@ export const HERO_DIRECTION = 'wedding_NG_to_US'
 export const HERO_FIT = { step: LOCKIN.hero.step, ci: LOCKIN.hero.ci, steepness: LOCKIN.hero.steepness, totalSteps: 30 }
 
 /* F10: coarse-to-fine commitment schedule (commitment_schedule.json hypotheses) */
+/* R4a (2026-07-31): H1 finally has a test under it, and it FAILED. The scene asserted
+   "coarse first, fine later" from two means 0.82 steps apart with no interval anywhere.
+   Permutation p = 0.72, bootstrap CI [-3.6, +5.3] — not separable from zero. The JSON's
+   own `supported: true` flag predates the test and is not to be trusted; `h1` below is.
+   Source: scripts/phase3_analysis/commitment_h1_permutation.py */
+import h1 from './cultural/commitment_h1_test.json'
+
+export const H1_TEST = h1 as unknown as {
+  scene: { n: number; mean: number; median: number; sd: number; min: number; max: number }
+  texture: { n: number; mean: number; median: number; sd: number; min: number; max: number }
+  observed_diff: number
+  permutation: { n_perm: number; p_two_sided: number }
+  bootstrap_ci_diff: [number, number]
+  separable_from_zero: boolean
+  verdict: string
+}
+
 export const COMMITMENT = {
   scene: { mean: commitment.hypotheses.H1_scene_before_texture.mean_crossing_scene, n: commitment.hypotheses.H1_scene_before_texture.n_scene },
   texture: { mean: commitment.hypotheses.H1_scene_before_texture.mean_crossing_texture, n: commitment.hypotheses.H1_scene_before_texture.n_texture },
-  supported: commitment.hypotheses.H1_scene_before_texture.supported,
+  /* deliberately NOT `commitment.hypotheses...supported` — that flag was set before
+     anyone tested it, and the test says otherwise. Read from H1_TEST instead. */
+  supported: h1.separable_from_zero,
   peopleCount: { mean: commitment.hypotheses.H2_people_count.mean_crossing_U04, note: 'people-count rarely produces a clean fitted crossing, consistent with a generic counting-capability gap, not clean cultural commitment' },
   nLogistic: commitment.summary.n_attribute_curves_fitted_logistic,
   nFallback: commitment.summary.n_attribute_curves_interval_fallback,

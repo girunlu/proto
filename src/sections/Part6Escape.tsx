@@ -5,7 +5,7 @@ import { ZoomImage, BoxPicker, useMagnet } from '../components/Viz'
 import { rgb, rgba } from '../lib/colors'
 import { C8, cell, seedImg, type Sit, type Code } from '../data/part1'
 import { ESCAPE_PAIRS, Q_TEXT } from '../data/uiv2'
-import { escapeUmap, escapePairsFor, xmEscapeImg, type XmEscapePair } from '../data/crossmodel'
+import { escapeUmap, escapePairsFor, xmEscapeImg, LADDER_MODELS, type XmEscapePair } from '../data/crossmodel'
 import { useModel, MODEL_NAME, type ModelId } from '../data/modelContext'
 import { isSd21, modelImg, modelSeeds } from '../data/modelData'
 
@@ -146,73 +146,32 @@ function LadderMap({ model, pair, rung, onPick }: {
   )
 }
 
-function LoadConservation() {
-  const rows = Object.entries(ESCAPE_PAIRS).map(([k, p]) => {
-    const at = (id: string) => p.levels.find((l) => l.id === id)?.load ?? null
-    const country = at('L0')
-    const deepest = [...p.levels].filter((l) => !l.control && l.id.startsWith('L')).pop()?.load ?? null
-    const ctrls = ['ctrl_large', 'ctrl_rain', 'ctrl_1985'].map(at).filter((v): v is number => v != null)
-    const plain = at('default')
-    return {
-      k,
-      label: `a ${p.situation} in ${C8[p.code].name}`,
-      plain,
-      cultural: deepest ?? country,
-      control: ctrls.length ? Math.round((ctrls.reduce((x, y) => x + y, 0) / ctrls.length) * 10) / 10 : null,
-    }
-  })
-  const max = Math.max(...rows.flatMap((r) => [r.cultural ?? 0, r.control ?? 0, r.plain ?? 0]))
-  const bar = (v: number | null, cls: string) => (
-    <div className="relative h-5 flex-1 rounded-sm bg-foreground/5">
-      {v != null && (
-        <motion.div
-          className={`absolute inset-y-0 left-0 flex items-center justify-end rounded-sm ${cls}`}
-          initial={{ width: 0 }}
-          whileInView={{ width: `${(v / max) * 100}%` }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <span className="pr-1.5 font-mono2 text-[10px] text-foreground/90">{v}</span>
-        </motion.div>
-      )}
-    </div>
-  )
-  return (
-    <div className="space-y-2.5">
-      <div className="flex items-center gap-3 pb-1 font-mono2 text-[9px] tracking-wider text-foreground/35 uppercase">
-        <span className="w-40 shrink-0 text-right">prompt</span>
-        <span className="flex-1">plain, before any qualifier</span>
-        <span className="flex-1">after the country clauses</span>
-        <span className="flex-1">after a neutral qualifier</span>
-      </div>
-      {rows.map((r) => (
-        <div key={r.k} className="flex items-center gap-3">
-          <span className="w-40 shrink-0 text-right font-mono2 text-[11px] text-foreground/60">{r.label}</span>
-          {bar(r.plain, 'bg-foreground/25')}
-          {bar(r.cultural, 'bg-red-400/70')}
-          {bar(r.control, 'bg-foreground/35')}
-        </div>
-      ))}
-      <p className="pt-2 font-mono2 text-[10px] leading-4 text-foreground/45">
-        Bars are counts of assumptions the model is making at that prompt. Read across a row: the middle bar is longer
-        than the left one in every case, and the right bar is longer than the left one just as often. Adding words
-        adds assumptions, and it does not matter whether the words name a country.
-      </p>
-    </div>
-  )
-}
+
+/* Every ladder in the study, on the two axes at once. Derived here rather than
+   exported because both halves are already in the bundle: SD 2.1's eight from
+   `ui_v2.escape`, the six cross-model ones from `crossmodel.escape`. Each row is
+   measured against its own L0 — the country-named prompt — because that is the
+   rung the counter-specification is trying to undo, and SD 2.1's ladder starts one
+   rung earlier than the cross-model ones. */
+/* which models have an own-clause ladder, in prose. Derived so that adding a model
+   to the export (sdxl + hunyuandit did exactly that on 2026-08-03) rewrites the
+   sentences rather than leaving them a rung behind the chart. */
+const XM_LADDER_NAMES = LADDER_MODELS.filter((m) => m !== 'sd21').map((m) =>
+  MODEL_NAME[m].replace('Stable Diffusion', 'SD'),
+)
+const prose = (xs: string[]) =>
+  xs.length < 2 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`
 
 export default function Part6Escape() {
   const { model } = useModel()
   const [event, setEvent] = useState('wedding')
   const [country, setCountry] = useState<Code>('NG')
   const [rungId, setRungId] = useState('L0')
-  /* Four models were run up the ladder: SD 2.1 on all eight pairs, and Kolors,
-     SD 3.5 Large and Qwen-Image on the two Nigeria pairs. Each of those three has
-     its OWN clauses, chosen from its own headline assumptions — that is what makes
-     switching model worth doing here, the prompts differ, not just the pictures.
-     The other three models have no ladder at all, so the scene holds on SD 2.1 and
-     says which four it has. */
+  /* Six of the seven models were run up the ladder: SD 2.1 on all eight pairs, and
+     the five cross-models on the two Nigeria pairs. Each cross-model has its OWN
+     clauses, chosen from its own headline assumptions — that is what makes switching
+     model worth doing here, the prompts differ, not just the pictures. Flux is remote
+     and has no ladder, so the scene falls back to SD 2.1 there and says so. */
   const xm = isSd21(model) ? null : escapePairsFor(model)
   const usingSd21 = !isSd21(model) && xm === null
   const ladderModel: ModelId = usingSd21 ? 'sd21' : model
@@ -274,16 +233,28 @@ export default function Part6Escape() {
           If “a wedding in Nigeria” comes out outdoors on every seed, the obvious fix is to say so: write “a wedding in
           Nigeria, indoors.” We built that ladder one clause per named assumption, up to three clauses deep, and
           measured what happened at every rung — eight event-and-country pairs on Stable Diffusion 2.1, and the two
-          Nigeria pairs on Kolors, SD 3.5 Large and Qwen-Image, each from its own list of assumptions. The clauses do
-          work. The escape does not happen.
+          Nigeria pairs on {prose(XM_LADDER_NAMES)}, each from its own list of assumptions.
+        </p>
+        <p className="prose-scene mt-4 max-w-2xl">
+          The answer, before the ladder rather than after it:{' '}
+          <strong className="text-foreground/90">the clauses do work, and the escape still does not happen.</strong>{' '}
+          You can change what is in the picture. You cannot change how few pictures there are. The rest of this scene is
+          why those two sentences are not a contradiction — and the reason has a shape:{' '}
+          <em className="text-amber-200">prompting is additive in an entangled concept space. You can add constraints.
+          You can never subtract a prior.</em>
         </p>
       </Reveal>
 
       <Reveal delay={0.08}>
         <Panel className="mt-10">
           <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-            the ladder · {MODEL_NAME[ladderModel]}
+            mechanism 1 · entanglement · the ladder · {MODEL_NAME[ladderModel]}
           </div>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/70">
+            A concept like “an indoor Nigerian wedding” arrives with its own furniture. Flipping one attribute does not
+            move the set, because the other attributes were never independent knobs — which is why the two panels below
+            disagree: the answers change while the pictures stay the same handful of pictures.
+          </p>
           {!isSd21(model) && (
             <p className={`mt-3 mb-4 rounded-md border px-3 py-2 font-mono2 text-[10px] leading-4 ${xm ? 'border-border bg-foreground/[0.04] text-foreground/70' : 'border-amber-300/30 bg-amber-300/5 text-amber-700 dark:text-amber-200/90'}`}>
               {xm
@@ -521,41 +492,15 @@ export default function Part6Escape() {
         </Panel>
       </Reveal>
 
-      <Reveal delay={0.1}>
-        <Panel className="mt-6">
-          <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-            finding 21 · is naming a country what makes it expensive? · Stable Diffusion 2.1
-          </div>
-          <p className="mt-4 max-w-3xl text-sm leading-6 text-foreground/70">
-            Everything above shows that adding words adds assumptions. The obvious next question is whether{' '}
-            <em>country</em> words are special in that respect, the way they turned out to be special for variety.
-            So we compared them against the same neutral qualifiers from scene 12: “a large wedding”, “a wedding in the
-            rain”, “a wedding in 1985”. Same lengths, no culture named. The neutral qualifiers were only ever generated
-            on Stable Diffusion 2.1, so this comparison stays there whichever model is selected above.
-          </p>
-          <div className="mt-6">
-            <LoadConservation />
-          </div>
-          <p className="mt-5 max-w-3xl text-sm leading-6 text-foreground/70">
-            The answer is no, and that is worth stating plainly because it cuts against the easy story. The two
-            effects come apart. <strong>The variety collapse is culture-specific</strong>, which is scene 12.
-            <strong> The rising assumption count is not</strong>: every added word recruits the prior, whatever the
-            word is. What makes country words dangerous is not that they cost more. It is what they buy.
-          </p>
-          <div className="mt-6 border-t border-border pt-5">
-            <TierNote
-              tier="evidence"
-              text="Counts come from the same frozen questionnaire run at every rung, 50 seeds each. We also measured the same thing on a continuous scale, in bits of narrowing rather than whole assumptions, and it gives the same answer: the country ladder adds 2.2 bits on the hero pair, the neutral qualifiers add 0.8, and across the eight pairs neither is reliably larger than the other."
-            />
-          </div>
-        </Panel>
-      </Reveal>
+
+
+
 
       <Reveal delay={0.1}>
         <div className="mx-auto mt-20 max-w-3xl text-center">
           <p className="font-display text-3xl leading-snug font-light text-foreground/90 md:text-4xl">
-            One cannot prompt a way out of a default one cannot see,{' '}
-            <span className="text-amber-200 italic">and even once it is visible, the exit costs more words than anyone types.</span>
+            You can change what is in the picture.{' '}
+            <span className="text-amber-200 italic">You cannot change how few pictures there are.</span>
           </p>
         </div>
       </Reveal>

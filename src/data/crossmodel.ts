@@ -45,13 +45,17 @@ interface CrossModel {
     rulers: Record<Ruler, { sit: string; code: string; d_empty: number; d_default: number }[]>
   }>
   dissimilar?: Record<string, Record<string, number[]>>
+  published?: Record<string, Record<string, number[]>>
+  /** finding 3 per model: each of the 50 plain-prompt seeds labelled with the
+      country centroid it lands nearest. Six models only — SD 2.1 keeps its own
+      shipped labels in chunk1.json (see build_f3's note on the 6/300 tie diff). */
+  f3?: Record<string, Record<string, string[]>>
   /* points arrive packed flat as [variantIndex, seed, x, y, …] — as objects this was
      800 KB of JSON punctuation for 18,000 dots. Unpacked once, below, and cached. */
   umap?: Record<string, Record<Ruler, Record<string, {
     order: string[]
     pts: number[]
     centroids: Record<string, [number, number]>
-    n_per_variant: number
   }>>>
   escape_umap?: Record<string, Record<string, { levels: string[]; pts: number[] }>>
   escape?: Record<string, Record<string, XmEscapePair>>
@@ -163,10 +167,24 @@ export const emptyImg = (m: ModelId, i: number) =>
 
 /* ── mosaics: most-different-first ─────────────────────────────────────────── */
 
-/** seeds ordered most-different-first (greedy farthest-point in DINOv3 space) */
+/** Scene 04's per-seed nearest-country labels for a cross-model, or null for SD 2.1
+    (which reads its own `F3` in part1.ts) and for anything not exported. */
+export const f3For = (m: ModelId, sit: Sit): string[] | null => X.f3?.[m]?.[sit] ?? null
+
+/** Which seeds of the 50 have a thumbnail on disk, most-typical-first. SD 2.1
+    ships all 50 and is not in the manifest; the six cross-models ship the 20
+    least-alike plus the 4 most typical (export_tier_c.py `build_dissimilar`). */
+export const publishedSeeds = (m: ModelId, sit: Sit, code: Code | 'default'): number[] | null =>
+  X.published?.[m]?.[`${sit}_${code}`] ?? null
+
+/** seeds ordered most-different-first (greedy farthest-point in DINOv3 space).
+    Filtered to what is actually published: the ordering names seed ids across the
+    full 0-49 range, so an unfiltered slice used to render 60% broken images. */
 export const dissimilarSeeds = (m: ModelId, sit: Sit, code: Code | 'default', n: number): number[] | null => {
   const all = X.dissimilar?.[m]?.[`${sit}_${code}`]
-  return all ? all.slice(0, n) : null
+  if (!all) return null
+  const pub = publishedSeeds(m, sit, code)
+  return (pub ? all.filter((s) => pub.includes(s)) : all).slice(0, n)
 }
 
 /* ── scene 05 / scene 16: projections ─────────────────────────────────────── */
@@ -175,7 +193,6 @@ export interface UmapPoint { c: string; s: number; xy: [number, number] }
 export interface UmapFit {
   points: UmapPoint[]
   centroids: Record<string, [number, number]>
-  n_per_variant: number
 }
 
 const unpack = new Map<string, UmapFit | null>()
@@ -190,7 +207,7 @@ export function umapFor(m: ModelId, sit: Sit, ruler: Ruler): UmapFit | null {
     for (let i = 0; i < raw.pts.length; i += 4) {
       points.push({ c: raw.order[raw.pts[i]], s: raw.pts[i + 1], xy: [raw.pts[i + 2], raw.pts[i + 3]] })
     }
-    out = { points, centroids: raw.centroids, n_per_variant: raw.n_per_variant }
+    out = { points, centroids: raw.centroids }
   }
   unpack.set(cacheKey, out)
   return out

@@ -1,12 +1,14 @@
 import { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
+import { Sd21Only } from '../components/ModelBar'
 import { ZoomImage, BoxPicker, BarRow, MetricToggle } from '../components/Viz'
 import { rgb } from '../lib/colors'
-import { C8, COUNTRY8, SITS, CV_DEFAULT, cell, type Sit, type Code } from '../data/part1'
+import { ordinal } from '../lib/utils'
+import { C8, COUNTRY8, SITS, CV_DEFAULT, type Sit, type Code } from '../data/part1'
 import { VENDI_CELL, ESCAPE_PAIRS, key, controlImg } from '../data/uiv2'
 import { useModel, modelImg, modelSeeds, isSd21, MODEL_NAME } from '../data/modelData'
-import { intraset as xmIntraset, realityFor, vendiFor, dissimilarSeeds, RULER_MAX, type Ruler } from '../data/crossmodel'
+import { intraset as xmIntraset, realityFor, dissimilarSeeds, RULER_MAX, type Ruler } from '../data/crossmodel'
 
 const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
 const CODE_BOXES = COUNTRY8.map((c) => ({ value: c.id, label: c.name, cv: c.cv }))
@@ -15,7 +17,6 @@ const CODE_BOXES = COUNTRY8.map((c) => ({ value: c.id, label: c.name, cv: c.cv }
 
 const MOSAIC_N = 20
 /* the tile wall in the variety meter shows the same count */
-const TILE_N = 20
 
 function CellMosaics({ situation, code }: { situation: Sit; code: Code }) {
   const { model } = useModel()
@@ -50,7 +51,7 @@ function CellMosaics({ situation, code }: { situation: Sit; code: Code }) {
                   key={seed}
                   src={modelImg(model, situation, s.code, seed)}
                   alt={`${situation} ${s.code} seed ${seed}`}
-                  caption={`${s.label} · ${MODEL_NAME[model]} · seed ${seed} · ${i + 1}${i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'} most different of 50`}
+                  caption={`${s.label} · ${MODEL_NAME[model]} · seed ${seed} · ${ordinal(i + 1)} most different of 50`}
                   imgClassName="aspect-square w-full cursor-zoom-in rounded-md border border-border object-cover"
                 />
               ))}
@@ -62,93 +63,6 @@ function CellMosaics({ situation, code }: { situation: Sit; code: Code }) {
           </div>
         )
       })}
-    </div>
-  )
-}
-
-/* The Vendi score, made concrete: 50 seeds generated, this many genuinely
-   different pictures come back. */
-function DistinctMeter({ situation, code, setSituation, setCode }: {
-  situation: Sit
-  code: Code
-  setSituation: (s: Sit) => void
-  setCode: (c: Code) => void
-}) {
-  const { model } = useModel()
-  const [side, setSide] = useState<'default' | 'country'>('country')
-  const target: Code | 'default' = side === 'default' ? 'default' : code
-  /* Every model's own Vendi score, the plain prompt included — the reality-anchor
-     run computed it for all 54 cells of all seven models, so nothing is borrowed
-     from SD 2.1 here any more. */
-  const v = vendiFor(model, situation, target) ?? VENDI_CELL[key(situation, target)] ?? 0
-  const cv = side === 'default' ? CV_DEFAULT : C8[code].cv
-  /* 20 tiles, not 50: fifty thumbnails of a collapsed set is a wall of the same
-     picture, and the count above already carries the measurement. These are the 20
-     least alike of the 50, so it is the most varied face the set has. */
-  const t = dissimilarSeeds(model, situation, target, TILE_N) ?? cell(situation, target).typical_order.slice(0, TILE_N)
-
-  return (
-    <div>
-      <div className="flex flex-wrap items-end gap-4">
-        <BoxPicker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
-        <BoxPicker label="country" value={code} onChange={setCode} options={CODE_BOXES} size="sm" />
-      </div>
-      <div className="mt-5 flex w-fit overflow-hidden rounded-md border border-border font-mono2 text-xs">
-        <button
-          onClick={() => setSide('default')}
-          className={`px-3 py-1.5 transition ${side === 'default' ? 'bg-foreground/10 text-foreground' : 'text-foreground/40 hover:text-foreground/70'}`}
-        >
-          “a {situation}”
-        </button>
-        <button
-          onClick={() => setSide('country')}
-          className={`px-3 py-1.5 transition ${side === 'country' ? 'bg-foreground/10 text-foreground' : 'text-foreground/40 hover:text-foreground/70'}`}
-        >
-          “…in {C8[code].name}”
-        </button>
-      </div>
-
-      <div className="mt-6 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-        <span className="font-mono2 text-6xl" style={{ color: rgb(cv) }}>
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={`${target}-${situation}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.22 }}
-              className="inline-block"
-            >
-              {v.toFixed(0)}
-            </motion.span>
-          </AnimatePresence>
-        </span>
-        <span className="text-sm leading-6 text-foreground/60">
-          genuinely different pictures, out of 50 generated.
-          <br />
-          <span className="text-foreground/40">The other {(50 - v).toFixed(0)} repeat what those already showed.</span>
-        </span>
-      </div>
-
-      {/* 2 × 10: a fixed grid, so the 20 read as a set you can count rather than a
-          reflowing strip */}
-      <div className="mt-5 grid grid-cols-5 gap-1.5 sm:grid-cols-10">
-        {t.map((seed) => (
-          <span key={seed} className="block">
-            <ZoomImage
-              src={modelImg(model, situation, target, seed)}
-              alt={`${situation} ${target} seed ${seed}`}
-              caption={`“a ${situation}${target === 'default' ? '' : ` in ${C8[code].name}`}” · ${MODEL_NAME[model]} · seed ${seed}`}
-              imgClassName="aspect-square w-full cursor-zoom-in rounded-md border border-border object-cover"
-            />
-          </span>
-        ))}
-      </div>
-      <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/45">
-        The count is {MODEL_NAME[model]}'s own, measured over all 50 generated images (a Vendi score on the
-        embeddings). Shown here are the <strong className="text-foreground/65">{t.length} least alike</strong> of those
-        50, ordered most-different-first: if these look like each other, the other 30 do too.
-      </p>
     </div>
   )
 }
@@ -197,29 +111,22 @@ function InversionScene() {
         </Panel>
       </Reveal>
 
-      <Reveal delay={0.08}>
-        <Panel className="mt-6">
-          <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-            how much variety survives · “a {sit}” against “…in {C8[code].name}”
-          </div>
-          <div className="mt-6">
-            <DistinctMeter situation={sit} code={code} setSituation={setSit} setCode={setCode} />
-          </div>
-        </Panel>
-      </Reveal>
-
+      {/* One measurement panel, not three. The old middle panel repeated this one for a
+          single pair — same "N distinct" number, same tile wall as the mosaics above,
+          and its own duplicate event/country pickers. Folded in: the nine rows below
+          carry the count, and the selected row IS the pair the mosaics are showing. */}
       <Reveal delay={0.08}>
         <Panel className="mt-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-              the same comparison for all nine prompts of “a {sit}”
+              how much variety survives · all nine prompts of “a {sit}” · pick a row
             </div>
             <MetricToggle value={ruler} onChange={setRuler} />
           </div>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-foreground/60">
             Each bar is how alike a prompt's 50 pictures are to each other. A short bar means every seed invented
             something different. A long bar means the model drew nearly the same picture 50 times. The plain prompt is
-            the reference line at the top.
+            the reference line at the top, and the highlighted row is the one shown in the pictures above.
           </p>
           <div className="mt-6 space-y-2.5">
             <BarRow
@@ -243,6 +150,8 @@ function InversionScene() {
                   color={c.cv}
                   delay={i * 0.05}
                   right={distinct(c.id) != null ? `${distinct(c.id)!.toFixed(0)} distinct` : undefined}
+                  selected={c.id === code}
+                  onSelect={() => setCode(c.id)}
                 />
               )
             })}
@@ -262,8 +171,11 @@ function InversionScene() {
               text={`Mean pairwise similarity inside each 50-seed set of ${MODEL_NAME[model]}, measured with ${ruler === 'dinov3' ? 'DINOv3' : 'CLIP'}, with 10,000-resample bootstrap intervals drawn through each bar. Both rulers and all seven models are real measurements here, not one model's numbers reused.`}
             />
             <p className="text-sm leading-6 text-foreground/60">
+              {/* B5: 0.65 was hardcoded here — true only for SD 2.1 under DINOv3.
+                  The real value spans 0.46–0.75 across the seven models and two rulers,
+                  so it now comes from the same table the chart above is drawn from. */}
               {sit === 'funeral'
-                ? 'The honest exception: the plain funeral is already narrow (0.65), since a Western church interior is itself a stereotype, so the country qualifier cannot narrow it much further. The comparison is always against the plain prompt, never against zero.'
+                ? `The honest exception: the plain funeral is already narrow (${defIntra.mean.toFixed(2)}), since a Western church interior is itself a stereotype, so the country qualifier cannot narrow it much further. The comparison is always against the plain prompt, never against zero.`
                 : cIntra.mean > defIntra.mean
                   ? `For “a ${sit}”, naming ${C8[code].name} takes the set from ${defIntra.mean.toFixed(2)} to ${cIntra.mean.toFixed(2)}: more alike, not less.`
                   : `For “a ${sit}”, ${C8[code].name} is one of the cases that does not narrow the set. We show every country rather than only the ones that make the point.`}
@@ -374,15 +286,25 @@ function SpecificityRows() {
                       />
                     )
                   })}
-                  <motion.span
-                    className="absolute top-1/2 h-4.5 w-4.5 -translate-x-1/2 -translate-y-1/2 cursor-help rounded-full"
-                    style={{ background: rgb(cv), left: pos(country - plain), height: 18, width: 18 }}
-                    initial={{ scale: 0 }}
-                    whileInView={{ scale: 1 }}
-                    viewport={{ once: true }}
-                    onMouseEnter={() => setHover({ row: pairKey, label: `“a ${p.situation} in ${C8[p.code].name}”`, d: country - plain })}
-                    onMouseLeave={() => setHover(null)}
-                  />
+                  {/* the centering lives on a plain wrapper, NOT on the motion element:
+                      framer-motion writes its own `transform` for the scale animation and
+                      overwrites -translate-x/y-1/2, which left this dot half its own size
+                      down and to the right of the value it marks — while the hollow
+                      control dots beside it, being plain spans, stayed correct. */}
+                  <span
+                    className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2"
+                    style={{ left: pos(country - plain) }}
+                  >
+                    <motion.span
+                      className="block cursor-help rounded-full"
+                      style={{ background: rgb(cv), height: 18, width: 18 }}
+                      initial={{ scale: 0 }}
+                      whileInView={{ scale: 1 }}
+                      viewport={{ once: true }}
+                      onMouseEnter={() => setHover({ row: pairKey, label: `“a ${p.situation} in ${C8[p.code].name}”`, d: country - plain })}
+                      onMouseLeave={() => setHover(null)}
+                    />
+                  </span>
                 </div>
                 <span className="w-14 shrink-0 text-right font-mono2 text-xs" style={{ color: rgb(cv) }}>
                   {signed(country - plain)}
@@ -433,6 +355,7 @@ function SpecificityScene() {
           So we built matched neutral qualifiers of the same length and ran them through the identical protocol. They
           land on top of the plain prompt. Only the country qualifier moves the set.
         </p>
+        <Sd21Only />
       </Reveal>
 
       <Reveal delay={0.08}>

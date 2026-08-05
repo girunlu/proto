@@ -4,3 +4,41 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+/** 1st, 2nd, 3rd, 4th … 11th, 21st. Ranks here run to 50, so the teens matter:
+    one caller printed a bare "th" ("1th most typical") and the other stopped
+    handling the exception at 3, which would have said "21th". */
+export function ordinal(n: number) {
+  const suffix = n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'
+  return `${n}${suffix}`
+}
+
+/** Round tick values inside [lo, hi] — 0.20 / 0.25 / 0.30, never 0.213 / 0.264.
+    The scatters used `lo + f*(hi-lo)` for fixed fractions, which produced labels
+    nobody can read a value off (review 01 · R5.3). Standard 1/2/5 × 10ⁿ steps;
+    `count` is a target, not a promise, which is what "nice" costs. */
+export function niceTicks(lo: number, hi: number, count = 4): number[] {
+  if (!(hi > lo)) return [lo]
+  const mag = 10 ** Math.floor(Math.log10((hi - lo) / count))
+  const at = (step: number) => {
+    /* Round to the step's own decimal place. `Math.round(v / step) * step` is the
+       obvious version and it does not work — 6 * 0.05 is 0.30000000000000004, so the
+       drift comes back on the multiply. Labels are read off these values. */
+    const dp = Math.max(0, -Math.floor(Math.log10(step)))
+    const out: number[] = []
+    for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-9; v += step) {
+      out.push(Number(v.toFixed(dp)))
+    }
+    return out
+  }
+  /* pick the step whose tick count lands nearest the target rather than the first
+     step wide enough. Taking the first overshoots on wide ranges — [3, 97] chose a
+     step of 50 and drew one tick. Ties go to the denser option. */
+  const candidates = [0.1, 0.2, 0.5, 1, 2, 5, 10].map((m) => m * mag)
+  let best = at(candidates[0])
+  for (const step of candidates.slice(1)) {
+    const t = at(step)
+    if (t.length >= 2 && Math.abs(t.length - count) <= Math.abs(best.length - count)) best = t
+  }
+  return best.length >= 2 ? best : [lo, hi]
+}

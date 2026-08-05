@@ -3,18 +3,24 @@ import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
 import { CountUp } from '../components/CountUp'
 import { ZoomImage, BarRow, DistanceRuler, KnnNote, BoxPicker, MetricToggle, useMagnet } from '../components/Viz'
+import branchAData from '../data/branchA.json'
+
+/** per-model, per-situation, per-country k-NN separability AUC (review 10 · C-3) */
+const branchAKnn = branchAData.knn as Record<string, Record<string, Record<string, number>>>
+import { Sd21Only } from '../components/ModelBar'
 import { rgb, rgba } from '../lib/colors'
 import {
-  SITS, COUNTRY8, C8, CV_DEFAULT, cell, decisionsFor, F3, F3_SOUTH_COUNT, F3_TOTAL, SOUTH,
+  SITS, COUNTRY8, C8, CV_DEFAULT, decisionsFrom, F3, F3_SOUTH_COUNT, F3_TOTAL, SOUTH,
   SILHOUETTE_RANGE, seedImg,
   type Sit, type Code,
 } from '../data/part1'
 import { HARDENING, key } from '../data/uiv2'
-import { useModel, modelImg, modelSeeds, seedCount, isSd21, MODEL_NAME, type ModelId } from '../data/modelData'
+import { CARDS_HEADLINE, CARDS_CANDIDATES } from '../data/part4'
+import { useModel, modelImg, modelSeeds, modelVqa, seedCount, isSd21, MODEL_NAME, CROSS_MODEL_NOTE, type ModelId } from '../data/modelData'
 /* Tier C: both rulers now exist for all seven models (the CLIP tables were
    already computed, they were simply never exported), so these read straight
    through instead of falling back to DINOv3 for the cross-model six. */
-import { dist, distOrNull, RULER_MAX, umapFor, emptyFor, emptyImg, type Ruler } from '../data/crossmodel'
+import { dist, distOrNull, RULER_MAX, umapFor, f3For, type Ruler } from '../data/crossmodel'
 
 export type { Ruler }
 const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
@@ -89,22 +95,29 @@ function mulberry32(a: number) {
   }
 }
 function rolledSeeds(m: ModelId, sit: Sit, code: Code | 'default', n: number, roll: number) {
-  const total = seedCount(m)
+  // the published seed ids are not 0..n-1 for the cross-models, so draw from the
+  // cell's own list rather than counting
+  const pool = modelSeeds(m, sit, code, seedCount(m, sit, code))
   const rnd = mulberry32(hashStr(`${m}_${sit}_${code}_${roll}`))
-  const pool = Array.from({ length: total }, (_, i) => i)
   const picks: number[] = []
-  while (picks.length < Math.min(n, total)) {
+  while (picks.length < Math.min(n, pool.length)) {
     picks.push(pool.splice(Math.floor(rnd() * pool.length), 1)[0])
   }
   return picks.sort((a, b) => a - b)
 }
 
 function UnsaidScene() {
+  const { model } = useModel()
   const [sit, setSit] = useState<Sit>('wedding')
   const [active, setActive] = useState(0)
   /* the same two-word prompt exists for all six events, so the reader can check
-     that the effect is not something peculiar to weddings */
-  const decisions = useMemo(() => decisionsFor(sit), [sit])
+     that the effect is not something peculiar to weddings — and R3: this list now
+     follows the model switcher rather than staying on SD 2.1 under a heading that
+     named it. The cross-model VQA is exported for all seven. */
+  const decisions = useMemo(
+    () => decisionsFrom(modelVqa(model, sit, 'default')?.closed ?? {}),
+    [model, sit]
+  )
   const pick = Math.min(active, decisions.length - 1)
   return (
     <SceneShell
@@ -117,8 +130,9 @@ function UnsaidScene() {
           A prompt of <strong>“a {sit}”</strong> specifies a noun and an article. The image additionally requires a
           setting, clothing, a crowd, architecture, an era, a palette, a light level, and a wealth level. These choices
           are not random in any meaningful sense: the model resolves each from its prior, in the same way, on nearly
-          every seed. The decisions below are the answers Stable Diffusion gives <strong>when nothing is specified at all</strong>.
-          Switch the event to see the same thing happen somewhere else.
+          every seed. The decisions below are the answers {MODEL_NAME[model]} gives{' '}
+          <strong>when nothing is specified at all</strong>. Switch the event — or the model, at the top of the
+          screen — to see the same thing happen somewhere else.
         </p>
       </Reveal>
       <div className="mt-12 grid gap-6 md:grid-cols-[1fr_1.2fr]">
@@ -144,7 +158,7 @@ function UnsaidScene() {
             <div className="mt-8 border-t border-border pt-5">
               <TierNote
                 tier="evidence"
-                text="Answers below come from the Assumption Auditor: 2 VQA annotators × 50 seeds per prompt, cross-annotator agreement AC1 ≥ 0.4, 693 named assumptions project-wide (375 headline-tier)."
+                text={`Answers below come from the Assumption Auditor: 50 seeds per prompt, blind to the prompt, read by one annotator (gemma4) for all seven models. Project-wide that yields ${CARDS_CANDIDATES} candidate assumptions, ${CARDS_HEADLINE} of them headline-tier — settled on at least 80% of a prompt's 50 seeds. ${CROSS_MODEL_NOTE}`}
               />
             </div>
           </Panel>
@@ -278,18 +292,21 @@ function MosaicWall({ onSelect, ruler, roll, controls }: {
             {hoverDist ? `${hoverDist.mean.toFixed(3)} from the plain prompt` : 'the plain prompt, the reference point'}
           </div>
           <div className="mt-2 grid grid-cols-2 gap-1.5">
+            {/* plain <img>, deliberately: this grid IS already the hover preview for the
+                matrix, so ZoomImage popped a second thumbnail in the corner on top of it —
+                a preview of a preview. Four pictures at this size are enough. */}
             {hoverSeeds.map((seed) => (
-              <ZoomImage
+              <img
                 key={seed}
                 src={modelImg(model, hover.sit, hover.code, seed)}
                 alt={`${hover.sit} ${hover.code} seed ${seed}`}
-                caption={`“a ${hover.sit}${hover.code === 'default' ? '' : ` in ${C8[hover.code].name}`}” · ${MODEL_NAME[model]} · seed ${seed}`}
-                imgClassName="aspect-square w-full cursor-zoom-in rounded-md border border-border object-cover"
+                loading="lazy"
+                className="aspect-square w-full rounded-md border border-border object-cover"
               />
             ))}
           </div>
           <div className="mt-2 font-mono2 text-[9px] leading-4 text-foreground/35">
-            hover a cell to load it here · hover one of these four to enlarge it
+            hover a cell to load it here
           </div>
         </div>
           {controls}
@@ -431,9 +448,9 @@ function DistanceBars({ situation, ruler }: { situation: Sit; ruler: Ruler }) {
         <span className="w-14 shrink-0 text-right font-mono2 text-[10px] text-foreground/45">distance</span>
         {isSd21(model) && (
           <span className="w-28 shrink-0 font-mono2 text-[10px] leading-4 text-foreground/45">
-            sorted back
+            told apart
             <br />
-            <span className="text-foreground/30">50% = coin flip</span>
+            <span className="text-foreground/30">50% = guessing</span>
           </span>
         )}
       </div>
@@ -448,7 +465,7 @@ function DistanceBars({ situation, ruler }: { situation: Sit; ruler: Ruler }) {
             max={RULER_MAX[ruler].dist}
             color={r.cv}
             delay={i * 0.05}
-            right={h ? `${Math.round(h.knn_auc * 100)}% correct` : undefined}
+            right={h ? `${Math.round(h.knn_auc * 100)}%` : undefined}
           />
         )
       })}
@@ -464,7 +481,15 @@ function NationalityScene() {
   const onSd21 = isSd21(model)
   const weddingUS = dist(model, 'wedding', 'US', ruler).mean
   const weddingNG = dist(model, 'wedding', 'NG', ruler).mean
-  const aucs = COUNTRY8.map((c) => HARDENING[key(situation, c.id)]?.knn_auc).filter(Boolean) as number[]
+  /* Review 10 · C-3: this printed SD 2.1's AUC range under every model. Per-cell
+     cross-model AUCs run 0.46-1.00 — Flux's floor is below chance — so a sentence
+     claiming "97% of the time" was false for four of the seven. Now reads the
+     selected model's own row. */
+  const aucs = (
+    isSd21(model)
+      ? COUNTRY8.map((c) => HARDENING[key(situation, c.id)]?.knn_auc)
+      : COUNTRY8.map((c) => (branchAKnn[model]?.[situation] as Record<string, number> | undefined)?.[c.id])
+  ).filter((v): v is number => v != null)
   return (
     <SceneShell
       number="02"
@@ -478,6 +503,14 @@ function NationalityScene() {
           “in the USA” draw almost the same pictures</strong> ({weddingUS.toFixed(2)} apart), while Nigeria sits
           {' '}{weddingNG.toFixed(2)} away, most of the way to being a different event.
         </p>
+        {/* R6: the page used "Western default" throughout without ever saying what
+            it was operationally. One sentence, at the first place the claim is made. */}
+        <p className="prose-scene mt-4 max-w-2xl text-foreground/55">
+          One definition, used everywhere below. <strong className="text-foreground/75">“Western default”</strong> means
+          the pictures a plain prompt draws sit closer to the US and Germany variants than to the India, Nigeria,
+          Indonesia and Egypt ones — in an embedding space trained without any of these labels. It is a claim about
+          relative position in that space, not about culture, and not about what any of these countries looks like.
+        </p>
       </Reveal>
       <Reveal delay={0.06}>
         <Panel className="mt-10">
@@ -489,7 +522,8 @@ function NationalityScene() {
               Showing <span className="text-amber-200">{MODEL_NAME[model]}</span>: its own images, and every distance
               measured from <em>its own</em> plain prompt rather than SD 2.1's, under whichever measuring stick is
               selected. All 50 seeds go into the statistics; {seedCount(model)} of them are published as thumbnails
-              here, against SD 2.1's fifty.
+              here, against SD 2.1's fifty — the 20 least alike plus the 4 most typical, so what you see spans the
+              full range of the set rather than a slice of it.
             </p>
           )}
           <div className="mt-6">
@@ -541,13 +575,19 @@ function NationalityScene() {
             <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
               one situation at a time, with its uncertainty
             </div>
-            <div className="flex flex-wrap items-end gap-4">
-              <BoxPicker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
-              <MetricToggle value={ruler} onChange={setRuler} />
-            </div>
+            <BoxPicker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
           </div>
           <div className="mt-8">
             <DistanceBars situation={situation} ruler={ruler} />
+          </div>
+          {/* the ruler belongs to the chart, not beside the event picker: two dropdowns of
+              equal weight read as two things to choose, when one picks the subject and the
+              other only restates it in a second measurement space. */}
+          <div className="mt-4 flex flex-wrap items-center justify-end gap-3 border-t border-border pt-3">
+            <span className="font-mono2 text-[10px] leading-4 text-foreground/40">
+              same distances, measured again in a second embedding space
+            </span>
+            <MetricToggle value={ruler} onChange={setRuler} showLabel={false} />
           </div>
           <div className="mt-6 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
             {onSd21 ? <KnnNote /> : (
@@ -562,12 +602,26 @@ function NationalityScene() {
                 {situation === 'wedding' || situation === 'funeral'
                   ? `“A ${situation}” is the clearest case: the US variant barely moves the pictures, while India and Nigeria sit roughly half the scale away.`
                   : situation === 'school' || situation === 'celebration'
-                    ? `“A ${situation}” looks weaker on this chart, yet the classifier still separates plain from country about 97% of the time. Diffuse is not the same as absent.`
+                    ? `“A ${situation}” looks weaker on this chart${
+                        aucs.length
+                          ? `, and for ${MODEL_NAME[model]} the sorting test runs ${Math.round(Math.min(...aucs) * 100)}–${Math.round(Math.max(...aucs) * 100)}% across the eight countries`
+                          : ''
+                      }. Diffuse is not the same as absent${
+                        aucs.length && Math.min(...aucs) < 0.5
+                          ? `, but the bottom of that range is below the 50% a coin scores — on that cell the sorting test does not merely fail, it is worse than chance, and no separation should be read into it`
+                          : aucs.length && Math.min(...aucs) < 0.6
+                            ? ', though at the bottom of that range it is close to it'
+                            : ''
+                      }.`
                     : `The gradient holds for “a ${situation}”: near-default countries cluster tightly, distant countries sit apart.`}
               </p>
               <TierNote
                 tier="evidence"
-                text={`For “a ${situation}” the classifier scores ${Math.round(Math.min(...aucs) * 100)}–${Math.round(Math.max(...aucs) * 100)}% across the eight countries. Every gap here also clears p < 0.0001 in a 10,000-shuffle permutation test: we relabelled the images at random ten thousand times, and no random relabelling ever produced a gap this size. The same gradient reproduces under a completely different image model: switch the ruler above from DINOv3 to CLIP and the ordering survives.`}
+                text={`For “a ${situation}” on ${MODEL_NAME[model]} the classifier scores ${Math.round(Math.min(...aucs) * 100)}–${Math.round(Math.max(...aucs) * 100)}% across the eight countries${
+                  Math.min(...aucs) < 0.5
+                    ? ' — and the floor of that range is below the 50% a coin would score, so for at least one country this model\u2019s plain and country sets are not separable at all'
+                    : ''
+                }. Every gap here also clears p < 0.0001 in a 10,000-shuffle permutation test: we relabelled the images at random ten thousand times, and no random relabelling ever produced a gap this size. The same gradient reproduces under a completely different image model: switch the ruler above from DINOv3 to CLIP and the ordering survives.`}
               />
             </div>
           </div>
@@ -590,360 +644,30 @@ function NationalityScene() {
    country cells. */
 export interface EmptyPoint { sit: Sit; code: Code | 'default'; d_empty: number; d_default: number }
 
-function EmptyScatter({ pts, hover, setHover, focus }: {
-  pts: EmptyPoint[]
-  hover: { sit: Sit; code: Code | 'default' }
-  setHover: (h: { sit: Sit; code: Code | 'default' }) => void
-  focus: Focus
-}) {
-  const W = 760
-  const H = 430
-  const padL = 46
-  const padB = 44
-  const padT = 14
-  const padR = 20
-  /* the axes follow the data: the cross-models sit on quite different scales from
-     SD 2.1, and a fixed window put half of Kolors off the plot */
-  const [x0, x1, y0, y1] = useMemo(() => {
-    const xs = pts.map((p) => p.d_empty)
-    const ys = pts.map((p) => p.d_default)
-    const pad = (lo: number, hi: number) => [lo - (hi - lo) * 0.08, hi + (hi - lo) * 0.08] as const
-    const [xa, xb] = pad(Math.min(...xs), Math.max(...xs))
-    const [ya, yb] = pad(Math.min(...ys), Math.max(...ys))
-    return [xa, xb, ya, yb]
-  }, [pts])
-  const X = (v: number) => padL + ((v - x0) / (x1 - x0)) * (W - padL - padR)
-  const Y = (v: number) => H - padB - ((v - y0) / (y1 - y0)) * (H - padT - padB)
-  const tick = (lo: number, hi: number) => [0.2, 0.45, 0.7, 0.95].map((f) => lo + f * (hi - lo))
-
-  const meanByCountry = useMemo(() => {
-    const m = new Map<Code | 'default', { x: number; y: number; n: number }>()
-    pts.forEach((p) => {
-      const cur = m.get(p.code) ?? { x: 0, y: 0, n: 0 }
-      m.set(p.code, { x: cur.x + p.d_empty, y: cur.y + p.d_default, n: cur.n + 1 })
-    })
-    return [...m.entries()].map(([code, v]) => ({ code, x: v.x / v.n, y: v.y / v.n }))
-  }, [pts])
-
-  // the pointer snaps to the nearest prompt rather than having to land on it
-  const magnet = useMagnet(
-    pts.map((p) => ({ x: X(p.d_empty), y: Y(p.d_default), item: p })),
-    (p) => p && setHover({ sit: p.sit, code: p.code })
-  )
-  const active = pts.find((p) => p.sit === hover.sit && p.code === hover.code)
-
-  return (
-    <div className="mx-auto max-w-3xl">
-      {/* axis titles live outside the drawing, where nothing can collide with them */}
-      <div className="mb-1 font-mono2 text-[10px] text-foreground/45">
-        ↑ how far the prompt sits from its own plain prompt
-      </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full cursor-crosshair" {...magnet}>
-        {tick(x0, x1).map((v) => (
-          <g key={`x${v}`}>
-            <line x1={X(v)} x2={X(v)} y1={padT} y2={H - padB} stroke="hsl(var(--grid))" strokeDasharray="3 5" />
-            <text x={X(v)} y={H - padB + 15} textAnchor="middle" fontSize="10" fill="hsl(var(--svg-fg))" fontFamily="JetBrains Mono">{v.toFixed(2)}</text>
-          </g>
-        ))}
-        {tick(y0, y1).map((v) => (
-          <g key={`y${v}`}>
-            <line x1={padL} x2={W - padR} y1={Y(v)} y2={Y(v)} stroke="hsl(var(--grid))" strokeDasharray="3 5" />
-            <text x={padL - 8} y={Y(v) + 3} textAnchor="end" fontSize="10" fill="hsl(var(--svg-fg))" fontFamily="JetBrains Mono">{v.toFixed(2)}</text>
-          </g>
-        ))}
-
-        {/* the snapped point gets a crosshair so the magnet is legible */}
-        {active && (
-          <g pointerEvents="none">
-            <line x1={padL} x2={W - padR} y1={Y(active.d_default)} y2={Y(active.d_default)} stroke="hsl(var(--foreground) / 0.18)" />
-            <line x1={X(active.d_empty)} x2={X(active.d_empty)} y1={padT} y2={H - padB} stroke="hsl(var(--foreground) / 0.18)" />
-          </g>
-        )}
-
-        {pts.map((p) => {
-          const cv = p.code === 'default' ? CV_DEFAULT : C8[p.code].cv
-          const on = hover.sit === p.sit && hover.code === p.code
-          const dim = focus != null && focus !== p.code
-          return (
-            <circle
-              key={`${p.sit}_${p.code}`}
-              cx={X(p.d_empty)}
-              cy={Y(p.d_default)}
-              r={on ? 7 : dim ? 3 : 4.5}
-              fill={rgb(cv)}
-              fillOpacity={dim ? 0.12 : on ? 1 : 0.45}
-              stroke={on ? 'white' : 'none'}
-              pointerEvents="none"
-            />
-          )
-        })}
-        {meanByCountry.map((m) => {
-          const cv = m.code === 'default' ? CV_DEFAULT : C8[m.code].cv
-          const low = Y(m.y) > H - padB - 40
-          const dim = focus != null && focus !== m.code
-          return (
-            <g key={`m${m.code}`} pointerEvents="none" opacity={dim ? 0.18 : 1}>
-              <circle cx={X(m.x)} cy={Y(m.y)} r={10} fill="none" stroke={rgb(cv)} strokeWidth={2.5} />
-              <text
-                x={X(m.x)}
-                y={low ? Y(m.y) - 15 : Y(m.y) + 22}
-                textAnchor="middle"
-                fontSize="10"
-                fill={rgb(cv)}
-                fontFamily="JetBrains Mono"
-              >
-                {m.code === 'default' ? 'default' : m.code}
-              </text>
-            </g>
-          )
-        })}
-      </svg>
-      <div className="mt-1 text-right font-mono2 text-[10px] text-foreground/45">
-        how far the prompt sits from the empty prompt →
-      </div>
-    </div>
-  )
-}
-
-function ZeroPointScene() {
-  const { model } = useModel()
-  const [hover, setHover] = useState<{ sit: Sit; code: Code | 'default' }>({ sit: 'wedding', code: 'NG' })
-  const [focus, setFocus] = useState<Focus>(null)
-  const [ruler, setRuler] = useState<Ruler>('dinov3')
-  /* All seven models were generated with prompt="" (SDXL, Hunyuan-DiT and Flux
-     joined 2026-07-30), so every model answers the switcher with its own 30
-     images and its own 54 cells. The SD 2.1 fallback below stays as the honest
-     behaviour if a model's empty run is ever missing from the export. */
-  const own = emptyFor(model, ruler)
-  const usingSd21 = own === null
-  const src = own ?? emptyFor('sd21', ruler)!
-  const pts: EmptyPoint[] = useMemo(
-    () => src.rows.map((r) => ({ sit: r.sit as Sit, code: r.code as Code | 'default', d_empty: r.d_empty, d_default: r.d_default })),
-    [src]
-  )
-  const point = pts.find((p) => p.sit === hover.sit && p.code === hover.code)
-  const seeds = cell(hover.sit, hover.code).typical_order
-  const cv = hover.code === 'default' ? CV_DEFAULT : C8[hover.code].cv
-  const avg = (a: EmptyPoint[]) => a.reduce((s, p) => s + p.d_empty, 0) / a.length
-  /* the ranking is derived rather than typed, so the named countries and the
-     ratio can never drift from the export the chart below is drawn from */
-  const ranked = COUNTRY8.map((c) => ({ id: c.id, name: c.name, d: avg(pts.filter((p) => p.code === c.id)) })).sort(
-    (a, b) => a.d - b.d
-  )
-  const nearest = ranked.slice(0, 3)
-  const farthest = ranked.slice(-2).reverse()
-  /* The near/far ends and the ratio between them are both read off the ranking,
-     so no country is named that the selected model's own numbers didn't put there.
-     The old prose fixed them as US/Germany against Nigeria/India — SD 2.1's answer,
-     and wrong on Qwen-Image, whose empty prompt sits farther from the US than from
-     anywhere except Nigeria. */
-  const dNear = (nearest[0].d + nearest[1].d) / 2
-  const dFar = (farthest[0].d + farthest[1].d) / 2
-  const ratio = dFar / dNear
-  const tied = nearest[2].d - nearest[0].d < 0.02
-  /* "Western-leaning" is a claim about which end is which, not just that the ends
-     differ. It holds where the US or Germany is in the nearest *pair* — the same
-     pair the ratio is computed from — and the spread is more than noise. Under
-     DINOv3 that is SD 2.1, SDXL and Kolors; Qwen-Image's nearest pair is Japan and
-     Indonesia, and its empty prompt sits farther from the US than from anywhere
-     but Nigeria, so the old title was simply false there. */
-  const westLean = ratio >= 1.15 && nearest.slice(0, 2).some((c) => c.id === 'US' || c.id === 'DE')
-  const shownModel = usingSd21 ? 'sd21' : model
-  /* SD 2.1's diagonal is not a law: the same Spearman run gives 0.29 on Kolors,
-     0.19 (not significant) on Qwen-Image and −0.42 on SD 3.5 Large. So the
-     sentence under the scatter reads the selected model's own fit instead of
-     asserting the shape. Always the DINOv3 figure over the 48 country cells —
-     that is what the published analysis computed, on either ruler setting. */
-  const fitLine = (() => {
-    const f = src.fit
-    if (!f) return null
-    const r = `ρ = ${f.rho.toFixed(2)}, ${f.p < 0.001 ? 'p < 0.001' : `p = ${f.p.toFixed(3)}`} over ${f.n} country cells (DINOv3)`
-    if (f.p >= 0.05)
-      return (
-        <>
-          {' '}It does not, but neither does it tilt: <strong>far-from-plain and far-from-empty are unrelated here</strong>{' '}
-          ({r}). The situation word is doing cultural work of its own, beyond what the bare prior already carries.
-        </>
-      )
-    if (f.rho < 0)
-      return (
-        <>
-          {' '}It tilts, but <strong>the other way</strong> ({r}): the prompts sitting farthest from this model's plain
-          prompt are the ones sitting <em>closest</em> to its empty one. The SD 2.1 result does not replicate here.
-        </>
-      )
-    if (f.rho < 0.5)
-      return (
-        <>
-          {' '}It tilts the expected way but <strong>only weakly</strong> ({r}) — a real relationship, far short of SD
-          2.1's, so the situation word still adds cultural location of its own.
-        </>
-      )
-    return (
-      <>
-        {' '}Instead it runs diagonally: <strong>the prompts that are far from the plain prompt are exactly the prompts
-        that are far from the empty one</strong> ({r}).
-      </>
-    )
-  })()
-  return (
-    <SceneShell
-      number="03"
-      kicker="Part I · the default · finding 2"
-      title={
-        westLean ? (
-          <>Even <em className="font-display italic text-amber-200">no prompt at all</em> is Western-leaning.</>
-        ) : (
-          <>Even <em className="font-display italic text-amber-200">no prompt at all</em> is already somewhere.</>
-        )
-      }
-    >
-      <Reveal>
-        <p className="prose-scene max-w-2xl">
-          We generated <strong>30 images from an empty prompt</strong>, the model with nothing asked of it at all, on the
-          same fixed seeds as every other prompt on this page (0–29 of the same 50), at the same 30 steps and the same
-          resolution.{' '}
-          {ratio >= 1.15 ? (
-            <>
-              Those 30 images do not land in the middle of the eight countries. They land{' '}
-              <strong>
-                closest to {nearest[0].name}, {nearest[1].name} and {nearest[2].name}
-              </strong>
-              {tied && ' — those three are effectively tied — '}
-              {!tied && ' '}and{' '}
-              <strong>
-                farthest from {farthest[0].name} and {farthest[1].name}
-              </strong>
-              , roughly <strong>{ratio.toFixed(1)}× further</strong>. Averaged over all six events:{' '}
-              {dFar.toFixed(2)} away from the {farthest[1].name} and {farthest[0].name} pictures against{' '}
-              {dNear.toFixed(2)} from the {nearest[0].name} and {nearest[1].name} ones.
-            </>
-          ) : (
-            <>
-              Here the 30 images land <strong>almost equidistant from all eight countries</strong> —{' '}
-              {dNear.toFixed(2)} at the near end ({nearest[0].name}, {nearest[1].name}) against {dFar.toFixed(2)} at
-              the far end ({farthest[1].name}, {farthest[0].name}), a spread of only{' '}
-              <strong>{ratio.toFixed(2)}×</strong>. This model's empty prompt has a location, but it is not one of the
-              eight; on {MODEL_NAME.sd21} the same measurement gives 1.5×, with the US and Germany at the near end.
-            </>
-          )}{' '}
-          Before a single word is typed, the model is already somewhere.
-        </p>
-      </Reveal>
-
-      <Reveal delay={0.06}>
-        <Panel className="mt-10">
-          <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-            what “” draws · 12 of the 30 empty-prompt images · {MODEL_NAME[shownModel]}
-          </div>
-          {!isSd21(model) && (
-            <p className={`mt-3 rounded-md border px-3 py-2 font-mono2 text-[10px] leading-4 ${own ? 'border-border bg-foreground/[0.04] text-foreground/70' : 'border-amber-300/30 bg-amber-300/5 text-amber-700 dark:text-amber-200/90'}`}>
-              {own
-                ? `${MODEL_NAME[model]} was run with an empty prompt too, so this whole scene is its own: its 30 images and its own 54 cells below.`
-                : `${MODEL_NAME[model]} was never generated with an empty prompt, so this scene stays on Stable Diffusion 2.1 rather than substituting a number it does not have.`}
-            </p>
-          )}
-          <div className="mt-5 grid grid-cols-6 gap-2">
-            {Array.from({ length: 12 }, (_, i) => emptyImg(shownModel, i)).map((src, i) => (
-              <ZoomImage
-                key={src}
-                src={src}
-                alt="empty-prompt generation"
-                caption={`the empty prompt “” · ${MODEL_NAME[shownModel]} · image ${i + 1} of 30`}
-                imgClassName="aspect-square w-full cursor-zoom-in rounded-lg border border-border object-cover"
-              />
-            ))}
-          </div>
-          <p className="mt-5 max-w-3xl text-sm leading-6 text-foreground/60">
-            Mundane, Western-coded stock-photo interiors and objects. Note carefully what the evidence is and is not:
-            a vision-language model looking at these pictures <em>cannot</em> reliably name the lean. The lean is
-            geometric, it lives in the measurement below, and we state it exactly that way.
-          </p>
-        </Panel>
-      </Reveal>
-
-      <Reveal delay={0.08}>
-        <Panel className="mt-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-              all {pts.length} cells, measured against two reference points at once
-            </div>
-            <MetricToggle value={ruler} onChange={setRuler} />
-          </div>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
-            Each small dot is one prompt: “a wedding in Nigeria”, “a breakfast in Japan”, and so on. Its horizontal
-            position is how far that prompt's pictures sit from the empty prompt. Its vertical position is how far they
-            sit from the same event's plain prompt. The ringed markers are the eight country averages across all six
-            events. If the empty prompt had no cultural location the cloud would be a vertical smear at one x value.
-            {fitLine}
-          </p>
-          <div className="mt-6">
-            <EmptyScatter pts={pts} hover={hover} setHover={setHover} focus={focus} />
-          </div>
-          <div className="mt-6 border-t border-border pt-5">
-            <div className="grid gap-6 md:grid-cols-[300px_1fr]">
-              <div className="rounded-lg border border-border p-3">
-                <div className="font-mono2 text-[11px]" style={{ color: rgb(cv) }}>
-                  “a {hover.sit}{hover.code === 'default' ? '' : ` in ${C8[hover.code].name}`}”
-                </div>
-                {point && (
-                  <div className="mt-1 font-mono2 text-[10px] leading-4 text-foreground/45">
-                    {point.d_empty.toFixed(2)} from the empty prompt · {point.d_default.toFixed(2)} from “a {hover.sit}”
-                  </div>
-                )}
-                {/* the prompted pictures exist for every model, empty run or not, so
-                    these stay on the model you selected even when the chart above has
-                    to fall back — a missing empty prompt is no reason to hide Flux's
-                    own weddings. */}
-                <div className="mt-2 grid grid-cols-3 gap-1.5">
-                  {(isSd21(model) ? [seeds[0], seeds[24], seeds[49]] : modelSeeds(model, hover.sit, hover.code, 3)).map((s) => (
-                    <ZoomImage
-                      key={s}
-                      src={modelImg(model, hover.sit, hover.code, s)}
-                      alt={`${hover.sit} ${hover.code} seed ${s}`}
-                      caption={`“a ${hover.sit}${hover.code === 'default' ? '' : ` in ${C8[hover.code].name}`}” · ${MODEL_NAME[model]} · seed ${s}`}
-                      imgClassName="aspect-square w-full cursor-zoom-in rounded-md border border-border object-cover"
-                    />
-                  ))}
-                </div>
-                <p className="mt-2 font-mono2 text-[9px] text-foreground/35">
-                  hover any dot to load its images here · {MODEL_NAME[model]}
-                  {usingSd21 && ', measured on Stable Diffusion 2.1'}
-                </p>
-              </div>
-              <div className="flex flex-col justify-between gap-5">
-                <Legend focus={focus} onFocus={setFocus} />
-                <p className="font-display border-l-2 border-amber-300/50 pl-4 text-lg leading-7 text-foreground/85 italic">
-                  {src.fit && src.fit.rho > 0.5 && src.fit.p < 0.05
-                    ? 'The default is not an answer the model gives. It is the state the model is already in.'
-                    : 'The empty prompt is already somewhere. On this model it is not the same somewhere its plain prompts go.'}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="mt-6 border-t border-border pt-4">
-            <TierNote
-              tier="evidence"
-              text="30 empty-prompt images, generated at each model's own guidance scale (7.5 for Stable Diffusion 2.1) rather than at CFG 0 — CFG 0 only runs the unconditional pass and never samples the conditioned prior. Horizontal axis: distance from the empty-prompt centroid to each variant's centroid, with bootstrap confidence intervals. Vertical axis: the same measurement against each situation's own plain prompt."
-            />
-          </div>
-        </Panel>
-      </Reveal>
-    </SceneShell>
-  )
-}
-
-/* ── Scene 4 · seed by seed (F3) ─────────────────────────────────────────── */
-
 function SeedBySeedScene() {
+  const { model } = useModel()
   const [situation, setSituation] = useState<Sit>('wedding')
-  const labels = F3[situation]
+  /* B13: this scene was SD 2.1 only, and the number it prints has a real exception
+     the page never mentioned — Flux's non-Western share is 0.283 against SD 2.1's
+     0.053, and 0.70 in one situation. The per-seed labels are now computed for all
+     seven, so the switcher shows the exception instead of hiding it. Thumbnails
+     exist for SD 2.1's full 50 only, hence the colour-strip fallback below. */
+  const labels = (isSd21(model) ? F3[situation] : f3For(model, situation) ?? F3[situation]) as Code[]
+  const allLabels = useMemo(
+    () => (isSd21(model) ? SITS.map((s) => F3[s]) : SITS.map((s) => f3For(model, s) ?? F3[s])),
+    [model]
+  )
+  const southTotal = allLabels.flat().filter((l) => SOUTH.includes(l as Code)).length
+  const seedTotal = allLabels.flat().length
   const counts = useMemo(() => {
     const m = new Map<Code | 'default', number>()
     labels.forEach((l) => m.set(l, (m.get(l) ?? 0) + 1))
     return [...m.entries()].sort((a, b) => b[1] - a[1])
   }, [labels])
   const southHere = labels.filter((l) => SOUTH.includes(l)).length
+  /* the looser cut: everything that is not the US or Germany. Stated alongside the
+     strict one so the choice of boundary is visible rather than assumed. */
+  const nonWestLoose = allLabels.flat().filter((l) => l !== 'US' && l !== 'DE').length
 
   return (
     <SceneShell
@@ -953,12 +677,35 @@ function SeedBySeedScene() {
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          A mean could hide a mixture: maybe half the default seeds are Western and half are not, cancelling out. They
-          are not. For every default seed we ask which country's cluster it lies closest to. Across all 300 default
-          seeds, only <strong>{F3_SOUTH_COUNT} ({(100 * F3_SOUTH_COUNT / F3_TOTAL).toFixed(1)}%) land nearest India,
-          Nigeria, Indonesia or Egypt</strong>. The rest land nearest the US, Germany, or the mid-band countries
-          Russia and Japan.
+          A mean could hide a mixture: maybe half the default seeds are Western and half are not, cancelling out. For
+          every default seed we ask which country's cluster it lies closest to. Across all {seedTotal} default seeds of{' '}
+          <strong>{MODEL_NAME[model]}</strong>, <strong>{southTotal} ({(100 * southTotal / seedTotal).toFixed(1)}%)
+          land nearest India, Nigeria, Indonesia or Egypt</strong>. The rest land nearest the US, Germany, or the
+          mid-band countries Russia and Japan.
         </p>
+        {/* Review 10 · C-2 and R6: this statistic depends entirely on where "non-Western"
+            is cut, and the page used the strict cut without saying so. Recompute with Japan
+            and Russia as non-Western and SD 2.1 goes from 5.3% to 35%. Both are now stated. */}
+        <p className="prose-scene mt-4 max-w-2xl text-[13px] leading-6 text-foreground/55">
+          <strong className="text-foreground/75">That percentage depends on where the line is drawn, so here is the
+          line.</strong> “Non-Western” above means the four Global-South countries only. Russia and Japan are
+          high-income countries that this study's own geometry places between the two groups, and counting them as
+          Western is a choice rather than a fact. Count them the other way — anything that is not the US or Germany —
+          and {MODEL_NAME[model]}'s share becomes{' '}
+          <strong className="text-foreground/75">{((100 * nonWestLoose) / seedTotal).toFixed(1)}%</strong> instead of{' '}
+          {((100 * southTotal) / seedTotal).toFixed(1)}%. Neither cut changes the direction result, which is measured
+          between prompts rather than assigned by category — but the headline number moves a long way between them, so
+          both are reported.
+        </p>
+        {southTotal / seedTotal > 0.15 && (
+          <p className="prose-scene mt-4 max-w-2xl text-amber-200/85">
+            This is the honest exception on the page. {MODEL_NAME[model]}'s plain prompt is markedly less Western than
+            Stable Diffusion 2.1's — {(100 * southTotal / seedTotal).toFixed(1)}% against{' '}
+            {(100 * F3_SOUTH_COUNT / F3_TOTAL).toFixed(1)}% — so the seed-composition claim does <em>not</em> hold
+            uniformly across models. What does hold in all seven is the direction: Nigeria still sits farther from each
+            model's own default than the USA does, in 42 of 42 model × situation cells.
+          </p>
+        )}
       </Reveal>
       <Reveal delay={0.08}>
         <Panel className="mt-10">
@@ -969,7 +716,28 @@ function SeedBySeedScene() {
             <BoxPicker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
           </div>
           {/* 5 rows of 10: the 50 seeds are a fixed set, so a fixed grid lets the
-              reader count them and compare row to row instead of reflowing */}
+              reader count them and compare row to row instead of reflowing.
+              Cross-models publish 24 thumbnails of the 50, so they get the same
+              grid as colour cells — every seed's label, no invented pictures. */}
+          {!isSd21(model) ? (
+            <>
+              <div className="mt-6 grid grid-cols-5 gap-1.5 sm:grid-cols-10">
+                {labels.map((l, seed) => (
+                  <span
+                    key={seed}
+                    className="block aspect-square rounded-sm"
+                    style={{ background: rgb(C8[l].cv) }}
+                    title={`“a ${situation}” · seed ${seed} · nearest country cluster: ${C8[l].name}`}
+                  />
+                ))}
+              </div>
+              <p className="mt-2 font-mono2 text-[10px] leading-4 text-foreground/45">
+                One cell per seed, coloured by the country cluster it lands nearest — hover for the country. Stable
+                Diffusion 2.1 shows the pictures themselves here; the other six publish 24 thumbnails per cell of the
+                50, so showing images would mean showing a subset while the tally counts all 50.
+              </p>
+            </>
+          ) : (
           <div className="mt-6 grid grid-cols-5 gap-1.5 sm:grid-cols-10">
             {labels.map((l, seed) => (
               <span key={seed} className="relative block">
@@ -983,6 +751,7 @@ function SeedBySeedScene() {
               </span>
             ))}
           </div>
+          )}
           <div className="mt-6 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
             <div>
               <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">nearest-cluster tally · {situation}</div>
@@ -1030,6 +799,12 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
      variants projected together so the clouds stay comparable inside a plot.
      Coordinates arrive already normalised to 0..1 by the exporter. */
   const data = umapFor(model, situation, ruler)
+  /* B11: the separability number the finding-5 box reports, over this situation's
+     eight country cells. SD 2.1's own hardening table — hence the Sd21Only there. */
+  const knnRange = useMemo(() => {
+    const aucs = COUNTRY8.map((c) => HARDENING[key(situation, c.id)]?.knn_auc).filter((v): v is number => v != null)
+    return aucs.length ? [Math.min(...aucs), Math.max(...aucs)] : [0.96, 0.99]
+  }, [situation])
   const W = 640
   const H = 420
   const pad = 26
@@ -1109,15 +884,26 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
             <p className="p-2 font-mono2 text-[11px] text-foreground/35">hover any point to see the image it represents</p>
           )}
         </div>
+        {/* R5.6 / B11: this box used to read "silhouette 0.10–0.27, so the clustering
+            is statistically real". A silhouette of 0.10 is barely above noise and does
+            not support that sentence. The separability evidence is real and already in
+            the project — k-NN AUC — so the box now leads with that and reports the
+            silhouette as the weak number it is. */}
         <div className="rounded-lg border border-sky-300/25 bg-sky-300/5 p-4">
-          <div className="font-mono2 text-[10px] tracking-widest text-sky-300/80 uppercase">finding 5 · it genuinely clusters</div>
+          <div className="font-mono2 text-[10px] tracking-widest text-sky-300/80 uppercase">
+            finding 5 · the countries are separable
+          </div>
           <p className="mt-2 text-sm leading-6 text-foreground/70">
-            Grouping images by country label gives silhouette scores of{' '}
-            <strong className="text-foreground">
-              {SILHOUETTE_RANGE[0].toFixed(2)}–{SILHOUETTE_RANGE[1].toFixed(2)}
-            </strong>{' '}
-            across situations, so the clustering is statistically real, not a projection artifact.
+            Ask a nearest-neighbour test to tell a country image from a plain-prompt one and it ranks them correctly{' '}
+            <strong className="text-foreground">{Math.round(knnRange[0] * 100)}–{Math.round(knnRange[1] * 100)}%</strong>{' '}
+            of the time across this situation's cells. That is the separability claim.
           </p>
+          <p className="mt-2 text-[13px] leading-5 text-foreground/50">
+            The clusters you see here are looser than they look: silhouette scores run{' '}
+            {SILHOUETTE_RANGE[0].toFixed(2)}–{SILHOUETTE_RANGE[1].toFixed(2)}, and 0.10 is barely above noise. The
+            countries are separable without being tidy, and the projection is a view, never the evidence.
+          </p>
+          <Sd21Only />
         </div>
       </div>
     </div>
@@ -1202,7 +988,6 @@ export default function Part1Default() {
     <>
       <UnsaidScene />
       <NationalityScene />
-      <ZeroPointScene />
       <SeedBySeedScene />
       <MapScene />
     </>

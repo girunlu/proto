@@ -5,7 +5,7 @@
 import ui from './cultural/ui_v2.json'
 import { cell, seedImg, type Sit, type Code } from './part1'
 import { VQA, key, type CellVqa } from './uiv2'
-import { dist as xmDist, intraset as xmIntraset } from './crossmodel'
+import { dist as xmDist, intraset as xmIntraset, publishedSeeds } from './crossmodel'
 import { type ModelId } from './modelContext'
 
 export { ModelProvider, useModel, MODELS, MODEL_NAME, type ModelId } from './modelContext'
@@ -16,23 +16,28 @@ const XM_VQA = ui.models as unknown as Record<string, Record<string, CellVqa>>
 
 export const isSd21 = (m: ModelId) => m === 'sd21'
 
-/** how many seeds of this model have published thumbnails. The Tier-C export
-    raised the cross-model strips from 9 to 20; the statistics behind every number
-    on the page have always used all 50 seeds for every model. */
-export const seedCount = (m: ModelId) => (isSd21(m) ? 50 : 20)
+/** The seeds of the 50 that this model publishes a thumbnail for, most typical
+    first. SD 2.1 publishes all 50 in its own typicality order; the six
+    cross-models publish 24 chosen by the export (the 20 least alike + the 4 most
+    typical). The statistics behind every number on the page have always used all
+    50 seeds for every model. */
+function seedOrder(m: ModelId, sit: Sit, code: Code | 'default'): number[] {
+  return isSd21(m) ? cell(sit, code).typical_order : publishedSeeds(m, sit, code) ?? []
+}
+
+export const seedCount = (m: ModelId, sit: Sit = 'wedding', code: Code | 'default' = 'default') =>
+  seedOrder(m, sit, code).length
 
 export function modelImg(m: ModelId, sit: Sit, code: Code | 'default', seed: number) {
   return isSd21(m) ? seedImg(sit, code, seed) : `/images/xm/${m}_${sit}_${code}_s${seed}.webp`
 }
 
-/** seeds to show for a cell, spread across typicality where we know it */
+/** seeds to show for a cell, spread across typicality */
 export function modelSeeds(m: ModelId, sit: Sit, code: Code | 'default', n: number) {
-  if (isSd21(m)) {
-    const t = cell(sit, code).typical_order
-    return Array.from({ length: n }, (_, i) => t[Math.round((i * (t.length - 1)) / (n - 1))])
-  }
-  const total = seedCount(m)
-  return Array.from({ length: Math.min(n, total) }, (_, i) => Math.round((i * (total - 1)) / (Math.min(n, total) - 1)))
+  const t = seedOrder(m, sit, code)
+  const k = Math.min(n, t.length)
+  if (k < 2) return t.slice(0, k)
+  return Array.from({ length: k }, (_, i) => t[Math.round((i * (t.length - 1)) / (k - 1))])
 }
 
 /* Superseded by src/data/crossmodel.ts, which has both rulers for all seven
@@ -51,4 +56,4 @@ export function modelVqa(m: ModelId, sit: Sit, code: Code | 'default'): CellVqa 
 
 /** what a scene should say when the reader has switched away from SD 2.1 */
 export const CROSS_MODEL_NOTE =
-  'Answers for the other six models come from a single annotator rather than the two used on Stable Diffusion 2.1, so compare those six freely against each other and treat comparisons against SD 2.1 as indicative.'
+  'All seven models are read by the same single annotator (gemma4), so these answers are directly comparable model to model.'

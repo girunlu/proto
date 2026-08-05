@@ -4,7 +4,7 @@ const STOPS = [
   { id: 'start', label: '— · what this is' },
   { id: 'p1', label: 'I · the default' },
   { id: 'p2', label: 'II · the mechanism' },
-  { id: 'p3', label: 'III · the override' },
+  // p3 (the override) dismissed 2026-08-04 — the section is unmounted in Home.tsx
   { id: 'p4', label: 'IV · assumptions' },
   { id: 'p5', label: 'V · reality' },
   { id: 'p6', label: 'VI · the escape' },

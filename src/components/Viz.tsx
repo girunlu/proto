@@ -122,6 +122,7 @@ export function BoxPicker<T extends string>({
 
 export function BarRow({
   label, value, ci, max, color, animate = true, delay = 0, right, labelWidth = 'w-32',
+  onSelect, selected = false, dimmed = false,
 }: {
   label: ReactNode
   value: number
@@ -132,10 +133,22 @@ export function BarRow({
   delay?: number
   right?: ReactNode
   labelWidth?: string
+  /* optional: makes the row a selector for the panel it lives in, so a chart of
+     nine prompts can double as the picker for which pair the images show. */
+  onSelect?: () => void
+  selected?: boolean
+  dimmed?: boolean
 }) {
   const pct = (v: number) => `${Math.max(0, Math.min(100, (v / max) * 100))}%`
   return (
-    <div className="flex items-center gap-3">
+    <div
+      className={`flex items-center gap-3 rounded-md transition ${
+        onSelect ? 'cursor-pointer px-2 -mx-2 py-0.5' : ''
+      } ${selected ? 'bg-foreground/[0.07]' : onSelect ? 'hover:bg-foreground/[0.04]' : ''} ${
+        dimmed ? 'opacity-45' : ''
+      }`}
+      onClick={onSelect}
+    >
       <span className={`${labelWidth} shrink-0 text-right font-mono2 text-[11px] leading-4 text-foreground/60`}>{label}</span>
       <div className="relative h-6 flex-1">
         <motion.div
@@ -249,13 +262,17 @@ export function KnnNote({ auc }: { auc?: number }) {
       <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
         the sorting test, in the right-hand column
       </div>
+      {/* R5.1: this described a classification procedure ("sort them into two
+          piles", "scores 50%") for a ranking statistic. AUC is the probability
+          that a randomly chosen country image outranks a randomly chosen
+          plain-prompt one — so the wording is now a ranking, not an accuracy. */}
       <p className="mt-2 max-w-2xl text-[13px] leading-6 text-foreground/65">
-        A distance can look small and still matter, so we ran a second, blunter check. Take the 50
-        plain-prompt images and the 50 country images, shuffle them into one pile, hide which is
-        which, and let a simple program sort them back into two piles using nothing but the pictures.
-        If both prompts drew the same world, sorting is impossible and it scores{' '}
-        <strong className="text-foreground">50%</strong>, the same as flipping a coin. Perfect
-        sorting scores <strong className="text-foreground">100%</strong>.
+        A distance can look small and still matter, so we ran a second, blunter check. Take one
+        plain-prompt image and one country image at random, and ask a simple program which is which,
+        using nothing but the pictures. The score is how often it puts the country image on the right
+        side of the line. If both prompts drew the same world it is guessing, and scores{' '}
+        <strong className="text-foreground">50%</strong>. A score of{' '}
+        <strong className="text-foreground">100%</strong> means the two sets never overlap.
         {auc != null && (
           <>
             {' '}Here it scores <strong className="text-foreground">{Math.round(auc * 100)}%</strong>.

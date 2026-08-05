@@ -1,13 +1,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // PART IV: THE ASSUMPTIONS, NAMED · findings F14–F17
-// Sources: attribute_summary.json (693 cards / 375 headline, AC1 ≥ 0.4 gate,
-//   qwen3_vl primary), attribute_distance_bridge.json (F16 η² decomposition),
-//   distances_clip.json (F17 CLIP replication). Verification rates 95.2% batch /
-//   99.1% per-item from ui_findings_handbook.md (promoted_spotcheck.json).
+// Sources: attribute_summary.json — gemma4 alone as of 2026-07-31 (708 cards /
+//   448 headline). The two-annotator AC1-gated table it replaced reported 375
+//   headline; the difference is consistency, not a gate. qwen3_vl answered the
+//   same 50 images less consistently, which pushed universal assumptions (a US
+//   wedding in white, in daylight) below the 0.8 bar. Verification rates 95.2%
+//   batch / 99.1% per-item from ui_findings_handbook.md (promoted_spotcheck.json).
+// Dropped 2026-07-31 (review B7): attribute_distance_bridge.json (328 KB) fed the
+//   η² BRIDGE/bridgeFor that scene 14 replaced on 2026-07-30, and distances_clip.json
+//   fed CLIP_DIST, which crossmodel.ts superseded. Both were still being bundled.
 // ─────────────────────────────────────────────────────────────────────────────
 import attrSummary from './cultural/attribute_summary.json'
-import bridge from './cultural/attribute_distance_bridge.json'
-import clipDist from './cultural/distances_clip.json'
 import type { Sit, Code } from './part1'
 import { Q_LABELS } from './part3'
 
@@ -29,18 +32,28 @@ export function cardsFor(sit: Sit, code: Code | 'default'): Card[] {
   return cards.filter((c) => c.tier === 'headline' || c.tier === 'secondary')
 }
 
-let _total = 0
+/* Three counts, because they are three different things and the page used to
+   print the largest one as if it were the reportable one. `CARDS_TOTAL` was
+   every tier including `excluded_low_agreement` — items `cardsFor()` above
+   refuses to show. That tier is empty since gemma4 became the sole annotator:
+   an agreement gate needs two annotators, so the tier split is now consistency
+   alone. Counted at load time, so the constants cannot drift from the file. */
+let _candidates = 0
+let _reported = 0
 let _headline = 0
 Object.values(ATTR).forEach((variants) =>
   Object.values(variants).forEach((cards) =>
     cards.forEach((c) => {
-      _total += 1
+      _candidates += 1
+      if (c.tier === 'headline' || c.tier === 'secondary') _reported += 1
       if (c.tier === 'headline') _headline += 1
     })
   )
 )
-export const CARDS_TOTAL = _total // 693
-export const CARDS_HEADLINE = _headline // 375
+export const CARDS_CANDIDATES = _candidates // 708 — everything the detector proposed
+export const CARDS_TOTAL = _reported // 708 — all of them clear the consistency floor
+export const CARDS_HEADLINE = _headline // 448 — the firm tier (consistency ≥ 0.8)
+export const CARDS_EXCLUDED = _candidates - _reported // 0 — the agreement gate needed two annotators
 export const VERIFICATION = { batch: 0.952, perItem: 0.991 } // promoted_spotcheck.json via handbook
 
 // extra question labels beyond part3's U-codes (Appendix A of the handbook)
@@ -56,30 +69,4 @@ export const qLabel = (c: Card) => Q_LABELS_FULL[c.question_id] ?? c.question
 /* F15: blind spot caveat, must ride on any count display */
 export const BLIND_SPOT =
   'Fewer cards ≠ fewer assumptions. The detector clears its consistency bar more easily on an already-collapsed stereotype than on a diffuse baseline: wedding × US and wedding × Germany surface zero headline cards because the default world needs no naming. The instrument inherits the bubble it measures.'
-
-/* F16: attribute ↔ distance bridge */
-export interface BridgeQuestion {
-  status: string
-  variance_explained_eta2?: number
-}
-export interface BridgeCell {
-  centroid_distance: number
-  questions: Record<string, BridgeQuestion>
-}
-export const BRIDGE = bridge.distance_decomposition as unknown as Record<string, Record<string, BridgeCell>>
-export function bridgeFor(sit: Sit, code: Code) {
-  const cellData = BRIDGE[sit]?.[code]
-  if (!cellData) return null
-  const rows = Object.entries(cellData.questions)
-    .filter(([, v]) => v.status === 'varies' && (v.variance_explained_eta2 ?? 0) > 0)
-    .map(([q, v]) => ({ q, eta2: v.variance_explained_eta2! }))
-    .sort((a, b) => b.eta2 - a.eta2)
-  return { distance: cellData.centroid_distance, rows }
-}
-
-/* F17: CLIP replication */
-export const CLIP_DIST = clipDist.results as unknown as Record<
-  Sit,
-  Record<Code, { mean: number; ci_low: number; ci_high: number }>
->
 

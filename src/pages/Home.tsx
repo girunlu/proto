@@ -2,15 +2,23 @@ import Hero from '../sections/Hero'
 import Overview from '../sections/Overview'
 import Part1Default from '../sections/Part1Default'
 import Part2Mechanism from '../sections/Part2Mechanism'
-import Part3Override from '../sections/Part3Override'
+// Part III (the override) is DISMISSED, 2026-08-04 — unmounted, not deleted. The file
+// and its data stay in the tree; nothing imports them. To bring it back: restore this
+// import, the divider and <div id="p3"> below, and the NavRail entry.
+// import Part3Override from '../sections/Part3Override'
 import Part4Assumptions from '../sections/Part4Assumptions'
 import Part5Reality from '../sections/Part5Reality'
+import Part6Clinic from '../sections/Part6Clinic'
+import Part6Debt from '../sections/Part6Debt'
 import Part6Escape from '../sections/Part6Escape'
+import Part6Steer from '../sections/Part6Steer'
 import BranchAModels from '../sections/BranchAModels'
+import Part7Consensus from '../sections/Part7Consensus'
 import Closing from '../sections/Closing'
 import { NavRail } from '../components/NavRail'
 import { ModelBar } from '../components/ModelBar'
 import { ModelProvider } from '../data/modelData'
+import { REAL_PHOTOS_N, REAL_QUESTIONNAIRE_N } from '../data/part5'
 
 function PartDivider({ label, sub, violet }: { label: string; sub: string; violet?: boolean }) {
   return (
@@ -43,25 +51,25 @@ export default function Home() {
       <div id="p2">
         <Part2Mechanism />
       </div>
-      <PartDivider label="Part III · the override" sub="naming a country doesn't enrich the output, it collapses it · only cultural qualifiers do this" />
-      <div id="p3">
-        <Part3Override />
-      </div>
       <PartDivider label="Part IV · the assumptions, named" sub="every named assumption paired with the real 50-seed distribution it summarizes" />
       <div id="p4">
         <Part4Assumptions />
       </div>
-      <PartDivider label="Part V · reality" sub="the same blind questionnaire on 2,977 real photographs of the same events" />
+      <PartDivider label="Part V · reality" sub={`${REAL_PHOTOS_N.toLocaleString()} real photographs of the same events · the blind questionnaire on ${REAL_QUESTIONNAIRE_N.toLocaleString()} of them`} />
       <div id="p5">
         <Part5Reality />
       </div>
-      <PartDivider label="Part VI · the escape and its price" sub="counter-specification flips attributes but never buys the distribution back" />
+      <PartDivider label="Part VI · the escape and its price" sub="you can change what is in the picture; you cannot change how few pictures there are" />
       <div id="p6">
+        <Part6Debt />
         <Part6Escape />
+        <Part6Steer />
+        <Part6Clinic />
       </div>
       <PartDivider violet label="Part VII · is it just this model?" sub="the identical frozen instrument, run in full on six more models · all real data" />
       <div id="xa">
         <BranchAModels />
+        <Part7Consensus />
       </div>
       <div id="closing">
         <Closing />

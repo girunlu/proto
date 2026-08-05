@@ -1,26 +1,66 @@
 {
- "wedding_NG": {
+ "celebration_DE": {
   "intraset": {
-   "default": 0.502,
-   "L0": 0.73,
-   "L1": 0.663,
-   "L2": 0.703,
-   "L3": 0.745,
-   "ctrl_large": 0.49,
-   "ctrl_rain": 0.561,
-   "ctrl_1985": 0.529,
-   "format": 0.717
+   "default": 0.444,
+   "L0": 0.508,
+   "L1": 0.444,
+   "L2": 0.567,
+   "L3": 0.592,
+   "ctrl_large": 0.486,
+   "ctrl_rain": 0.626,
+   "ctrl_1985": 0.525
   },
   "load": {
-   "default": 6,
-   "L0": 10,
-   "L1": 12,
-   "L2": 10,
-   "L3": 10,
+   "default": 5,
+   "L0": 7,
+   "L1": 9,
+   "L2": 9,
+   "L3": 6,
    "ctrl_large": 8,
-   "ctrl_rain": 10,
-   "ctrl_1985": 9,
-   "format": 9
+   "ctrl_rain": 12,
+   "ctrl_1985": 12
+  }
+ },
+ "celebration_EG": {
+  "intraset": {
+   "default": 0.444,
+   "L0": 0.575,
+   "L1": 0.511,
+   "L2": 0.594,
+   "L3": 0.609,
+   "ctrl_large": 0.486,
+   "ctrl_rain": 0.626,
+   "ctrl_1985": 0.525
+  },
+  "load": {
+   "default": 5,
+   "L0": 8,
+   "L1": 6,
+   "L2": 4,
+   "L3": 3,
+   "ctrl_large": 8,
+   "ctrl_rain": 12,
+   "ctrl_1985": 12
+  }
+ },
+ "celebration_IN": {
+  "intraset": {
+   "default": 0.444,
+   "L0": 0.679,
+   "L1": 0.618,
+   "L2": 0.603,
+   "ctrl_large": 0.486,
+   "ctrl_rain": 0.626,
+   "ctrl_1985": 0.525
+  },
+  "load": {
+   "default": 5,
+   "L0": 8,
+   "L1": 9,
+   "L2": 8,
+   "ctrl_large": 8,
+   "ctrl_rain": 12,
+   "ctrl_1985": 12
   }
  },
  "celebration_NG": {
@@ -45,26 +85,6 @@
    "ctrl_rain": 12,
    "ctrl_1985": 12,
    "format": 8
-  }
- },
- "wedding_IN": {
-  "intraset": {
-   "default": 0.502,
-   "L0": 0.634,
-   "L1": 0.635,
-   "L2": 0.656,
-   "ctrl_large": 0.49,
-   "ctrl_rain": 0.561,
-   "ctrl_1985": 0.529
-  },
-  "load": {
-   "default": 6,
-   "L0": 7,
-   "L1": 10,
-   "L2": 8,
-   "ctrl_large": 8,
-   "ctrl_rain": 10,
-   "ctrl_1985": 9
   }
  },
  "wedding_DE": {
@@ -105,68 +125,56 @@
    "ctrl_1985": 9
   }
  },
- "celebration_DE": {
+ "wedding_IN": {
   "intraset": {
-   "default": 0.444,
-   "L0": 0.508,
-   "L1": 0.444,
-   "L2": 0.567,
-   "L3": 0.592,
-   "ctrl_large": 0.486,
-   "ctrl_rain": 0.626,
-   "ctrl_1985": 0.525
+   "default": 0.502,
+   "L0": 0.634,
+   "L1": 0.635,
+   "L2": 0.656,
+   "ctrl_large": 0.49,
+   "ctrl_rain": 0.561,
+   "ctrl_1985": 0.529
   },
   "load": {
-   "default": 5,
+   "default": 6,
    "L0": 7,
-   "L1": 9,
-   "L2": 9,
-   "L3": 6,
-   "ctrl_large": 8,
-   "ctrl_rain": 12,
-   "ctrl_1985": 12
-  }
- },
- "celebration_IN": {
-  "intraset": {
-   "default": 0.444,
-   "L0": 0.679,
-   "L1": 0.618,
-   "L2": 0.603,
-   "ctrl_large": 0.486,
-   "ctrl_rain": 0.626,
-   "ctrl_1985": 0.525
-  },
-  "load": {
-   "default": 5,
-   "L0": 8,
-   "L1": 9,
+   "L1": 10,
    "L2": 8,
    "ctrl_large": 8,
-   "ctrl_rain": 12,
-   "ctrl_1985": 12
+   "ctrl_rain": 10,
+   "ctrl_1985": 9
   }
  },
- "celebration_EG": {
+ "wedding_NG": {
   "intraset": {
-   "default": 0.444,
-   "L0": 0.575,
-   "L1": 0.511,
-   "L2": 0.594,
-   "L3": 0.609,
-   "ctrl_large": 0.486,
-   "ctrl_rain": 0.626,
-   "ctrl_1985": 0.525
+   "default": 0.502,
+   "L0": 0.73,
+   "L1": 0.663,
+   "L2": 0.703,
+   "L3": 0.745,
+   "L4": 0.73,
+   "L5": 0.673,
+   "L6": 0.662,
+   "L7": 0.663,
+   "ctrl_large": 0.49,
+   "ctrl_rain": 0.561,
+   "ctrl_1985": 0.529,
+   "format": 0.717
   },
   "load": {
-   "default": 5,
-   "L0": 8,
-   "L1": 6,
-   "L2": 4,
-   "L3": 3,
+   "default": 6,
+   "L0": 10,
+   "L1": 12,
+   "L2": 10,
+   "L3": 10,
+   "L4": 7,
+   "L5": 8,
+   "L6": 7,
+   "L7": 6,
    "ctrl_large": 8,
-   "ctrl_rain": 12,
-   "ctrl_1985": 12
+   "ctrl_rain": 10,
+   "ctrl_1985": 9,
+   "format": 9
   }
  }
 }

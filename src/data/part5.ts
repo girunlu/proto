@@ -2,18 +2,19 @@
 // PARTS V/VI + CLOSING · findings F18–F21, F25–F26
 // Sources (real analysis exports, compact derivations in src/data/cultural/):
 //   reality_anchor.json          F18 real-vs-generated homogeneity + distances
-//   base_rates_wedding.json      F18 real Commons photo attribute base rates (n=20/cell)
-//   reality_attribution.json     F18 photo credits (Wikimedia Commons manifests)
+//   ui_v2.json                   reality_attrs, for the questionnaire's own n
+// Dropped 2026-07-31 (review B7): base_rates_wedding / reality_attribution /
+//   load_conservation fed BASE_RATES, BACKWARDS, REAL_PHOTOS and LOAD_CONS, none of
+//   which any scene rendered. The files stay on disk (load_conservation is wanted
+//   for the planned remedy scenes) — only the imports are gone.
 //   distortion_summary.json      F19 toward-default vs toward-reality, per model + pooled
-//   load_conservation.json       F21 control-qualifier load deltas (load_bits.json)
 //   ../audits/*.json             F25 six cached auditor reports (sd3.5-large validation)
 // F26 numbers from vqa_agreement.json / annotator_hedge_audit.json / promoted_spotcheck.json
 // ─────────────────────────────────────────────────────────────────────────────
+import ui from './cultural/ui_v2.json'
 import realityAnchor from './cultural/reality_anchor.json'
-import baseRatesWedding from './cultural/base_rates_wedding.json'
-import attribution from './cultural/reality_attribution.json'
 import distortion from './cultural/distortion_summary.json'
-import loadCons from './cultural/load_conservation.json'
+import remedy from './cultural/remedy.json'
 import auditBirthday from './audits/sd3.5-large__a_birthday_party.json'
 import auditFamilyJapan from './audits/sd3.5-large__a_family_gathering_in_japan.json'
 import auditFuneralIndonesia from './audits/sd3.5-large__a_funeral_in_indonesia.json'
@@ -44,42 +45,35 @@ export const REAL_PHOTOS_N = REAL_CELL_COUNTS.reduce((a, b) => a + b, 0)
 export const REAL_CELLS_N = REAL_CELL_COUNTS.length
 export const REAL_PER_CELL = Math.round(REAL_PHOTOS_N / Math.max(1, REAL_CELLS_N))
 
-export const BASE_RATES = baseRatesWedding as unknown as Record<
-  string,
-  Record<string, { majority: string; share: number; n: number }>
->
+/* Two different n's, and the page used to print the bigger one for both.
+   REAL_PHOTOS_N is the geometry: every photograph that entered a distance or
+   homogeneity measurement. The questionnaire originally ran on a capped subsample
+   (≤20 per cell); the cap was lifted 2026-08-02 (Job 2, ~3× n), so the two counts
+   now cover the same collected set. Summed from the export, not typed. */
+export const REAL_QUESTIONNAIRE_N = Object.values(
+  ui.reality_attrs as Record<string, { n_real: number }[]>
+).reduce((sum, rows) => sum + Math.max(0, ...rows.map((r) => r.n_real)), 0)
 
-export interface Attribution { file: string; author: string; license: string; url: string }
-export const REAL_PHOTOS = attribution as unknown as Record<string, Attribution[]>
-
-// hero backwards case: generated wedding×NG assumes outdoors 96% (attribute_summary),
-// real Nigerian weddings are 75% indoors (base_rates_wedding, qwen3_vl, n=20)
-export const BACKWARDS = {
-  attribute: 'setting',
-  generatedValue: 'outdoors',
-  generatedShare: 0.96,
-  realValue: BASE_RATES.wedding_nigeria.U01.majority,
-  realShare: BASE_RATES.wedding_nigeria.U01.share,
+/* F19: direction of error (pooled tendency only; per-question 0/31 significant on SD 2.1).
+   `sd21` is the two-annotator AC1-gated table; `sd21_matched` is the same model scored by
+   gemma4 alone, which is the instrument all six cross-models were scored with. The page must
+   compare across `sd21_matched` — reading the two-annotator row against six single-annotator
+   ones was what made SD 2.1 look even (51.7%) when matched it is 60.9%, mid-pack. */
+interface DistortionRow {
+  toward_default: number
+  toward_reality: number
+  n_questions_tested: number
+  n_significant_p05: number
+  annotator: string
 }
-
-/* F19: direction of error (pooled tendency only; per-question 0/31 significant on SD 2.1) */
 export const DISTORTION = distortion as unknown as {
-  sd21: { toward_default: number; toward_reality: number; n_questions_tested: number; n_significant_p05: number }
+  sd21: DistortionRow
+  sd21_matched: DistortionRow
   models: Record<string, { toward_default: number; toward_reality: number }>
   pooled: { toward_default: number; toward_reality: number; ratio: number }
+  pooled_mixed: { toward_default: number; toward_reality: number; ratio: number }
   caveat: string
 }
-
-/* F21: load conservation: neutral qualifiers recruit load like country names */
-export const LOAD_CONS = loadCons as unknown as Record<
-  string,
-  {
-    default_load_bits: number
-    cultural_ladder_delta_bits: number
-    control_delta_bits: Record<string, number>
-    mean_control_delta_bits: number
-  }
->
 
 /* F25: cached auditor reports (static demo, no live inference) */
 export interface AuditAssumption {
@@ -108,13 +102,24 @@ export const AUDITS: { id: string; novel: boolean; report: AuditReport }[] = [
   { id: 'a wedding in Germany', novel: false, report: auditWeddingGermany as unknown as AuditReport },
 ]
 
-/* F26: the instrument is audited (vqa_agreement.json, annotator_hedge_audit.json,
-   promoted_spotcheck.json: key numbers, see those files for full tables) */
+/* F26: the instrument is audited. Rebuilt 2026-07-31 when gemma4 became the page's
+   only annotator. The old audit was a two-annotator agreement table; with one
+   annotator the question changes from "do they agree?" to "does it actually look?" —
+   answered by remedy.json's `instrument` block, which is Job A's pilot: same
+   annotator, same questions, same cells, one clause different in the prompt.
+   Summed from the export, not typed. */
+const INST = remedy.instrument as {
+  annotator: string
+  n_conditions: number
+  n_seeds: number
+  n_moved: number
+  n_held: number
+  moved: { cell: string; q: string; v: string; clause: string; before: number; after: number }[]
+  held: { cell: string; q: string; v: string; clause: string; before: number; after: number }[]
+}
 export const INSTRUMENT_AUDIT = {
-  gate: 'Gwet’s AC1 ≥ 0.4 (Cohen’s κ kept as legacy reference)',
-  perQuestionKappa: { U01: 0.7475, U03: 0.7659, U04: 0.8072, U06: 0.4786, U09: 0.0818 },
-  hedgeFinding:
-    'The second annotator hedges far more on geographic-placement questions (urban/rural, continent, weather) but hedges LESS than the primary on attire and cultural-marker questions (headwear, outfit color, dancing, food). The trigger worry, alignment training softening regional descriptors, was narrower than feared.',
+  ...INST,
+  gate: 'consistency ≥ 0.8 across 50 seeds (headline) / ≥ 0.6 (secondary)',
   promotedSpotcheck: { total: 109, verdict: 'every cell promoted by the κ→AC1 gate fix individually spot-checked' },
   verification: { batch: 0.952, perItem: 0.991 },
 }

@@ -8,7 +8,7 @@
 import { SceneShell, Reveal, Panel } from '../components/Scene'
 import { STATS } from '../data/research'
 import { CARDS_HEADLINE } from '../data/part4'
-import { REAL_PHOTOS_N } from '../data/part5'
+import { REAL_PHOTOS_N, REAL_QUESTIONNAIRE_N } from '../data/part5'
 import { MODELS } from '../data/modelData'
 import { Q_TEXT } from '../data/uiv2'
 
@@ -27,12 +27,8 @@ const MOVES: { id: string; part: string; claim: string; how: string }[] = [
     claim: 'That choice is made in the first third of drawing, and guidance cannot reach it.',
     how: 'generation interrupted and the prompt swapped mid-flight; the guidance slider swept 1 → 15',
   },
-  {
-    id: 'p3',
-    part: 'III · the override',
-    claim: 'Naming a country does not enrich the output. It narrows it.',
-    how: 'variety inside each set, against matched neutral qualifiers of the same length',
-  },
+  // III · the override — dismissed 2026-08-04. Left out of the roadmap because its
+  // anchor (#p3) no longer exists; the section file is still in src/sections/.
   {
     id: 'p4',
     part: 'IV · the assumptions, named',
@@ -43,7 +39,7 @@ const MOVES: { id: string; part: string; claim: string; how: string }[] = [
     id: 'p5',
     part: 'V · reality',
     claim: 'Where the model contradicts photographs, it errs toward its own default.',
-    how: `${REAL_PHOTOS_N.toLocaleString()} Wikimedia Commons photographs of the same events, same questionnaire`,
+    how: `${REAL_PHOTOS_N.toLocaleString()} Wikimedia Commons photographs of the same events measured, ${REAL_QUESTIONNAIRE_N.toLocaleString()} of them through the same questionnaire`,
   },
   {
     id: 'p6',

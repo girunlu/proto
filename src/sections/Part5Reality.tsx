@@ -3,8 +3,8 @@ import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
 import { ZoomImage, BoxPicker } from '../components/Viz'
 import { rgb, rgba } from '../lib/colors'
-import { C8, COUNTRY8, SITS, cell, type Sit, type Code } from '../data/part1'
-import { REALITY_ANCHOR, DISTORTION, REAL_PHOTOS_N, REAL_CELLS_N, REAL_PER_CELL } from '../data/part5'
+import { C8, COUNTRY8, SITS, DEMONYM, cell, type Sit, type Code } from '../data/part1'
+import { REALITY_ANCHOR, DISTORTION, REAL_PHOTOS_N, REAL_QUESTIONNAIRE_N, REAL_CELLS_N, REAL_PER_CELL } from '../data/part5'
 import { REALITY_ATTRS, REAL_CREDITS, VQA, realImg, key, Q_TEXT } from '../data/uiv2'
 import { useModel, modelImg, modelSeeds, MODEL_NAME as UI_MODEL_NAME, isSd21 } from '../data/modelData'
 import { realityFor } from '../data/crossmodel'
@@ -112,10 +112,23 @@ function HomogeneityDumbbells({ sit }: { sit: Sit }) {
    Counts alone were unreadable because the models have different numbers of
    contradictions; each row is now that model's own split, as percentages. */
 function DistortionBars() {
+  /* One row per model, all seven scored by the same annotator. SD 2.1 used to
+     appear twice — once on a two-annotator table and once matched — because its
+     unmatched row was what made it look even. That table was retired on
+     2026-07-31 and the asymmetry with it. Sorted by lean so "mid-pack" is
+     something the reader sees rather than something the caption claims. */
   const entries = [
-    { id: 'sd21', ...DISTORTION.sd21 },
-    ...Object.entries(DISTORTION.models).map(([id, v]) => ({ id, ...v })),
-  ].map((e) => ({ ...e, total: e.toward_default + e.toward_reality }))
+    { id: 'sd21', label: 'Stable Diffusion 2.1', note: 'gemma4', matched: true, ...DISTORTION.sd21_matched },
+    ...Object.entries(DISTORTION.models).map(([id, v]) => ({
+      id,
+      label: MODEL_NAME[id] ?? id,
+      note: 'gemma4',
+      matched: true,
+      ...v,
+    })),
+  ]
+    .map((e) => ({ ...e, total: e.toward_default + e.toward_reality }))
+    .sort((a, b) => b.toward_default / b.total - a.toward_default / a.total)
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3 pb-1">
@@ -128,8 +141,11 @@ function DistortionBars() {
       {entries.map((e, i) => {
         const pd = e.toward_default / e.total
         return (
-          <div key={e.id} className="flex items-center gap-3">
-            <span className="w-44 shrink-0 text-right font-mono2 text-[11px] text-foreground/60">{MODEL_NAME[e.id] ?? e.id}</span>
+          <div key={e.id} className={`flex items-center gap-3 ${e.matched ? '' : 'opacity-60'}`}>
+            <span className="w-44 shrink-0 text-right font-mono2 text-[11px] leading-4 text-foreground/60">
+              {e.label}
+              <span className="block text-[9px] text-foreground/35">{e.note}</span>
+            </span>
             <div className="flex h-6 flex-1 overflow-hidden rounded-sm">
               <motion.div
                 className="flex items-center justify-end bg-red-400/70"
@@ -158,6 +174,7 @@ function DistortionBars() {
         <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-red-400/70" /> leans toward its own default world</span>
         <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-400/55" /> leans toward the photographs</span>
         <span className="text-foreground/45">a model with no pull either way would sit at 50/50</span>
+        <span className="text-foreground/45">the faded row is the one measured with a different instrument — not comparable to the rest</span>
       </div>
     </div>
   )
@@ -257,8 +274,10 @@ export default function Part5Reality() {
       <Reveal>
         <p className="prose-scene max-w-2xl">
           Everything so far compares the model to itself. This part compares it to photographs. We measured{' '}
-          {REAL_PHOTOS_N.toLocaleString()} real pictures of these events from Wikimedia Commons and put them through the
-          identical blind questionnaire, so the same questions get answered about the model's world and about the world.
+          {REAL_PHOTOS_N.toLocaleString()} real pictures of these events from Wikimedia Commons geometrically, and put{' '}
+          {REAL_QUESTIONNAIRE_N.toLocaleString()} of them through the identical blind questionnaire — the full
+          collected set, after an earlier 20-per-cell cap was lifted on 2026-08-02 — so the same questions get
+          answered about the model's world and about the world.
         </p>
       </Reveal>
 
@@ -315,11 +334,21 @@ export default function Part5Reality() {
             )}
           </div>
 
-          {/* the whole questionnaire, both worlds, side by side */}
+          {/* the whole questionnaire, both worlds, side by side.
+              R3: this chart reads REALITY_ATTRS/VQA, which are SD 2.1 only, while the
+              images above follow the switcher. Labelling it honestly rather than
+              printing the selected model's name over Stable Diffusion's numbers. */}
           <div className="mt-8 border-t border-border pt-5">
             <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
               the same questions, asked about both · {contradictions.length} of {attrs.length} answers disagree
             </div>
+            {!isSd21(model) && (
+              <p className="mt-2 font-mono2 text-[10px] leading-4 text-amber-200/90">
+                The pictures above follow your model selection; this questionnaire comparison is Stable Diffusion 2.1's
+                only — the blind battery was run against the photographs for SD 2.1, and the cross-model reality tables
+                cover the geometry rather than these per-answer base rates.
+              </p>
+            )}
             <div className="mt-5 overflow-hidden">
               <div className="flex items-end gap-1">
                 {attrs.slice(0, 10).map((a) => (
@@ -363,7 +392,13 @@ export default function Part5Reality() {
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-5 font-mono2 text-[10px] text-foreground/50">
                 <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-red-400/65" /> what the model draws, as a share of its 50 seeds</span>
-                <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-400/60" /> what the photographs show, as a share of {attrs[0]?.n_real ?? 20}</span>
+                {/* rows in the same chart can have different n_real (14-20), so the
+                    legend has to name the range it actually covers, not row 0's */}
+                <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-400/60" /> what the photographs show, as a share of {(() => {
+                  const ns = attrs.map((a) => a.n_real).filter(Boolean)
+                  const lo = Math.min(...ns), hi = Math.max(...ns)
+                  return ns.length === 0 ? 20 : lo === hi ? lo : `${lo}–${hi}`
+                })()}</span>
                 <span className="text-foreground/35">both columns are percentages on the same 0–100 scale</span>
               </div>
             </div>
@@ -373,7 +408,7 @@ export default function Part5Reality() {
                 <strong className="text-red-300">“{hero.gen}”</strong> on {Math.round(hero.gen_share * 100)}% of its
                 seeds, while {Math.round(hero.real_share * 100)}% of the photographs answer{' '}
                 <strong className="text-emerald-300">“{hero.real}”</strong>. The model did not learn{' '}
-                {C8[code].name === 'United States' ? 'American' : `${C8[code].name}n`} {sit}s. It learned a postcard of
+                {DEMONYM[code]} {sit}s. It learned a postcard of
                 them.
               </p>
             )}
@@ -382,7 +417,7 @@ export default function Part5Reality() {
           <div className="mt-5 border-t border-border pt-5">
             <TierNote
               tier="evidence"
-              text={`Generated side: 50 seeds per cell, two independent annotators. Real side: ${REAL_PHOTOS_N.toLocaleString()} Commons photographs across ${REAL_CELLS_N} cells, put through the same frozen questionnaire, about ${REAL_PER_CELL} photographs per cell (collected from ~4,700 candidates, then relevance-filtered). One caveat we can measure and do not hide: a few Commons categories are dominated by a single prolific photographer, which narrows those cells; it does not flip the direction of any comparison above.`}
+              text={`Generated side: 50 seeds per cell. Both sides are read by the same annotator (gemma4) — a comparison scored by two different readers would be measuring the readers. Real side: ${REAL_PHOTOS_N.toLocaleString()} Commons photographs across ${REAL_CELLS_N} cells (about ${REAL_PER_CELL} per cell, collected from ~4,700 candidates then relevance-filtered) carry the geometry — distances and homogeneity. The frozen questionnaire ran on ${REAL_QUESTIONNAIRE_N.toLocaleString()} of them — the full collected set since 2026-08-02, when an earlier 20-per-cell cap was lifted; the larger n did not move any of the 31 per-question tests to significance, which makes the pooled tendency below the honest headline. One caveat we can measure and do not hide: a few Commons categories are dominated by a single prolific photographer, which narrows those cells; it does not flip the direction of any comparison above.`}
             />
           </div>
         </Panel>
@@ -430,22 +465,35 @@ export default function Part5Reality() {
           <div className="mt-6 flex flex-wrap items-center gap-4 rounded-lg border border-red-400/25 bg-red-400/5 p-4">
             <span className="font-mono2 text-3xl text-red-300">{DISTORTION.pooled.ratio}×</span>
             <p className="max-w-xl text-sm leading-6 text-foreground/70">
-              Pooled over all seven models: <strong>{DISTORTION.pooled.toward_default}</strong> disagreements lean
-              toward the model's own default world against <strong>{DISTORTION.pooled.toward_reality}</strong> that
-              lean toward the photographs. The departures are not scattered evenly in every direction. They have a home
-              to fall back towards.
+              Pooled over all seven models, every one of them scored by the same single annotator:{' '}
+              <strong>{DISTORTION.pooled.toward_default}</strong> disagreements lean toward the model's own default
+              world against <strong>{DISTORTION.pooled.toward_reality}</strong> that lean toward the photographs. The
+              departures are not scattered evenly in every direction. They have a home to fall back towards.
             </p>
           </div>
           <p className="mt-3 max-w-3xl font-mono2 text-[10px] leading-4 text-foreground/50">
-            Where that pooled figure comes from matters: Stable Diffusion 2.1's own split is close to even (
-            {DISTORTION.sd21.toward_default} against {DISTORTION.sd21.toward_reality}, and none of its{' '}
-            {DISTORTION.sd21.n_questions_tested} tested questions is individually significant). The lean is carried by
-            the six newer models, each of which sits well above an even split on its own row.
+            An earlier version of this panel read Stable Diffusion 2.1 as close to even and concluded that the lean was
+            carried by the six newer models. That was an artifact of our own instrument: SD 2.1 was the only model
+            scored by a different annotator. Scored the way the other six were scored it reads{' '}
+            <strong>
+              {Math.round(
+                (DISTORTION.sd21_matched.toward_default /
+                  (DISTORTION.sd21_matched.toward_default + DISTORTION.sd21_matched.toward_reality)) *
+                  100
+              )}
+              %
+            </strong>{' '}
+            toward its own default and sits mid-pack, not apart. A measurement that can move that far on annotator
+            choice alone is one that has to be taken on a single instrument, which is what this page now does
+            everywhere. Not a single one
+            of the {DISTORTION.sd21.n_questions_tested} tested questions is individually significant — and that held
+            when the questionnaire behind it was tripled to the full collected set, so the null is no longer a
+            sample-size question. This stays a pooled tendency.
           </p>
           <div className="mt-5 border-t border-border pt-5">
             <TierNote
               tier="evidence"
-              text={`Direction assigned per question by permutation test, 10,000 shuffles. On Stable Diffusion 2.1, ${DISTORTION.sd21.n_significant_p05} of ${DISTORTION.sd21.n_questions_tested} questions reach significance on their own, so this is reported only as a pooled tendency and never attribute by attribute. ${DISTORTION.caveat}`}
+              text={`Direction assigned per question by permutation test, 10,000 shuffles. On Stable Diffusion 2.1, ${DISTORTION.sd21.n_significant_p05} of ${DISTORTION.sd21.n_questions_tested} questions reach significance on their own, so this is reported only as a pooled tendency and never attribute by attribute. ${DISTORTION.caveat} All seven rows are scored by gemma4, the page's only annotator.`}
             />
           </div>
         </Panel>
