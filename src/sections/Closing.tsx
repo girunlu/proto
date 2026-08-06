@@ -3,7 +3,7 @@ import { CountUp } from '../components/CountUp'
 import { STATS } from '../data/research'
 import { REAL_PHOTOS_N, REAL_QUESTIONNAIRE_N } from '../data/part5'
 import { CARDS_HEADLINE, CARDS_TOTAL } from '../data/part4'
-import { REFERENCES, ANNOTATORS, AUTHOR } from '../data/references'
+import { REFERENCES, WEIGHTS, AUTHOR } from '../data/references'
 
 const STAT_CELLS = [
   { v: STATS.images, label: 'generated images analyzed' },
@@ -61,7 +61,7 @@ export default function Closing() {
                   the same blind questionnaire.
                 </p>
                 <p>
-                  It places the plain prompt closest to real US weddings and farthest from real Indian ones, and it
+                  It places the default prompt closest to real US weddings and farthest from real Indian ones, and it
                   finds the generated sets narrower than the real ones for <em>every</em> country. That second result
                   is the one that rules out the charitable reading, namely that the model is merely reflecting a world
                   which is itself repetitive.
@@ -154,23 +154,32 @@ export default function Closing() {
                 photographers, reused under their individual licences — each photograph carries its author and licence
                 inline in that scene.
               </p>
-              <p>
-                Model weights, all run locally:{' '}
-                {ANNOTATORS.map((a, i) => (
-                  <span key={a.label}>
-                    {i > 0 && ' · '}
-                    <a
-                      href={a.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="underline decoration-border underline-offset-2 hover:decoration-amber-200"
-                    >
-                      {a.label}
-                    </a>
-                  </span>
+              <p>Model weights, all run locally:</p>
+              <ul className="space-y-2">
+                {WEIGHTS.map((g) => (
+                  <li key={g.group} className="flex flex-col gap-0.5 sm:flex-row sm:gap-4">
+                    <span className="font-mono2 w-56 shrink-0 text-[10px] tracking-wider text-foreground/40 uppercase sm:pt-1">
+                      {g.group}
+                    </span>
+                    <span className="text-[13px] leading-6">
+                      {g.models.map((m, i) => (
+                        <span key={m.label}>
+                          {i > 0 && ' · '}
+                          <a
+                            href={m.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline decoration-border underline-offset-2 hover:decoration-amber-200"
+                          >
+                            {m.label}
+                          </a>
+                        </span>
+                      ))}
+                    </span>
+                  </li>
                 ))}
-                . Interface built with shadcn/ui, Radix primitives and Google Fonts.
-              </p>
+              </ul>
+              <p>Interface built with shadcn/ui, Radix primitives and Google Fonts.</p>
             </div>
           </Panel>
         </Reveal>

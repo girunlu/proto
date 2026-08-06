@@ -41,7 +41,7 @@ export const REFERENCES: Reference[] = [
     title: 'Social Biases through the Text-to-Image Generation Lens',
     venue: 'AIES 2023, 786–808',
     url: 'https://arxiv.org/abs/2304.06034',
-    role: 'the method this page extends: everyday-situation prompts × country qualifiers, measured as embedding distance from the unqualified default',
+    role: 'the method this page extends: everyday-situation prompts × country qualifiers, measured as embedding distance from the default prompt',
   },
   {
     id: 'bianchi2023',
@@ -86,7 +86,7 @@ export const REFERENCES: Reference[] = [
     title: 'Visual Fingerprints for LLM Generation Comparison',
     venue: 'arXiv:2605.06054',
     url: 'https://arxiv.org/abs/2605.06054',
-    role: 'the distribution-over-choices frequency matrix that the attribute tables in Part IV are modelled on',
+    role: 'the distribution-over-choices frequency matrix that the attribute tables in Part II are modelled on',
   },
 
   // ── the mechanism: training data ───────────────────────────────────────────
@@ -106,7 +106,7 @@ export const REFERENCES: Reference[] = [
     title: "Who's in and who's out? A case study of multimodal CLIP-filtering in DataComp",
     venue: 'arXiv:2405.08209',
     url: 'https://arxiv.org/abs/2405.08209',
-    role: 'non-Western content passes CLIP filtering at systematically lower rates — the mechanism behind the density axis in scene 10',
+    role: 'non-Western content passes CLIP filtering at systematically lower rates — the mechanism behind the density axis in scene 11',
   },
 
   // ── the models measured ────────────────────────────────────────────────────
@@ -126,7 +126,7 @@ export const REFERENCES: Reference[] = [
     title: 'Denoising Diffusion Implicit Models',
     venue: 'ICLR 2021',
     url: 'https://arxiv.org/abs/2010.02502',
-    role: 'the deterministic sampler: same seed, identical trajectory — without which the prompt-swap experiments in Part II mean nothing',
+    role: 'the deterministic sampler: same seed, identical trajectory — without which the prompt-swap experiments in Part IV mean nothing',
   },
   {
     id: 'radford2021',
@@ -212,7 +212,7 @@ export const REFERENCES: Reference[] = [
     title: 'Prompt-to-Prompt Image Editing with Cross Attention Control',
     venue: 'ICLR 2023',
     url: 'https://arxiv.org/abs/2208.01626',
-    role: 'the mid-generation conditioning swap that Part II turns into the lock-in curve',
+    role: 'the mid-generation conditioning swap that Part IV turns into the lock-in curve',
   },
   {
     id: 'wang2023',
@@ -254,9 +254,41 @@ export const REFERENCES: Reference[] = [
   },
 ]
 
-/** The instruments that are themselves models, named where the page relies on them. */
-export const ANNOTATORS = [
-  { label: 'Gemma-4-E4B-it', url: 'https://huggingface.co/google/gemma-4-E4B-it-qat-w4a16-ct' },
-  { label: 'DINOv3 ViT-7B/16', url: 'https://huggingface.co/facebook/dinov3-vit7b16-pretrain-lvd1689m' },
-  { label: 'Stable Diffusion 2.1', url: 'https://huggingface.co/stabilityai/stable-diffusion-2-1' },
+/* Every set of weights the page's numbers came out of, grouped by the job it did.
+   Repo ids are the ones the run scripts actually loaded — phase2_generation/
+   run_cross_model_batch.py and utils/download_models.py for the generators,
+   phase3_analysis for the two rulers — not a from-memory guess at the canonical
+   name of each model.
+
+   This used to list three: SD 2.1, the annotator and DINOv3. Part VI is an entire
+   argument about seven models from five developers, and six of them were uncredited
+   and unlinked, which is not a citation standard anyone would accept of a figure.
+
+   ONE ANNOTATOR. qwen3_vl was retired on 2026-07-31 and the whole page is narrated
+   from gemma4 alone; there is no second reader to name here, and if one is ever
+   added this list is where it becomes visible. */
+export const WEIGHTS: { group: string; models: { label: string; url: string }[] }[] = [
+  {
+    group: 'image generators',
+    models: [
+      { label: 'Stable Diffusion 2.1', url: 'https://huggingface.co/stabilityai/stable-diffusion-2-1' },
+      { label: 'SDXL 1.0', url: 'https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0' },
+      { label: 'Stable Diffusion 3.5 Large', url: 'https://huggingface.co/stabilityai/stable-diffusion-3.5-large' },
+      { label: 'FLUX.1 [dev]', url: 'https://huggingface.co/black-forest-labs/FLUX.1-dev' },
+      { label: 'Kolors', url: 'https://huggingface.co/Kwai-Kolors/Kolors-diffusers' },
+      { label: 'HunyuanDiT v1.2', url: 'https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers' },
+      { label: 'Qwen-Image', url: 'https://huggingface.co/Qwen/Qwen-Image' },
+    ],
+  },
+  {
+    group: 'the annotator — one model reads every image on this page',
+    models: [{ label: 'Gemma-4-E4B-it', url: 'https://huggingface.co/google/gemma-4-E4B-it-qat-w4a16-ct' }],
+  },
+  {
+    group: 'embeddings, the two rulers',
+    models: [
+      { label: 'DINOv3 ViT-7B/16', url: 'https://huggingface.co/facebook/dinov3-vit7b16-pretrain-lvd1689m' },
+      { label: 'CLIP ViT-L/14', url: 'https://huggingface.co/openai/clip-vit-large-patch14' },
+    ],
+  },
 ]

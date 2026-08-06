@@ -18,38 +18,38 @@ const MOVES: { id: string; part: string; claim: string; how: string }[] = [
   {
     id: 'p1',
     part: 'I · the default',
-    claim: 'An unqualified prompt already has a nationality.',
-    how: 'distance from “a wedding” to “a wedding in …”, seed by seed, plus what the model draws for no prompt at all',
+    claim: 'A default prompt already has a nationality.',
+    how: 'distance from “a wedding” to “a wedding in …”, seed by seed, plus what the model generates for no prompt at all',
   },
-  {
-    id: 'p2',
-    part: 'II · the mechanism',
-    claim: 'That choice is made in the first third of drawing, and guidance cannot reach it.',
-    how: 'generation interrupted and the prompt swapped mid-flight; the guidance slider swept 1 → 15',
-  },
-  // III · the override — dismissed 2026-08-04. Left out of the roadmap because its
-  // anchor (#p3) no longer exists; the section file is still in src/sections/.
   {
     id: 'p4',
-    part: 'IV · the assumptions, named',
+    part: 'II · the assumptions, named',
     claim: 'The narrowing is nameable, attribute by attribute.',
     how: `every image shown to a vision-language model that never sees the prompt, ${N_QUESTIONS} frozen questions`,
   },
   {
+    id: 'p6',
+    part: 'III · the escape attempts',
+    claim: 'You can flip an attribute. You cannot buy the distribution back.',
+    how: 'the guidance slider swept 1 → 15, then the named assumptions counter-specified one clause at a time',
+  },
+  // the override (old Part III) — dismissed 2026-08-04. Left out of the roadmap
+  // because its anchor (#p3) no longer exists; the section file is still in src/sections/.
+  {
+    id: 'p2',
+    part: 'IV · the mechanism',
+    claim: 'That choice is made in the first third of generation.',
+    how: 'generation interrupted and the prompt swapped mid-flight',
+  },
+  {
     id: 'p5',
-    part: 'V · reality',
-    claim: 'Where the model contradicts photographs, it errs toward its own default.',
+    part: 'V · an outside reference',
+    claim: 'Real photographs of the same events vary more than the model does, everywhere.',
     how: `${REAL_PHOTOS_N.toLocaleString()} Wikimedia Commons photographs of the same events measured, ${REAL_QUESTIONNAIRE_N.toLocaleString()} of them through the same questionnaire`,
   },
   {
-    id: 'p6',
-    part: 'VI · the escape and its price',
-    claim: 'You can flip an attribute. You cannot buy the distribution back.',
-    how: 'counter-specifying the named assumptions one clause at a time, then measuring what returns',
-  },
-  {
     id: 'xa',
-    part: 'VII · is it just this model?',
+    part: 'VI · is it just this model?',
     claim: 'No. The default replicates in every model tested.',
     how: `the identical frozen instrument re-run on ${MODELS.length - 1} more models`,
   },
@@ -60,7 +60,7 @@ export default function Overview() {
     <SceneShell
       number="—"
       kicker="before you start"
-      title={<>One argument, <em className="font-display italic text-amber-200">seven moves.</em></>}
+      title={<>One argument, <em className="font-display italic text-amber-200">six moves.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">

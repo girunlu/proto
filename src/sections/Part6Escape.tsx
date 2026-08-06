@@ -3,12 +3,16 @@ import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
 import { ZoomImage, BoxPicker, useMagnet } from '../components/Viz'
 import { rgb, rgba } from '../lib/colors'
-import { C8, cell, seedImg, type Sit, type Code } from '../data/part1'
-import { ESCAPE_PAIRS, Q_TEXT } from '../data/uiv2'
+import { C8, COUNTRY8, SITS, cell, seedImg, type Sit, type Code } from '../data/part1'
+import { CFG, CFG_VALUES } from '../data/part2'
+import { ESCAPE_PAIRS, Q_TEXT, cfgImgCell } from '../data/uiv2'
 import { escapeUmap, escapePairsFor, xmEscapeImg, LADDER_MODELS, type XmEscapePair } from '../data/crossmodel'
 import { useModel, MODEL_NAME, type ModelId } from '../data/modelContext'
 import { isSd21, modelImg, modelSeeds } from '../data/modelData'
+import { Sd21Only } from '../components/ModelBar'
 
+const MONO = 'JetBrains Mono'
+const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
 const PAIRS = Object.keys(ESCAPE_PAIRS)
 const EVENT_OPTS = [...new Set(PAIRS.map((k) => ESCAPE_PAIRS[k].situation))].map((v) => ({ value: v, label: `a ${v}` }))
 
@@ -17,6 +21,226 @@ const EVENT_OPTS = [...new Set(PAIRS.map((k) => ESCAPE_PAIRS[k].situation))].map
 type EscapePairLike = Omit<XmEscapePair, 'levels'> & {
   levels: (XmEscapePair['levels'][number] & { control?: boolean })[]
   final_load_delta?: number
+}
+
+/* ── Scene 07 · the guidance knob, swept (F11) ───────────────────────────────
+   Moved here from the mechanism part on 2026-08-06: turning guidance up is an
+   escape attempt people reach for, so it opens the escape part, before the
+   counter-specification ladder. */
+
+function CfgChart({ situation, highlight, onHover, onPick }: {
+  situation: Sit
+  highlight: Code | null
+  /* hovering a line previews that country; clicking pins it. Same two gestures the
+     legend below the chart uses, so either entry point behaves identically. */
+  onHover: (c: Code | null) => void
+  onPick: (c: Code) => void
+}) {
+  /* 900 × 340 at full panel width pushed the legend, the picture strip and the
+     caveat below the fold; 900 × 250 fixed the height but left a 3.6:1 letterbox
+     that read as stretched. 780 × 265 is close to 3:1, and the narrower viewBox
+     also makes the axis labels relatively larger. */
+  const W = 780
+  const H = 265
+  const padL = 40
+  const padB = 30
+  const padT = 12
+  const padR = 12
+  const xMax = 15
+  const yMax = 0.6
+  const x = (cfg: number) => padL + (cfg / xMax) * (W - padL - padR)
+  const y = (d: number) => padT + (1 - d / yMax) * (H - padT - padB)
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {[0, 0.2, 0.4, 0.6].map((v) => (
+        <g key={v}>
+          <line x1={padL} x2={W - padR} y1={y(v)} y2={y(v)} stroke="hsl(var(--grid))" strokeDasharray="3 4" />
+          <text x={padL - 6} y={y(v) + 4} textAnchor="end" fontSize="9" fill="hsl(var(--svg-fg))" fontFamily={MONO}>
+            {v.toFixed(1)}
+          </text>
+        </g>
+      ))}
+      {CFG_VALUES.map((v) => (
+        <text key={v} x={x(v)} y={H - 12} textAnchor="middle" fontSize="9" fill="hsl(var(--svg-fg))" fontFamily={MONO}>
+          {v}
+        </text>
+      ))}
+      <text x={W / 2} y={H - 1} textAnchor="middle" fontSize="9" fill="hsl(var(--svg-fg))" fontFamily={MONO}>
+        guidance strength (CFG): how hard the model is pushed to obey the prompt
+      </text>
+      {COUNTRY8.map((c, ci) => {
+        const pts = CFG_VALUES.map((v) => ({ cfg: v, d: CFG[situation][c.id][String(v)].mean }))
+        const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(p.cfg)},${y(p.d)}`).join(' ')
+        const on = highlight === null || c.id === highlight
+        const sole = highlight === c.id
+        return (
+          <g key={c.id}>
+            <motion.path
+              d={path}
+              fill="none"
+              stroke={rgb(c.cv)}
+              strokeWidth={sole ? 3 : on ? 2.5 : 1.25}
+              strokeOpacity={on ? 1 : 0.22}
+              initial={{ pathLength: 0 }}
+              whileInView={{ pathLength: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.1, delay: ci * 0.06 }}
+              pointerEvents="none"
+            />
+            {pts.map((p) => (
+              <circle
+                key={p.cfg}
+                cx={x(p.cfg)}
+                cy={y(p.d)}
+                r={sole ? 5 : on ? 4 : 2}
+                fill={rgb(c.cv)}
+                fillOpacity={on ? 1 : 0.22}
+                pointerEvents="none"
+              />
+            ))}
+            {/* an invisible fat stroke along the same path: a 2.5px line is too thin
+                to hit with a pointer, so this is the actual hit target */}
+            <path
+              d={path}
+              fill="none"
+              stroke="transparent"
+              strokeWidth={16}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              pointerEvents="stroke"
+              className="cursor-pointer"
+              onMouseEnter={() => onHover(c.id)}
+              onMouseLeave={() => onHover(null)}
+              onClick={() => onPick(c.id)}
+            >
+              <title>{`${c.name} — click to keep it singled out`}</title>
+            </path>
+          </g>
+        )
+      })}
+      <motion.g initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 1 }}>
+        <line x1={x(4)} x2={x(4)} y1={y(0)} y2={y(0.6)} stroke={rgba('--c-amber', 0.45)} strokeDasharray="4 4" />
+        <text x={x(4.4)} y={y(0.56)} fontSize="9" fill={rgb('--c-amber-t')} fontFamily={MONO}>
+          the gap has already opened by CFG 4
+        </text>
+      </motion.g>
+    </svg>
+  )
+}
+
+export function CfgScene() {
+  const [situation, setSituation] = useState<Sit>('wedding')
+  const [code, setCode] = useState<Code>('IN')
+  // null = nothing singled out, every line drawn at equal weight
+  const [pinned, setPinned] = useState<Code | null>('IN')
+  // a transient hover, from either the lines or the legend; it never clears the pin
+  const [hoverC, setHoverC] = useState<Code | null>(null)
+  const focus = hoverC ?? pinned
+  const pick = (c: Code) => { setPinned(pinned === c ? null : c); setCode(c) }
+  const shown = [1, 4, 12, 15]
+  return (
+    <SceneShell
+      number="07"
+      kicker="Part III · the escape attempts · finding 11"
+      title={<>The knob that <em className="font-display italic text-amber-200">doesn't help.</em></>}
+    >
+      <Reveal>
+        <p className="prose-scene max-w-2xl">
+          Every image tool has a guidance slider: turn it up and the model is pushed harder to obey the words you
+          typed. If the cultural gap were a matter of the model half-listening, pushing harder would close it. It does
+          not. The gap opens almost entirely between guidance 1 and 4, then sits flat all the way to 15, in every one
+          of the six events. The guidance sweep was generated for Stable Diffusion 2.1 only.
+        </p>
+        <Sd21Only />
+      </Reveal>
+      <Reveal delay={0.08}>
+        <Panel className="mt-10">
+          <BoxPicker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
+
+          <div className="mt-6">
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
+                distance from the default prompt at each guidance level
+              </div>
+              <button
+                onClick={() => { setPinned(null); setHoverC(null) }}
+                className={`rounded border px-2 py-0.5 font-mono2 text-[10px] transition ${pinned === null ? 'border-amber-300/50 text-amber-200' : 'border-border text-foreground/45 hover:text-foreground'}`}
+              >
+                show all countries equally
+              </button>
+            </div>
+            <div className="mx-auto max-w-2xl">
+              <CfgChart situation={situation} highlight={focus} onHover={setHoverC} onPick={pick} />
+            </div>
+            {/* fixed legend column: the country labels used to sit at the line
+                ends and jumped around whenever the lines crossed */}
+            <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-4">
+              {COUNTRY8.map((c) => {
+                const end = CFG[situation][c.id]['15'].mean
+                const on = focus === null || focus === c.id
+                return (
+                  <button
+                    key={c.id}
+                    onMouseEnter={() => setHoverC(c.id)}
+                    onMouseLeave={() => setHoverC(null)}
+                    onClick={() => pick(c.id)}
+                    className={`flex items-center justify-between gap-2 rounded px-1.5 py-0.5 font-mono2 text-[10px] transition ${focus === c.id ? 'bg-foreground/10' : on ? '' : 'opacity-45 hover:opacity-100'}`}
+                  >
+                    <span className="flex items-center gap-1.5" style={{ color: rgb(c.cv) }}>
+                      <span className="h-0.5 w-4 rounded-full" style={{ background: rgb(c.cv) }} />
+                      {c.name}
+                    </span>
+                    <span className="text-foreground/45">{end.toFixed(2)}</span>
+                  </button>
+                )
+              })}
+            </div>
+            <p className="mt-2 font-mono2 text-[10px] text-foreground/55">
+              hover a line in the chart or a country here to single it out · click either to keep it that way — the
+              picture strip below follows the same choice. Click again, or use the button above, to bring every line
+              back to equal weight
+            </p>
+          </div>
+
+          <div className="mt-8 border-t border-border pt-5">
+            <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
+              “a {situation} in {C8[code].name}” · the same request, asked more and more forcefully
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {shown.map((v) => (
+                <figure key={v}>
+                  <ZoomImage
+                    src={cfgImgCell(situation, code, v)}
+                    alt={`a ${situation} in ${C8[code].name} at guidance ${v}`}
+                    caption={`“a ${situation} in ${C8[code].name}” · guidance ${v} · seed 0`}
+                    imgClassName="aspect-square w-full cursor-zoom-in rounded-lg border border-border object-cover"
+                  />
+                  <figcaption className="mt-1.5 font-mono2 text-[10px] text-foreground/45">
+                    guidance {v}
+                    {v === 1 && <span className="text-foreground/30"> · barely listening</span>}
+                    {v === 15 && <span className="text-foreground/30"> · pushed as hard as it goes</span>}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+            <p className="mt-2 font-mono2 text-[9px] text-foreground/35">same seed throughout, so any change is the guidance and nothing else</p>
+          </div>
+
+          <div className="mt-6 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
+            <TierNote
+              tier="evidence"
+              text="Distance from the default prompt at each guidance level, 50 seeds per point with bootstrap confidence intervals. It holds in all six events; wedding × Nigeria is the flattest of all, 0.491 at guidance 4 and 0.488 at guidance 15."
+            />
+            <p className="text-sm leading-6 text-foreground/60">
+              An honest caveat: the near-default lines (USA, Germany) look flat partly because there is barely a gap
+              there to open. The finding is about the far lines. No amount of guidance closes those.
+            </p>
+          </div>
+        </Panel>
+      </Reveal>
+    </SceneShell>
+  )
 }
 
 /* how many assumptions are live at this rung, drawn as a filled tray */
@@ -49,7 +273,7 @@ function LoadTray({ load, max = 14 }: { load: number; max?: number }) {
 function LadderMap({ model, pair, rung, onPick }: {
   model: ModelId
   pair: string
-  /* the rung *id*, not an index: the projection always contains the plain prompt,
+  /* the rung *id*, not an index: the projection always contains the default prompt,
      while a cross-model ladder starts at L0, so the two lists don't line up */
   rung: string
   onPick: (id: string) => void
@@ -66,7 +290,7 @@ function LadderMap({ model, pair, rung, onPick }: {
     default: '--c-gray', L0: '--c-red', L1: '--c-amber', L2: '--c-sky', L3: '--c-em',
   }
   const LABEL: Record<string, string> = {
-    default: 'plain', L0: '+country', L1: 'L1', L2: 'L2', L3: 'L3',
+    default: 'default', L0: '+country', L1: 'L1', L2: 'L2', L3: 'L3',
   }
 
   const magnet = useMagnet(
@@ -133,13 +357,13 @@ function LadderMap({ model, pair, rung, onPick }: {
               className="h-2 w-2 rounded-full"
               style={{ background: rgb(CV[l] ?? '--c-gray'), opacity: active === l ? 1 : 0.4 }}
             />
-            {l === 'default' ? 'plain prompt' : l === 'L0' ? 'country named' : l}
+            {l === 'default' ? 'default prompt' : l === 'L0' ? 'country named' : l}
           </button>
         ))}
       </div>
       <p className="mt-1 font-mono2 text-[9px] leading-4 text-foreground/40">
         {hover
-          ? `${hover.l === 'default' ? 'plain prompt' : hover.l === 'L0' ? 'country named' : hover.l} · seed ${hover.s}`
+          ? `${hover.l === 'default' ? 'default prompt' : hover.l === 'L0' ? 'country named' : hover.l} · seed ${hover.s}`
           : 'one dot per seed · rings are each rung\'s centre · click a rung to bring it forward'}
       </p>
     </div>
@@ -195,7 +419,7 @@ export default function Part6Escape() {
   const seeds = isSd21(ladderModel) ? cell(sit, code).typical_order : modelSeeds(ladderModel, sit, code, 20)
   const plain = rungs[0]
   /* the rung every count is judged against: the country-named prompt. SD 2.1's ladder
-     starts one rung earlier (the plain prompt), so this cannot be rungs[1] for both. */
+     starts one rung earlier (the default prompt), so this cannot be rungs[1] for both. */
   const baseline = rungs.find((l) => l.id === 'L0') ?? rungs[0]
   const deltaFromBaseline = (rungs.at(-1)?.load ?? 0) - (baseline.load ?? 0)
   /* the per-pair summary under the chart, derived so it can never claim an escape
@@ -213,7 +437,7 @@ export default function Part6Escape() {
     }
   })
 
-  /* rung 0 and 1 are that model's own plain and country cells, already shipped for
+  /* rung 0 and 1 are that model's own default and country cells, already shipped for
      every model; only L1-L3 need the ladder's own thumbnails */
   const rungImg = (id: string, s: number) =>
     id === 'default'
@@ -224,8 +448,8 @@ export default function Part6Escape() {
 
   return (
     <SceneShell
-      number="16"
-      kicker="Part VI · the escape and its price · findings 20–21"
+      number="08"
+      kicker="Part III · the escape attempts · findings 20–21"
       title={<>Counter-specification: the obvious remedy, <em className="font-display italic text-amber-200">measured.</em></>}
     >
       <Reveal>
@@ -256,10 +480,10 @@ export default function Part6Escape() {
             disagree: the answers change while the pictures stay the same handful of pictures.
           </p>
           {!isSd21(model) && (
-            <p className={`mt-3 mb-4 rounded-md border px-3 py-2 font-mono2 text-[10px] leading-4 ${xm ? 'border-border bg-foreground/[0.04] text-foreground/70' : 'border-amber-300/30 bg-amber-300/5 text-amber-700 dark:text-amber-200/90'}`}>
+            <p className={`mt-3 mb-4 rounded-md border px-3 py-2 font-mono2 text-[10px] leading-4 ${xm ? 'border-border bg-foreground/[0.04] text-foreground/70' : 'border-amber-300/30 bg-amber-300/5 text-amber-200/90'}`}>
               {xm
                 ? `${MODEL_NAME[model]} was run up its own ladder for the two Nigeria pairs, and the clauses below are its own — chosen from its own headline assumptions, so they are not the same words SD 2.1 was given.`
-                : `${MODEL_NAME[model]} has no counter-specification ladder: only Stable Diffusion 2.1 (all eight pairs) and Kolors, SD 3.5 Large and Qwen-Image (the two Nigeria pairs) were run. The plain and country prompts exist for every model, but a ladder needs the counter-specified rungs, so this scene stays on Stable Diffusion 2.1.`}
+                : `${MODEL_NAME[model]} has no counter-specification ladder: only Stable Diffusion 2.1 (all eight pairs) and Kolors, SD 3.5 Large and Qwen-Image (the two Nigeria pairs) were run. The default and country prompts exist for every model, but a ladder needs the counter-specified rungs, so this scene stays on Stable Diffusion 2.1.`}
             </p>
           )}
           {/* boxes, like every other selector on the page since the Tier-B pass */}
@@ -292,7 +516,7 @@ export default function Part6Escape() {
                   onClick={() => setRungId(l.id)}
                   className={`chip !px-3 !py-1.5 ${cur.id === l.id ? 'chip-active' : ''}`}
                 >
-                  {l.id === 'default' ? 'plain prompt' : l.id === 'L0' ? `+ in ${C8[activeCountry].name}` : l.id}
+                  {l.id === 'default' ? 'default prompt' : l.id === 'L0' ? `+ in ${C8[activeCountry].name}` : l.id}
                 </button>
               ))}
             </div>
@@ -312,7 +536,7 @@ export default function Part6Escape() {
 
           <div className="mt-5">
             <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-              what that prompt draws · 3 of 50 seeds · {MODEL_NAME[ladderModel]}
+              what that prompt generates · 3 of 50 seeds · {MODEL_NAME[ladderModel]}
             </div>
             <div className="mt-2 flex flex-wrap gap-2">
               {[0, 1, 2].map((s) => (
@@ -333,9 +557,9 @@ export default function Part6Escape() {
             </div>
             <p className="mt-2 max-w-3xl text-[13px] leading-5 text-foreground/55">
               A UMAP of the same embeddings the numbers above are computed from, fitted over all five rungs at once —
-              the same projection Part I uses, read the same way. The plain prompt is one cloud, the country prompt is
+              the same projection Part I uses, read the same way. The default prompt is one cloud, the country prompt is
               another, and the counter-specified rungs stay alongside the country prompt rather than travelling back
-              toward the plain one. Escaping an attribute does not move the set.
+              toward the default one. Escaping an attribute does not move the set.
             </p>
             <div className="mt-4">
               <LadderMap model={ladderModel} pair={pairKey} rung={cur.id} onPick={setRungId} />
@@ -458,7 +682,7 @@ export default function Part6Escape() {
               text={
                 isSd21(ladderModel)
                   ? 'Eight pairs (wedding and celebration × Nigeria, India, Germany, Egypt) × 50 seeds per rung, the full questionnaire run at every rung. Ladders stop early where a pair had too few named assumptions to counter-specify further.'
-                  : `Two pairs (wedding and celebration × Nigeria) × 50 seeds per rung, the same questionnaire at every rung. The clauses are this model's own, chosen from its own headline assumptions, so the ladder is not a replay of SD 2.1's — and the count here is measured against the country-named prompt, not the plain one.`
+                  : `Two pairs (wedding and celebration × Nigeria) × 50 seeds per rung, the same questionnaire at every rung. The clauses are this model's own, chosen from its own headline assumptions, so the ladder is not a replay of SD 2.1's — and the count here is measured against the country-named prompt, not the default one.`
               }
             />
             {isSd21(ladderModel) ? (
@@ -469,7 +693,7 @@ export default function Part6Escape() {
                 </p>
                 <p>
                   • <strong>The exception</strong> is a celebration in Egypt, where the count falls 8 → 6 → 4 → 3. Its
-                  rehearsed scene was the shallowest to begin with, sitting closest to the plain prompt, so resistance
+                  rehearsed scene was the shallowest to begin with, sitting closest to the default prompt, so resistance
                   tracks how deeply the scene is dug in rather than which country was named.
                 </p>
               </div>

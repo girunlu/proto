@@ -8,16 +8,16 @@ import { niceTicks } from '../lib/utils'
 import { C8, COUNTRY8, SITS, seedImg, type Sit, type Code } from '../data/part1'
 import {
   LOCKUP, LOCKUP_STEPS, stepKey, DIRECTIONS, HERO_DIRECTION,
-  CFG, CFG_VALUES, LAION,
+  LAION,
 } from '../data/part2'
-import { swapImgSeed, cfgImgCell } from '../data/uiv2'
+import { swapImgSeed } from '../data/uiv2'
 import { lockFit, fitCurve, dist as xmDist, intraset as xmIntraset, type Ruler } from '../data/crossmodel'
 import { useModel, isSd21 } from '../data/modelData'
 
 const MONO = 'JetBrains Mono'
 const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
 
-/* ── Scene 6 · the scene is settled early (F9) ───────────────────────────── */
+/* ── Scene 10 · the scene is settled early (F9) ──────────────────────────── */
 
 function parseDirection(d: string): { sit: Sit; a: Code; b: Code } {
   const m = d.match(/^([a-z]+)_([A-Z]+)_to_([A-Z]+)$/)!
@@ -134,13 +134,13 @@ function CommitEarlyScene() {
 
   return (
     <SceneShell
-      number="06"
-      kicker="Part II · the mechanism · finding 9"
-      title={<>Which country it depicts is settled in the <em className="font-display italic text-amber-200">first third</em> of drawing.</>}
+      number="10"
+      kicker="Part IV · the mechanism · finding 9"
+      title={<>Which country it depicts is settled in the <em className="font-display italic text-amber-200">first third</em> of generation.</>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          An image is drawn in 30 steps, from pure noise to a picture. So we interrupted it. Generation starts on one
+          An image is generated in 30 steps, from pure noise to a picture. So we interrupted it. Generation starts on one
           prompt and, at step k, we quietly swap the prompt for another country's. If the finished image still looks
           like the first country, the cultural identity had already been decided before we intervened. Pick an event
           and a direction, then drag the step slider and watch the middle image change.
@@ -209,7 +209,7 @@ function CommitEarlyScene() {
               <figcaption className="mt-2 font-mono2 text-[10px] leading-4" style={{ color: rgb(C8[b].cv) }}>
                 “a {sit} in {C8[b].name}”
                 <br />
-                <span className="text-foreground/40">what the new prompt draws on its own</span>
+                <span className="text-foreground/40">what the new prompt generates on its own</span>
               </figcaption>
             </figure>
           </div>
@@ -308,224 +308,7 @@ function CommitEarlyScene() {
   )
 }
 
-/* ── Scene 7 · coarse to fine (F10) ──────────────────────────────────────── */
-
-function CfgChart({ situation, highlight, onHover, onPick }: {
-  situation: Sit
-  highlight: Code | null
-  /* hovering a line previews that country; clicking pins it. Same two gestures the
-     legend below the chart uses, so either entry point behaves identically. */
-  onHover: (c: Code | null) => void
-  onPick: (c: Code) => void
-}) {
-  /* 900 × 340 at full panel width pushed the legend, the picture strip and the
-     caveat below the fold; 900 × 250 fixed the height but left a 3.6:1 letterbox
-     that read as stretched. 780 × 265 is close to 3:1, and the narrower viewBox
-     also makes the axis labels relatively larger. */
-  const W = 780
-  const H = 265
-  const padL = 40
-  const padB = 30
-  const padT = 12
-  const padR = 12
-  const xMax = 15
-  const yMax = 0.6
-  const x = (cfg: number) => padL + (cfg / xMax) * (W - padL - padR)
-  const y = (d: number) => padT + (1 - d / yMax) * (H - padT - padB)
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
-      {[0, 0.2, 0.4, 0.6].map((v) => (
-        <g key={v}>
-          <line x1={padL} x2={W - padR} y1={y(v)} y2={y(v)} stroke="hsl(var(--grid))" strokeDasharray="3 4" />
-          <text x={padL - 6} y={y(v) + 4} textAnchor="end" fontSize="9" fill="hsl(var(--svg-fg))" fontFamily={MONO}>
-            {v.toFixed(1)}
-          </text>
-        </g>
-      ))}
-      {CFG_VALUES.map((v) => (
-        <text key={v} x={x(v)} y={H - 12} textAnchor="middle" fontSize="9" fill="hsl(var(--svg-fg))" fontFamily={MONO}>
-          {v}
-        </text>
-      ))}
-      <text x={W / 2} y={H - 1} textAnchor="middle" fontSize="9" fill="hsl(var(--svg-fg))" fontFamily={MONO}>
-        guidance strength (CFG): how hard the model is pushed to obey the prompt
-      </text>
-      {COUNTRY8.map((c, ci) => {
-        const pts = CFG_VALUES.map((v) => ({ cfg: v, d: CFG[situation][c.id][String(v)].mean }))
-        const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(p.cfg)},${y(p.d)}`).join(' ')
-        const on = highlight === null || c.id === highlight
-        const sole = highlight === c.id
-        return (
-          <g key={c.id}>
-            <motion.path
-              d={path}
-              fill="none"
-              stroke={rgb(c.cv)}
-              strokeWidth={sole ? 3 : on ? 2.5 : 1.25}
-              strokeOpacity={on ? 1 : 0.22}
-              initial={{ pathLength: 0 }}
-              whileInView={{ pathLength: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.1, delay: ci * 0.06 }}
-              pointerEvents="none"
-            />
-            {pts.map((p) => (
-              <circle
-                key={p.cfg}
-                cx={x(p.cfg)}
-                cy={y(p.d)}
-                r={sole ? 5 : on ? 4 : 2}
-                fill={rgb(c.cv)}
-                fillOpacity={on ? 1 : 0.22}
-                pointerEvents="none"
-              />
-            ))}
-            {/* an invisible fat stroke along the same path: a 2.5px line is too thin
-                to hit with a pointer, so this is the actual hit target */}
-            <path
-              d={path}
-              fill="none"
-              stroke="transparent"
-              strokeWidth={16}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              pointerEvents="stroke"
-              className="cursor-pointer"
-              onMouseEnter={() => onHover(c.id)}
-              onMouseLeave={() => onHover(null)}
-              onClick={() => onPick(c.id)}
-            >
-              <title>{`${c.name} — click to keep it singled out`}</title>
-            </path>
-          </g>
-        )
-      })}
-      <motion.g initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 1 }}>
-        <line x1={x(4)} x2={x(4)} y1={y(0)} y2={y(0.6)} stroke={rgba('--c-amber', 0.45)} strokeDasharray="4 4" />
-        <text x={x(4.4)} y={y(0.56)} fontSize="9" fill={rgb('--c-amber-t')} fontFamily={MONO}>
-          the gap has already opened by CFG 4
-        </text>
-      </motion.g>
-    </svg>
-  )
-}
-
-function CfgScene() {
-  const [situation, setSituation] = useState<Sit>('wedding')
-  const [code, setCode] = useState<Code>('IN')
-  // null = nothing singled out, every line drawn at equal weight
-  const [pinned, setPinned] = useState<Code | null>('IN')
-  // a transient hover, from either the lines or the legend; it never clears the pin
-  const [hoverC, setHoverC] = useState<Code | null>(null)
-  const focus = hoverC ?? pinned
-  const pick = (c: Code) => { setPinned(pinned === c ? null : c); setCode(c) }
-  const shown = [1, 4, 12, 15]
-  return (
-    <SceneShell
-      number="08"
-      kicker="Part II · the mechanism · finding 11"
-      title={<>The knob that <em className="font-display italic text-amber-200">doesn't help.</em></>}
-    >
-      <Reveal>
-        <p className="prose-scene max-w-2xl">
-          Every image tool has a guidance slider: turn it up and the model is pushed harder to obey the words you
-          typed. If the cultural gap were a matter of the model half-listening, pushing harder would close it. It does
-          not. The gap opens almost entirely between guidance 1 and 4, then sits flat all the way to 15, in every one
-          of the six events. The guidance sweep was generated for Stable Diffusion 2.1 only.
-        </p>
-        <Sd21Only />
-      </Reveal>
-      <Reveal delay={0.08}>
-        <Panel className="mt-10">
-          <BoxPicker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
-
-          <div className="mt-6">
-            <div className="flex flex-wrap items-baseline justify-between gap-3">
-              <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-                distance from the plain prompt at each guidance level
-              </div>
-              <button
-                onClick={() => { setPinned(null); setHoverC(null) }}
-                className={`rounded border px-2 py-0.5 font-mono2 text-[10px] transition ${pinned === null ? 'border-amber-300/50 text-amber-200' : 'border-border text-foreground/45 hover:text-foreground'}`}
-              >
-                show all countries equally
-              </button>
-            </div>
-            <div className="mx-auto max-w-2xl">
-              <CfgChart situation={situation} highlight={focus} onHover={setHoverC} onPick={pick} />
-            </div>
-            {/* fixed legend column: the country labels used to sit at the line
-                ends and jumped around whenever the lines crossed */}
-            <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-4">
-              {COUNTRY8.map((c) => {
-                const end = CFG[situation][c.id]['15'].mean
-                const on = focus === null || focus === c.id
-                return (
-                  <button
-                    key={c.id}
-                    onMouseEnter={() => setHoverC(c.id)}
-                    onMouseLeave={() => setHoverC(null)}
-                    onClick={() => pick(c.id)}
-                    className={`flex items-center justify-between gap-2 rounded px-1.5 py-0.5 font-mono2 text-[10px] transition ${focus === c.id ? 'bg-foreground/10' : on ? '' : 'opacity-45 hover:opacity-100'}`}
-                  >
-                    <span className="flex items-center gap-1.5" style={{ color: rgb(c.cv) }}>
-                      <span className="h-0.5 w-4 rounded-full" style={{ background: rgb(c.cv) }} />
-                      {c.name}
-                    </span>
-                    <span className="text-foreground/45">{end.toFixed(2)}</span>
-                  </button>
-                )
-              })}
-            </div>
-            <p className="mt-2 font-mono2 text-[10px] text-foreground/55">
-              hover a line in the chart or a country here to single it out · click either to keep it that way — the
-              picture strip below follows the same choice. Click again, or use the button above, to bring every line
-              back to equal weight
-            </p>
-          </div>
-
-          <div className="mt-8 border-t border-border pt-5">
-            <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-              “a {situation} in {C8[code].name}” · the same request, asked more and more forcefully
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {shown.map((v) => (
-                <figure key={v}>
-                  <ZoomImage
-                    src={cfgImgCell(situation, code, v)}
-                    alt={`a ${situation} in ${C8[code].name} at guidance ${v}`}
-                    caption={`“a ${situation} in ${C8[code].name}” · guidance ${v} · seed 0`}
-                    imgClassName="aspect-square w-full cursor-zoom-in rounded-lg border border-border object-cover"
-                  />
-                  <figcaption className="mt-1.5 font-mono2 text-[10px] text-foreground/45">
-                    guidance {v}
-                    {v === 1 && <span className="text-foreground/30"> · barely listening</span>}
-                    {v === 15 && <span className="text-foreground/30"> · pushed as hard as it goes</span>}
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-            <p className="mt-2 font-mono2 text-[9px] text-foreground/35">same seed throughout, so any change is the guidance and nothing else</p>
-          </div>
-
-          <div className="mt-6 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
-            <TierNote
-              tier="evidence"
-              text="Distance from the plain prompt at each guidance level, 50 seeds per point with bootstrap confidence intervals. It holds in all six events; wedding × Nigeria is the flattest of all, 0.491 at guidance 4 and 0.488 at guidance 15."
-            />
-            <p className="text-sm leading-6 text-foreground/60">
-              An honest caveat: the near-default lines (USA, Germany) look flat partly because there is barely a gap
-              there to open. The finding is about the far lines. No amount of guidance closes those.
-            </p>
-          </div>
-        </Panel>
-      </Reveal>
-    </SceneShell>
-  )
-}
-
-/* ── Scene 9 · not the text encoder (F12) ────────────────────────────────── */
+/* ── Scene 11 · not copied from the data (F13) ───────────────────────────── */
 
 /* Each grid is scaled to its OWN range. Sharing one scale let the image grid's
    larger spread wash the text grid out to near-blank, which is precisely the
@@ -709,8 +492,8 @@ function LaionScene() {
 
   return (
     <SceneShell
-      number="10"
-      kicker="Part II · the mechanism · finding 13"
+      number="11"
+      kicker="Part IV · the mechanism · finding 13"
       title={<>The narrowness is the model's own, <em className="font-display italic text-amber-200">not copied.</em></>}
     >
       <Reveal>
@@ -799,7 +582,7 @@ function LaionScene() {
           {/* one legend for both panels: every dot is one of the 54 prompts, coloured
               by the country in it, and hovering a country isolates it in both clouds */}
           <div className="mt-5 flex flex-wrap gap-x-4 gap-y-1.5 border-t border-border pt-4">
-            {[{ id: 'default', name: 'no country', cv: '--c-gray' }, ...COUNTRY8.map((c) => ({ id: c.id as string, name: c.name, cv: c.cv }))].map((e) => {
+            {[{ id: 'default', name: 'default prompt', cv: '--c-gray' }, ...COUNTRY8.map((c) => ({ id: c.id as string, name: c.name, cv: c.cv }))].map((e) => {
               const dim = focus != null && focus !== e.cv
               return (
                 <button
@@ -845,13 +628,12 @@ function LaionScene() {
   )
 }
 
-/* ── Part II ─────────────────────────────────────────────────────────────── */
+/* ── Part IV ─────────────────────────────────────────────────────────────── */
 
 export default function Part2Mechanism() {
   return (
     <>
       <CommitEarlyScene />
-      <CfgScene />
       <LaionScene />
     </>
   )

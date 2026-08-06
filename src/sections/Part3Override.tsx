@@ -88,7 +88,7 @@ function InversionScene() {
     <SceneShell
       number="11"
       kicker="Part III · the override · finding 6 · the most novel result"
-      title={<>Naming a country <em className="font-display italic text-red-300">narrows</em> the output below the plain prompt.</>}
+      title={<>Naming a country <em className="font-display italic text-red-300">narrows</em> the output below the default prompt.</>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
@@ -125,7 +125,7 @@ function InversionScene() {
           </div>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-foreground/60">
             Each bar is how alike a prompt's 50 pictures are to each other. A short bar means every seed invented
-            something different. A long bar means the model drew nearly the same picture 50 times. The plain prompt is
+            something different. A long bar means the model generated nearly the same picture 50 times. The default prompt is
             the reference line at the top, and the highlighted row is the one shown in the pictures above.
           </p>
           <div className="mt-6 space-y-2.5">
@@ -175,7 +175,7 @@ function InversionScene() {
                   The real value spans 0.46–0.75 across the seven models and two rulers,
                   so it now comes from the same table the chart above is drawn from. */}
               {sit === 'funeral'
-                ? `The honest exception: the plain funeral is already narrow (${defIntra.mean.toFixed(2)}), since a Western church interior is itself a stereotype, so the country qualifier cannot narrow it much further. The comparison is always against the plain prompt, never against zero.`
+                ? `The honest exception: the default funeral prompt is already narrow (${defIntra.mean.toFixed(2)}), since a Western church interior is itself a stereotype, so the country qualifier cannot narrow it much further. The comparison is always against the default prompt, never against zero.`
                 : cIntra.mean > defIntra.mean
                   ? `For “a ${sit}”, naming ${C8[code].name} takes the set from ${defIntra.mean.toFixed(2)} to ${cIntra.mean.toFixed(2)}: more alike, not less.`
                   : `For “a ${sit}”, ${C8[code].name} is one of the cases that does not narrow the set. We show every country rather than only the ones that make the point.`}
@@ -219,10 +219,10 @@ const CTRL_LABEL: Record<string, string> = {
   ctrl_1985: 'in 1985',
 }
 
-/* Plotted as the CHANGE from each row's own plain prompt, not as raw similarity.
+/* Plotted as the CHANGE from each row's own default prompt, not as raw similarity.
    On the raw scale every mark piled into the right-hand third and the rows were
    not comparable, because "a wedding" and "a celebration" start from different
-   baselines. Zero is now the same thing in every row: the plain prompt. */
+   baselines. Zero is now the same thing in every row: the default prompt. */
 function SpecificityRows() {
   const [hover, setHover] = useState<{ row: string; label: string; d: number } | null>(null)
   const pairs = Object.entries(ESCAPE_PAIRS)
@@ -255,7 +255,7 @@ function SpecificityRows() {
                   className="absolute -translate-x-1/2 font-mono2 text-[9px] text-foreground/40"
                   style={{ left: pos(v) }}
                 >
-                  {v === 0 ? 'plain prompt' : `${v > 0 ? '+' : ''}${v.toFixed(1)}`}
+                  {v === 0 ? 'default prompt' : `${v > 0 ? '+' : ''}${v.toFixed(1)}`}
                 </span>
               ))}
             </div>
@@ -318,8 +318,8 @@ function SpecificityRows() {
       <div className="mt-2 flex items-center gap-3">
         <span className="w-44 shrink-0" />
         <div className="flex flex-1 justify-between font-mono2 text-[10px] text-foreground/35">
-          <span>← more varied than the plain prompt</span>
-          <span>less varied than the plain prompt →</span>
+          <span>← more varied than the default prompt</span>
+          <span>less varied than the default prompt →</span>
         </div>
         <span className="w-14 shrink-0" />
       </div>
@@ -327,11 +327,11 @@ function SpecificityRows() {
       <div className="mt-4 flex min-h-[18px] flex-wrap items-center gap-5 border-t border-border pt-3 font-mono2 text-[10px] text-foreground/50">
         {hover ? (
           <span className="text-foreground/80">
-            {hover.label}: {signed(hover.d)} against its own plain prompt
+            {hover.label}: {signed(hover.d)} against its own default prompt
           </span>
         ) : (
           <>
-            <span className="flex items-center gap-1.5"><span className="h-4 w-px bg-foreground/40" /> the plain prompt, at zero in every row</span>
+            <span className="flex items-center gap-1.5"><span className="h-4 w-px bg-foreground/40" /> the default prompt, at zero in every row</span>
             <span className="flex items-center gap-1.5"><span className="h-3.5 w-3.5 rounded-full border-2 border-foreground/55" /> a neutral qualifier: {Object.values(CTRL_LABEL).join(' / ')}</span>
             <span className="flex items-center gap-1.5"><span className="h-4 w-4 rounded-full bg-red-400" /> the country qualifier</span>
           </>
@@ -353,7 +353,7 @@ function SpecificityScene() {
         <p className="prose-scene max-w-2xl">
           The obvious objection is that <em>any</em> extra words narrow the output: “a large wedding” would do it too.
           So we built matched neutral qualifiers of the same length and ran them through the identical protocol. They
-          land on top of the plain prompt. Only the country qualifier moves the set.
+          land on top of the default prompt. Only the country qualifier moves the set.
         </p>
         <Sd21Only />
       </Reveal>
@@ -364,9 +364,9 @@ function SpecificityScene() {
             all eight tested pairs · four countries, two events
           </div>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
-            Every mark is plotted as the <em>change</em> from its own row's plain prompt, so the vertical line means
+            Every mark is plotted as the <em>change</em> from its own row's default prompt, so the vertical line means
             the same thing in all eight rows: no change in variety. Marks to the right of it are less varied than the
-            plain prompt, marks to the left are more varied.
+            default prompt, marks to the left are more varied.
           </p>
           <div className="mt-6">
             <SpecificityRows />
@@ -386,7 +386,7 @@ function SpecificityScene() {
         <Panel className="mt-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-              what the neutral qualifiers actually drew
+              what the neutral qualifiers actually generated
             </div>
             <BoxPicker
               label="event"
@@ -414,7 +414,7 @@ function SpecificityScene() {
                     ))}
                   </div>
                   <div className="mt-1.5 font-mono2 text-[9px] text-foreground/40">
-                    stays at the plain prompt's variety ({lvl?.intraset?.toFixed(2)})
+                    stays at the default prompt's variety ({lvl?.intraset?.toFixed(2)})
                   </div>
                 </div>
               )

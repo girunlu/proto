@@ -36,8 +36,10 @@ const MODEL_SUB: Record<string, string> = {
   hunyuandit_cultural: 'Tencent · 2024 · Chinese-developed',
 }
 
+/* leading slash, like every other image helper on the page: this one was relative,
+   which happens to resolve at the site root and 404s everywhere else */
 const xmImg = (model: string, sit: string, code: string, s: number) =>
-  `images/xm/${model}_${sit}_${code}_s${s}.webp`
+  `/images/xm/${model}_${sit}_${code}_s${s}.webp`
 
 function ModelStrip() {
   /* R3b: this used to hold its own `useState('flux_cultural')`, so the global bar
@@ -84,7 +86,7 @@ function ModelStrip() {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3 }}
         >
-          {/* The model's own unqualified default, uncurated. Seeds come from that
+          {/* The model's own default prompt, uncurated. Seeds come from that
               cell's published list rather than 0..19: the thumbnail set is a
               selected 24 of the 50, so counting from zero 404'd half this grid. */}
           <div className="mt-5 grid grid-cols-10 gap-1.5">
@@ -135,7 +137,7 @@ function ModelStrip() {
       <div className="mt-6">
         <TierNote
           tier="evidence"
-          text="Distance measured from each model's OWN plain prompt, 50 seeds per prompt, with bootstrap confidence intervals. The identical frozen instrument (54 prompts × 50 seeds) was run in full on every model: 2,700 verified-complete images each."
+          text="Distance measured from each model's OWN default prompt, 50 seeds per prompt, with bootstrap confidence intervals. The identical frozen instrument (54 prompts × 50 seeds) was run in full on every model: 2,700 verified-complete images each."
         />
       </div>
     </Panel>
@@ -187,7 +189,7 @@ function ReplicationWall() {
           {/* B9: "3 training lineages (Western, Chinese-language, mixed)" deleted.
               "Mixed" is unfalsifiable, and the project elsewhere relies on the fact
               that Kolors', Qwen-Image's and Hunyuan-DiT's corpora are NOT public
-              (that is why scene 10's LAION correlation is undefined for them) — we
+              (that is why scene 11's LAION correlation is undefined for them) — we
               cannot call the training data unknown and then sort it into lineages.
               5 developers is checkable and says more. B12: the denominators. */}
           <p className="mt-3 font-mono2 text-[11px] leading-5 text-foreground/50">
@@ -228,7 +230,7 @@ function SharedWorldview() {
           label="country"
           value={code}
           onChange={setCode}
-          options={[{ value: 'default' as const, label: 'no country' },
+          options={[{ value: 'default' as const, label: 'default prompt' },
 ...CODES.map((c) => ({ value: c, label: COUNTRY_NAME[c], cv: COUNTRY_CV[c] }))]}
           size="sm"
         />
@@ -455,8 +457,8 @@ export default function BranchAModels() {
   return (
     <>
       <SceneShell
-        number="VII·1"
-        kicker="part vii · across the ecosystem"
+        number="13"
+        kicker="Part VI · across the ecosystem"
         title={
           <>
             Swap the model. <span className="text-amber-200">The default doesn't blink.</span>
@@ -477,8 +479,8 @@ export default function BranchAModels() {
       </SceneShell>
 
       <SceneShell
-        number="VII·2"
-        kicker="part vii · zero exceptions"
+        number="14"
+        kicker="Part VI · zero exceptions"
         title={
           <>
             Thirty-six of thirty-six.
@@ -535,8 +537,8 @@ export default function BranchAModels() {
       </SceneShell>
 
       <SceneShell
-        number="VII·3"
-        kicker="part vii · whose assumptions are they? · SD 2.1's own, checked elsewhere"
+        number="15"
+        kicker="Part VI · whose assumptions are they? · SD 2.1's own, checked elsewhere"
         title={
           <>
             A third of the worldview is <span className="text-emerald-300">inherited</span>.

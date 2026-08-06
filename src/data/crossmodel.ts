@@ -46,7 +46,7 @@ interface CrossModel {
   }>
   dissimilar?: Record<string, Record<string, number[]>>
   published?: Record<string, Record<string, number[]>>
-  /** finding 3 per model: each of the 50 plain-prompt seeds labelled with the
+  /** finding 3 per model: each of the 50 default-prompt seeds labelled with the
       country centroid it lands nearest. Six models only — SD 2.1 keeps its own
       shipped labels in chunk1.json (see build_f3's note on the 6/300 tie diff). */
   f3?: Record<string, Record<string, string[]>>
@@ -130,11 +130,11 @@ export const cardsForModel = (m: ModelId, sit: Sit, code: Code | 'default') =>
 export const openForModel = (m: ModelId, sit: Sit, code: Code | 'default') =>
   X.open[m]?.[`${sit}_${code}`] ?? null
 
-/* ── scene 14: what actually moved, plain prompt → country prompt ──────────── */
+/* ── scene 14: what actually moved, default prompt → country prompt ──────────── */
 
-/** One question's contribution to the plain→country movement.
+/** One question's contribution to the default→country movement.
  *  `share`  fraction of the movement this attribute's answers CHANGING accounts for.
- *  `plain`  its majority answer for the plain prompt, `value` for the country one —
+ *  `plain`  its majority answer for the default prompt, `value` for the country one —
  *           carried so the scene can show that many attributes did not move at all.
  *  `sep`    the answers barely overlap between the two cells, so the share is forced
  *           toward 1: true but tautological (apparent continent on a Nigerian prompt).
@@ -154,7 +154,7 @@ export const realityFor = (m: ModelId, sit: Sit, code: Code) => X.reality[m]?.[s
 export const EMPTY_MODELS = Object.keys(X.empty) as ModelId[]
 /** the empty-prompt scatter for one model under one ruler, or null if that model
     was never generated with prompt="". `fit` is that model's own Spearman ρ for
-    "far from the plain prompt = far from the empty prompt" — SD 2.1's 0.75 does
+    "far from the default prompt = far from the empty prompt" — SD 2.1's 0.75 does
     not replicate, so the scene reads this rather than asserting the diagonal. */
 export const emptyFor = (m: ModelId, ruler: Ruler) => {
   const e = X.empty[m]
@@ -234,7 +234,7 @@ export const hasUmap = (m: ModelId) => X.umap?.[m] != null
 
 /* ── scene 16: the counter-specification ladder, per model ─────────────────── */
 
-/** Same shape as ui_v2.json's `escape` block, minus the plain-prompt rung and the
+/** Same shape as ui_v2.json's `escape` block, minus the default-prompt rung and the
     neutral-qualifier controls: cross-model, the ladder was only built for the two
     Nigeria hero pairs, and only from L0 upward. `moved` is how far that rung's set
     sits from this model's own country-qualified prompt. */
@@ -258,6 +258,6 @@ export const xmEscapeImg = (m: ModelId, pair: string, level: string, seed: numbe
     : `/images/escape/${m}_${pair}_${level}_s${String(seed).padStart(2, '0')}.webp`
 
 /** each model's own Vendi score ("effectively distinct pictures of 50"), including
-    for the plain prompt — scene 11 used to borrow SD 2.1's for that one column */
+    for the default prompt — scene 11 used to borrow SD 2.1's for that one column */
 export const vendiFor = (m: ModelId, sit: Sit, code: Code | 'default') =>
   X.reality[m]?.[sit]?.[code]?.gen_vendi ?? null

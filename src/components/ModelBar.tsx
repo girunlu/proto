@@ -44,13 +44,23 @@ export function ModelBar() {
        slid under the toggle exactly when the cap started binding (~390px and below).
        At 768 and 1024 the bar is content-width and nowhere near either gutter. */
     <div className="fixed top-4 left-1/2 z-40 max-w-[calc(100vw-8rem)] -translate-x-1/2">
-      <div ref={box} className="rounded-xl border border-border bg-background/90 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.6)] backdrop-blur">
+      {/* Opens on hover so changing model is one click, not two. The click toggle
+          stays for touch and keyboard, where there is no hover to open it with, and
+          Escape / outside-click still close it. */}
+      <div
+        ref={box}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        className="w-[min(19rem,calc(100vw-8rem))] rounded-xl border border-border bg-background/90 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.6)] backdrop-blur"
+      >
         <button
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-haspopup="listbox"
           aria-label={`Model: ${current.name}. Change which model the page shows.`}
-          className={`flex items-center gap-3 py-2 transition-all ${scrolled ? 'px-3' : 'px-4'}`}
+          /* w-full + justify-center: the panel below is wider than this row, so the
+             box stretches the trigger and left-aligned content then reads as off-centre */
+          className={`flex w-full items-center justify-center gap-3 py-2 transition-all ${scrolled ? 'px-3' : 'px-4'}`}
         >
           {/* the label is the first thing to go once the reader knows what the bar is */}
           {!scrolled && (
@@ -73,9 +83,9 @@ export function ModelBar() {
                 <div className="font-mono2 text-[10px] text-foreground/40">{m.sub}</div>
               </button>
             ))}
-            <p className="px-3 pt-2 pb-1 font-mono2 text-[10px] leading-4 text-foreground/35">
-              The same 54 prompts were run in full on all seven. Charts that can switch will follow this control;
-              scenes measured only on Stable Diffusion 2.1 say so where they sit.
+            <p className="px-3 pt-2 pb-1 font-mono2 text-[9px] leading-4 text-foreground/35">
+              All seven ran the same 54 prompts. Charts that can switch follow this; scenes measured only on
+              Stable Diffusion 2.1 say so where they sit.
             </p>
           </div>
         )}

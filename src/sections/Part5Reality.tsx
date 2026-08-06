@@ -4,8 +4,8 @@ import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
 import { ZoomImage, BoxPicker } from '../components/Viz'
 import { rgb, rgba } from '../lib/colors'
 import { C8, COUNTRY8, SITS, DEMONYM, cell, type Sit, type Code } from '../data/part1'
-import { REALITY_ANCHOR, DISTORTION, REAL_PHOTOS_N, REAL_QUESTIONNAIRE_N, REAL_CELLS_N, REAL_PER_CELL } from '../data/part5'
-import { REALITY_ATTRS, REAL_CREDITS, VQA, realImg, key, Q_TEXT } from '../data/uiv2'
+import { REALITY_ANCHOR, REAL_PHOTOS_N, REAL_QUESTIONNAIRE_N, REAL_CELLS_N, REAL_PER_CELL } from '../data/part5'
+import { REALITY_ATTRS, REAL_CREDITS, realImg, key, Q_TEXT } from '../data/uiv2'
 import { useModel, modelImg, modelSeeds, MODEL_NAME as UI_MODEL_NAME, isSd21 } from '../data/modelData'
 import { realityFor } from '../data/crossmodel'
 
@@ -16,16 +16,6 @@ const SLUG: Record<Code, string> = {
   JP: 'japan', EG: 'egypt', IN: 'india', NG: 'nigeria',
 }
 
-/* the model names, written the way their makers write them */
-const MODEL_NAME: Record<string, string> = {
-  sd21: 'Stable Diffusion 2.1',
-  flux: 'FLUX.1 [dev]',
-  kolors: 'Kolors',
-  sdxl: 'SDXL 1.0',
-  sd35: 'Stable Diffusion 3.5 Large',
-  qwenimage: 'Qwen-Image',
-  hunyuandit: 'HunyuanDiT',
-}
 
 /* F18: is the model narrower than reality? Drawn in SVG: the previous version
    animated CSS-translated dots, and the inline transform framer-motion writes
@@ -108,150 +98,7 @@ function HomogeneityDumbbells({ sit }: { sit: Sit }) {
   )
 }
 
-/* F19: which way does the model err when it contradicts the photographs?
-   Counts alone were unreadable because the models have different numbers of
-   contradictions; each row is now that model's own split, as percentages. */
-function DistortionBars() {
-  /* One row per model, all seven scored by the same annotator. SD 2.1 used to
-     appear twice — once on a two-annotator table and once matched — because its
-     unmatched row was what made it look even. That table was retired on
-     2026-07-31 and the asymmetry with it. Sorted by lean so "mid-pack" is
-     something the reader sees rather than something the caption claims. */
-  const entries = [
-    { id: 'sd21', label: 'Stable Diffusion 2.1', note: 'gemma4', matched: true, ...DISTORTION.sd21_matched },
-    ...Object.entries(DISTORTION.models).map(([id, v]) => ({
-      id,
-      label: MODEL_NAME[id] ?? id,
-      note: 'gemma4',
-      matched: true,
-      ...v,
-    })),
-  ]
-    .map((e) => ({ ...e, total: e.toward_default + e.toward_reality }))
-    .sort((a, b) => b.toward_default / b.total - a.toward_default / a.total)
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-3 pb-1">
-        <span className="w-44 shrink-0" />
-        <span className="flex-1 font-mono2 text-[10px] text-foreground/40">
-          each bar is 100% of that model's disagreements with the photographs
-        </span>
-        <span className="w-20 shrink-0 text-right font-mono2 text-[10px] text-foreground/40">disagreements</span>
-      </div>
-      {entries.map((e, i) => {
-        const pd = e.toward_default / e.total
-        return (
-          <div key={e.id} className={`flex items-center gap-3 ${e.matched ? '' : 'opacity-60'}`}>
-            <span className="w-44 shrink-0 text-right font-mono2 text-[11px] leading-4 text-foreground/60">
-              {e.label}
-              <span className="block text-[9px] text-foreground/35">{e.note}</span>
-            </span>
-            <div className="flex h-6 flex-1 overflow-hidden rounded-sm">
-              <motion.div
-                className="flex items-center justify-end bg-red-400/70"
-                initial={{ width: 0 }}
-                whileInView={{ width: `${pd * 100}%` }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: i * 0.05 }}
-              >
-                <span className="pr-2 font-mono2 text-[10px] text-white/90">{Math.round(pd * 100)}%</span>
-              </motion.div>
-              <motion.div
-                className="flex items-center bg-emerald-400/55"
-                initial={{ width: 0 }}
-                whileInView={{ width: `${(1 - pd) * 100}%` }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: 0.1 + i * 0.05 }}
-              >
-                <span className="pl-2 font-mono2 text-[10px] text-foreground/80">{Math.round((1 - pd) * 100)}%</span>
-              </motion.div>
-            </div>
-            <span className="w-20 shrink-0 text-right font-mono2 text-[10px] text-foreground/45">{e.total}</span>
-          </div>
-        )
-      })}
-      <div className="flex flex-wrap items-center gap-5 pt-2 font-mono2 text-[10px] text-foreground/50">
-        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-red-400/70" /> leans toward its own default world</span>
-        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-400/55" /> leans toward the photographs</span>
-        <span className="text-foreground/45">a model with no pull either way would sit at 50/50</span>
-        <span className="text-foreground/45">the faded row is the one measured with a different instrument — not comparable to the rest</span>
-      </div>
-    </div>
-  )
-}
 
-/* what one of those counted errors actually looks like, worked through on the
-   cell the reader has selected, rather than asserted in a sentence */
-function ErrorExamples({ sit, code }: { sit: Sit; code: Code }) {
-  const attrs = REALITY_ATTRS[key(sit, code)] ?? []
-  const plain = VQA[key(sit, 'default')]?.closed ?? {}
-  const rows = attrs
-    .filter((a) => a.contradicts)
-    .map((a) => {
-      const pl = plain[a.q]
-      const plainTop = pl?.[0]
-      const total = pl?.reduce((x, y) => x + y.n, 0) ?? 0
-      return {
-        ...a,
-        plain: plainTop?.v,
-        plainShare: plainTop && total ? plainTop.n / total : 0,
-        towardDefault: plainTop ? plainTop.v === a.gen : false,
-      }
-    })
-    .filter((r) => r.plain)
-    .sort((a, b) => Number(b.towardDefault) - Number(a.towardDefault))
-    .slice(0, 4)
-
-  if (!rows.length) return null
-  return (
-    <div className="mt-6 border-t border-border pt-5">
-      <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-        what one of these disagreements looks like · “a {sit} in {C8[code].name}”
-      </div>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground/60">
-        Read a row left to right: the photographs, then the country prompt, then the same prompt with the country taken
-        out. When the country prompt's answer and the country-less answer are the <em>same word</em>, the model has
-        departed from the photographs in the direction of the thing it already draws by default — that is the red count
-        above. When it departs in some other direction, the prior is not what pulled it, so that row tells us nothing
-        either way.
-      </p>
-      <div className="mt-4 space-y-1.5">
-        {/* the same px-2 the bordered rows below carry, plus a border-coloured
-            transparent edge: without them every value sat 8px right of its header */}
-        {/* one skeleton, used by the header and every row: the verdict column was
-            w-32, too narrow for its own heading, so both it and the values wrapped
-            onto a second line. Wider verdict column, left-aligned question, and the
-            same px-2 the bordered rows carry. */}
-        <div className="flex items-center gap-4 border border-transparent px-2 pb-1 font-mono2 text-[9px] leading-4 tracking-wider text-foreground/50 uppercase">
-          <span className="w-40 shrink-0">question</span>
-          <span className="flex-1">the photographs say</span>
-          <span className="flex-1">“a {sit} in {C8[code].name}” draws</span>
-          <span className="flex-1">“a {sit}” with no country</span>
-          <span className="w-44 shrink-0">which way does it lean?</span>
-        </div>
-        {rows.map((r) => (
-          <div key={r.q} className="flex items-center gap-4 rounded-md border border-border px-2 py-2">
-            <span className="w-40 shrink-0 truncate font-mono2 text-[10px] text-foreground/50" title={Q_TEXT[r.q] ?? r.q}>
-              {Q_TEXT[r.q] ?? r.q}
-            </span>
-            <span className="flex-1 font-mono2 text-[11px] text-emerald-300">
-              {r.real} <span className="text-foreground/35">{Math.round(r.real_share * 100)}%</span>
-            </span>
-            <span className="flex-1 font-mono2 text-[11px] text-red-300">
-              {r.gen} <span className="text-foreground/35">{Math.round(r.gen_share * 100)}%</span>
-            </span>
-            <span className="flex-1 font-mono2 text-[11px] text-foreground/70">
-              {r.plain} <span className="text-foreground/35">{Math.round(r.plainShare * 100)}%</span>
-            </span>
-            <span className={`w-44 shrink-0 font-mono2 text-[10px] leading-4 ${r.towardDefault ? 'text-red-300' : 'text-foreground/55'}`}>
-              {r.towardDefault ? '→ toward its default' : '→ some other way'}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
 
 export default function Part5Reality() {
   const { model } = useModel()
@@ -265,11 +112,16 @@ export default function Part5Reality() {
   const hero = contradictions[0]
   const seeds = cell(sit, code).typical_order
 
+  /* The old title — "and the model points the wrong way" — was finding 19's verdict,
+     and finding 19 was removed 2026-08-06. What is left is a comparison with no
+     correct side: the photographs vary more, and the two sets answer the questionnaire
+     differently. Emerald because the subject of the claim is now the photographs,
+     matching the "photographed" label below. */
   return (
     <SceneShell
-      number="15"
-      kicker="Part V · reality · findings 18–19"
-      title={<>There are real photographs of these events, <em className="font-display italic text-red-300">and the model points the wrong way.</em></>}
+      number="12"
+      kicker="Part V · an outside reference · finding 18"
+      title={<>There are real photographs of these events, <em className="font-display italic text-emerald-300">and they vary more than the model does.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
@@ -362,7 +214,7 @@ export default function Part5Reality() {
                           whileInView={{ height: `${a.gen_share * 100}%` }}
                           viewport={{ once: true }}
                           transition={{ duration: 0.6 }}
-                          title={`the model draws “${a.gen}” on ${Math.round(a.gen_share * 100)}% of seeds`}
+                          title={`the model generates “${a.gen}” on ${Math.round(a.gen_share * 100)}% of seeds`}
                         />
                       </div>
                       <div className="flex h-full w-1/2 max-w-[34px] flex-col justify-end">
@@ -391,7 +243,7 @@ export default function Part5Reality() {
                 ))}
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-5 font-mono2 text-[10px] text-foreground/50">
-                <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-red-400/65" /> what the model draws, as a share of its 50 seeds</span>
+                <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-red-400/65" /> what the model generates, as a share of its 50 seeds</span>
                 {/* rows in the same chart can have different n_real (14-20), so the
                     legend has to name the range it actually covers, not row 0's */}
                 <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-400/60" /> what the photographs show, as a share of {(() => {
@@ -443,61 +295,10 @@ export default function Part5Reality() {
         </Panel>
       </Reveal>
 
-      <Reveal delay={0.08}>
-        <Panel className="mt-6">
-          <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-            finding 19 · when the model and the photographs disagree, which way does it lean?
-          </div>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
-            Three answers exist for every question here: what the <strong>photographs</strong> show, what the model draws
-            for <strong>“a wedding in Nigeria”</strong>, and what the same model draws for <strong>“a wedding”</strong>{' '}
-            with no country in it — its own default. Whenever the country prompt disagrees with the photographs, that
-            disagreement has a direction: either toward the photographs, or toward the model's own default answer. We
-            classified every disagreeing question in every cell, in all seven models. Each bar below is one model's own
-            split as a percentage, and the figure on the right is how many disagreements it had in total. Note what this
-            is and is not: a disagreement with a photograph set is not by itself an error — a generated picture is not
-            obliged to match a Commons category — so this is read as a <em>tendency</em>, never as a failure count.
-          </p>
-          <div className="mt-6">
-            <DistortionBars />
-          </div>
-          <ErrorExamples sit={sit} code={code} />
-          <div className="mt-6 flex flex-wrap items-center gap-4 rounded-lg border border-red-400/25 bg-red-400/5 p-4">
-            <span className="font-mono2 text-3xl text-red-300">{DISTORTION.pooled.ratio}×</span>
-            <p className="max-w-xl text-sm leading-6 text-foreground/70">
-              Pooled over all seven models, every one of them scored by the same single annotator:{' '}
-              <strong>{DISTORTION.pooled.toward_default}</strong> disagreements lean toward the model's own default
-              world against <strong>{DISTORTION.pooled.toward_reality}</strong> that lean toward the photographs. The
-              departures are not scattered evenly in every direction. They have a home to fall back towards.
-            </p>
-          </div>
-          <p className="mt-3 max-w-3xl font-mono2 text-[10px] leading-4 text-foreground/50">
-            An earlier version of this panel read Stable Diffusion 2.1 as close to even and concluded that the lean was
-            carried by the six newer models. That was an artifact of our own instrument: SD 2.1 was the only model
-            scored by a different annotator. Scored the way the other six were scored it reads{' '}
-            <strong>
-              {Math.round(
-                (DISTORTION.sd21_matched.toward_default /
-                  (DISTORTION.sd21_matched.toward_default + DISTORTION.sd21_matched.toward_reality)) *
-                  100
-              )}
-              %
-            </strong>{' '}
-            toward its own default and sits mid-pack, not apart. A measurement that can move that far on annotator
-            choice alone is one that has to be taken on a single instrument, which is what this page now does
-            everywhere. Not a single one
-            of the {DISTORTION.sd21.n_questions_tested} tested questions is individually significant — and that held
-            when the questionnaire behind it was tripled to the full collected set, so the null is no longer a
-            sample-size question. This stays a pooled tendency.
-          </p>
-          <div className="mt-5 border-t border-border pt-5">
-            <TierNote
-              tier="evidence"
-              text={`Direction assigned per question by permutation test, 10,000 shuffles. On Stable Diffusion 2.1, ${DISTORTION.sd21.n_significant_p05} of ${DISTORTION.sd21.n_questions_tested} questions reach significance on their own, so this is reported only as a pooled tendency and never attribute by attribute. ${DISTORTION.caveat} All seven rows are scored by gemma4, the page's only annotator.`}
-            />
-          </div>
-        </Panel>
-      </Reveal>
+      {/* finding 19 — "when the model and the photographs disagree, which way does
+          it lean?" — REMOVED 2026-08-06, with its DistortionBars and ErrorExamples
+          panels. distortion_summary.json and part5.ts's DISTORTION export are
+          untouched; nothing renders them now. Recover from git if wanted. */}
     </SceneShell>
   )
 }

@@ -28,6 +28,21 @@ export interface Hardening {
 }
 export const HARDENING = ui.hardening as unknown as Record<CellKey, Hardening>
 
+/* Fail loud, never invent: scenes 02 and 05 quote AUC ranges derived from this
+   table, so a partial export must kill the page at import time rather than let
+   the UI fall back to hand-typed numbers. (The fallback that used to live in
+   scene 05 printed "96–99%" — a range no export actually contains.) The design
+   is 6 situations × 8 countries = 48 cells; the export must carry all of them. */
+{
+  const entries = Object.entries(HARDENING)
+  const bad = entries.filter(([, h]) => typeof h?.knn_auc !== 'number')
+  if (entries.length !== 48 || bad.length) {
+    throw new Error(
+      `ui_v2.json: hardening table incomplete — ${entries.length}/48 cells, ${bad.length} missing knn_auc`,
+    )
+  }
+}
+
 /* the same within-set similarity, recomputed with CLIP instead of DINOv3 */
 export const INTRASET_CLIP = ui.intraset_clip as unknown as Record<
   CellKey, { mean: number; ci_low: number; ci_high: number }
@@ -52,7 +67,7 @@ export const VQA = ui.vqa as unknown as Record<CellKey, CellVqa>
    again. U12 (apparent continent) joined the battery on 2026-08-03; it had been
    withheld since the first export. The "a wedding → Europe 80%" card that was the
    argument for surfacing it was qwen3_vl's, and qwen3_vl was retired on 2026-07-31 —
-   under gemma4 the plain prompt has no nameable continent at all. See U12_CONTINENT. */
+   under gemma4 the default prompt has no nameable continent at all. See U12_CONTINENT. */
 /* U12 asks "which continent does this appear to be", and the answer is the page's own
    thesis showing up inside the instrument: name a non-Western country and the annotator
    names a continent; name a Western one, or none at all, and it mostly returns "unclear".
