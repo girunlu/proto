@@ -1,72 +1,118 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
-import { rgb } from '../lib/colors'
+
+import { rgb, rgba } from '../lib/colors'
 import { Q_TEXT } from '../data/uiv2'
 import { useModel, MODEL_NAME, MODELS, type ModelId } from '../data/modelContext'
-import { CONSENSUS as C, PREVALENCE as P } from '../data/remedy'
+import { CONSENSUS as C, PREVALENCE as P, firingCells, isAssumption } from '../data/remedy'
+import { modelImg, modelSeeds } from '../data/modelData'
+import { C8, type Sit, type Code } from '../data/part1'
 
 const short = (m: string) => MODEL_NAME[m as ModelId]?.replace('Stable Diffusion', 'SD') ?? m
 
-/* The unanimity histogram with the permutation null drawn behind it. The null is the
-   whole point: chance alone puts ~101 slots at 7-of-7, so the observed 135 has to be
-   read against that and not against zero. */
-function Histogram() {
-  const bars = Object.entries(C.hist).map(([k, v]) => ({ k: Number(k), v }))
-  const max = Math.max(...bars.map((b) => b.v))
-  return (
-    <div>
-      <div className="flex items-end gap-2" style={{ height: 160 }}>
-        {bars.map((b) => (
-          <div key={b.k} className="flex flex-1 flex-col items-center justify-end gap-1.5">
-            <span className="font-mono2 text-[10px] text-foreground/50">{b.v}</span>
-            <motion.div
-              className="w-full rounded-t"
-              initial={{ height: 0 }}
-              whileInView={{ height: `${(b.v / max) * 120}px` }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: b.k * 0.04 }}
-              style={{ background: b.k === 7 ? rgb('--c-em') : b.k === 1 ? rgb('--c-red') : rgb('--c-gray'), opacity: b.k === 7 || b.k === 1 ? 0.8 : 0.35 }}
-            />
-            <span className="font-mono2 text-[10px] text-foreground/40">{b.k}</span>
-          </div>
-        ))}
-      </div>
-      <p className="mt-2 text-center font-mono2 text-[9px] tracking-wider text-foreground/35 uppercase">
-        how many of the seven models fill the blank the same way
-      </p>
-    </div>
-  )
+/* cell keys are `${sit}_${code}`; no situation contains an underscore, so the last
+   one is the separator */
+function splitCell(key: string): { sit: Sit; code: Code | 'default' } {
+  const i = key.lastIndexOf('_')
+  return { sit: key.slice(0, i) as Sit, code: key.slice(i + 1) as Code | 'default' }
+}
+const promptOf = (key: string) => {
+  const { sit, code } = splitCell(key)
+  return code === 'default' ? `a ${sit}` : `a ${sit} in ${C8[code as Code].name}`
 }
 
-function NullBar({ label, t }: { label: string; t: typeof C.null.unanimous }) {
-  const max = Math.max(t.observed, t.hi) * 1.15
+/* ── the evidence behind one matrix cell ───────────────────────────────────────
+   The matrix ships counts, and a count is exactly the kind of number this page
+   refuses to let stand on its own: "flux assumes it is daytime in 41 of 54
+   prompts" is a claim about pictures, so the pictures have to be reachable. The
+   firing prompts come from the debt block at the headline gate, which is the same
+   record the count was made from — see firingCells for the one case (attributes
+   the prompt itself entails) where the count exists and the list cannot.
+
+   Rendered in the page's existing preview position — fixed, bottom right, pointer
+   transparent — so it behaves like every other hover preview here rather than
+   inventing a second idiom for the same gesture. */
+type Pick = { m: ModelId; q: string; v: string; n: number }
+
+/* ── the shading ──────────────────────────────────────────────────────────────
+   The first version scaled alpha linearly on 0…54, which is the wrong range: no
+   cell is ever 0 (blank means "outside this model's top twenty"), the observed
+   floor is 7, and the counts are heavily skewed — 90% sit under 27 while the
+   scale reserved half its ink for 27…54. A cell of 24, well into the top decile,
+   came out at 0.35 alpha and read as nothing.
+   The ramp now spans the observed range and is square-rooted, so the crowded low
+   end gets the spread it needs. The number is printed in every cell regardless —
+   the colour is the secondary encoding here, which is what makes a perceptual
+   ramp legitimate rather than a distortion. Legend below the table, with the
+   median ticked, since a non-linear ramp has to show its own scale. */
+/* prompt-entailed and abstention rows are dropped before anything is measured off
+   the matrix, so the ramp is scaled to what the table actually shows */
+const MATRIX = P.matrix.filter((r) => isAssumption(r.q, r.v))
+const COUNTS = MATRIX.flatMap((r) => Object.values(r.by_model).filter((n) => n > 0)).sort((a, b) => a - b)
+const N_LO = COUNTS[0]
+const N_HI = COUNTS[COUNTS.length - 1]
+const N_MED = COUNTS[Math.floor(COUNTS.length / 2)]
+const alphaFor = (n: number) =>
+  n <= 0 ? 0 : 0.14 + 0.78 * Math.sqrt(Math.max(0, n - N_LO) / (N_HI - N_LO))
+
+/* Images are drawn breadth-first across the firing prompts: one from each before a
+   second from any, so a 1-image preview is one prompt rather than one seed of one
+   prompt, and 2×2 is four different prompts wherever the count allows. */
+function sample(m: ModelId, cells: string[], want: number) {
+  // no cells => per is Infinity and the loop below never terminates
+  if (!cells.length) return []
+  const per = Math.ceil(want / cells.length)
+  const cols = cells.map((key) => {
+    const { sit, code } = splitCell(key)
+    return modelSeeds(m, sit, code, per).map((s) => ({ key, sit, code, s }))
+  })
+  const out: { key: string; sit: Sit; code: Code | 'default'; s: number }[] = []
+  for (let i = 0; i < per && out.length < want; i++) {
+    for (const col of cols) {
+      if (col[i] && out.length < want) out.push(col[i])
+    }
+  }
+  return out
+}
+
+function EvidencePreview({ pick, want }: { pick: Pick; want: number }) {
+  const { m, q, v, n } = pick
+  const { cells, held } = firingCells(m, q, v)
+  const shots = sample(m, cells, want)
+  const cols = want === 1 ? 1 : 2
+
   return (
-    <div>
-      <div className="flex items-baseline justify-between font-mono2 text-[10px] text-foreground/45">
-        <span>{label}</span>
-        <span>
-          <strong className="text-foreground/80">{t.observed}</strong> observed · {t.mean} expected by chance
-        </span>
+    <div className="pointer-events-none fixed right-6 bottom-6 z-50 w-[300px] rounded-xl border border-amber-300/40 bg-background/95 p-2.5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)] backdrop-blur">
+      <div className="font-mono2 text-[10px] leading-4 text-foreground/60">
+        <span className="text-amber-200">{short(m)}</span> · {Q_TEXT[q] ?? q}{' '}
+        <span className="text-emerald-300">{v}</span>
       </div>
-      <div className="relative mt-1.5 h-6 rounded-sm bg-foreground/5">
-        {/* the null's 95% band, drawn as the thing the observation has to beat */}
-        <div
-          className="absolute inset-y-0 bg-foreground/15"
-          style={{ left: `${(t.lo / max) * 100}%`, width: `${((t.hi - t.lo) / max) * 100}%` }}
-        />
-        <motion.div
-          className="absolute inset-y-1.5 left-0 rounded-sm bg-emerald-400/50"
-          initial={{ width: 0 }}
-          whileInView={{ width: `${(t.observed / max) * 100}%` }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        />
-        <div className="absolute inset-y-0 w-px bg-foreground/50" style={{ left: `${(t.mean / max) * 100}%` }} />
+      <div className={`mt-2 grid gap-0.5 ${cols === 1 ? '' : 'grid-cols-2'}`}>
+        {shots.map((sh) => (
+          <img
+            key={`${sh.key}_${sh.s}`}
+            src={modelImg(m, sh.sit, sh.code, sh.s)}
+            alt=""
+            loading="lazy"
+            className="w-full rounded-sm"
+          />
+        ))}
       </div>
-      <p className="mt-1 font-mono2 text-[9px] text-foreground/40">
-        grey band = 95% of {C.null.n_perm} shuffles that keep each question's answer mix but scramble which model said
-        what · excess {t.excess} · p = {t.p < 0.001 ? '< 0.001' : t.p}
-      </p>
+      <div className="mt-2 font-mono2 text-[9px] leading-3.5 text-foreground/45">
+        fires in {n} of {P.n_cells} prompts · showing{' '}
+        {shots.length === 1 ? '1' : `${new Set(shots.map((s) => s.key)).size} of them`}
+        <div className="mt-1 text-foreground/30">
+          {cells.slice(0, 6).map(promptOf).join(' · ')}
+          {cells.length > 6 ? ` · +${cells.length - 6} more` : ''}
+        </div>
+        {held > 0 && (
+          <div className="mt-1 text-foreground/30">
+            {held} more {held === 1 ? 'prompt is' : 'prompts are'} counted but not shown: nobody is in the picture, so
+            it says nothing about what people wear.
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -75,12 +121,13 @@ export default function Part7Consensus() {
   const { model } = useModel()
   const pm = C.per_model[model]
   const rows = P.per_model[model] ?? []
-  const unan = C.null.unanimous
+  const [pick, setPick] = useState<Pick | null>(null)
+  const [want, setWant] = useState(4)
 
   return (
     <SceneShell
-      number="VII·4"
-      kicker="part vii · is it just this model? · the shared prior"
+      number="16"
+      kicker="Part VI · is it just this model? · the shared prior"
       title={<>They do not merely lean the same way. They fill the same blanks with <em className="font-display italic text-emerald-300">the same words.</em></>}
       id="xa4"
     >
@@ -88,59 +135,13 @@ export default function Part7Consensus() {
         <p className="prose-scene max-w-2xl">
           The scene above asks a one-sided question: do <em>Stable Diffusion 2.1's</em> assumptions survive in the other
           six? That makes one model the reference frame, and a reader is entitled to ask why. So ask it symmetrically
-          instead. Take every (prompt, question) blank any model fills — <strong>{C.n_slots} of them</strong> — and count
-          how many of the seven fill it with the identical value.
+          instead: across every (prompt, question) blank any model fills — <strong>{C.n_slots} of them</strong> — how
+          much of what a model assumes is its own, and how much is everyone's?
         </p>
       </Reveal>
 
-      <Reveal delay={0.08}>
-        <Panel className="mt-10">
-          <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-            agreement across seven independently trained models · five developers · two architecture families
-          </div>
-          <div className="mt-6 grid gap-8 md:grid-cols-[1.1fr_1fr]">
-            <Histogram />
-            <div className="space-y-5">
-              <NullBar label="all seven name the same value" t={unan} />
-              <NullBar label="at least four of seven agree" t={C.null.at_least_4} />
-            </div>
-          </div>
-
-          <div className="mt-8 border-t border-border pt-6">
-            <p className="max-w-3xl text-sm leading-6 text-foreground/70">
-              <strong>{unan.observed} of {C.n_slots} blanks get the identical answer from all seven models.</strong>{' '}
-              That number needs its null beside it, and this is the honest version: shuffling which model said what —
-              while keeping each question's mix of answers exactly as it is — still produces about{' '}
-              <strong>{unan.mean}</strong> unanimous blanks. Some of the agreement really is arithmetic, because a
-              yes/no question with a lopsided answer distribution will look like consensus whatever the models do.
-            </p>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/70">
-              The excess above chance is <strong>{unan.excess} blanks</strong>, and it does not happen by accident
-              (p {unan.p < 0.001 ? '< 0.001' : `= ${unan.p}`}). Chance-corrected across models, agreement runs at{' '}
-              <strong>Gwet's AC1 = {C.ac1.weighted.toFixed(2)}</strong> over the {C.ac1.n_questions} questions where more
-              than one answer was ever observed — “substantial” on the same scale, and by the same statistic, this project
-              uses to decide whether two human-facing annotators may be pooled at all.
-            </p>
-          </div>
-
-          <div className="mt-6 rounded-lg border border-amber-300/25 bg-amber-300/5 p-4">
-            <div className="font-mono2 text-[10px] tracking-wider text-amber-200/80 uppercase">
-              the result that is stronger for being a near-absence
-            </div>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground/75">
-              Confident disagreement — two different values each named by at least two models — happens in{' '}
-              <strong>{C.contradictory} of {C.n_slots} blanks</strong>, and most of those are wording rather than
-              worldview (“wedding” against “dress”, “traditional” against “attire”). Seven models from five developers do
-              not argue about what a wedding looks like. <strong>Switching model is not an exit either</strong> — which
-              is a harder claim than the direction result above it, because that one is about which way they lean and
-              this one is about what they actually say.
-            </p>
-          </div>
-        </Panel>
-      </Reveal>
-
       <Reveal delay={0.1}>
-        <Panel className="mt-6">
+        <Panel className="mt-10">
           <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
             {MODEL_NAME[model]} · what it shares, what it adds, where it stands alone
           </div>
@@ -217,7 +218,33 @@ export default function Part7Consensus() {
             <div className="font-mono2 text-[10px] tracking-wider text-foreground/40 uppercase">
               the same assumptions, all seven models · read a column for a worldview, a row for the ecosystem's
             </div>
-            <div className="mt-4 overflow-x-auto">
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+              <p className="font-mono2 text-[9px] text-foreground/35">
+                hover any number to see the prompts it counts, and the images that fired them
+              </p>
+              <div className="flex items-center gap-1 font-mono2 text-[9px] text-foreground/35">
+                <span className="mr-1">preview</span>
+                {[
+                  [1, '1'],
+                  [2, '2'],
+                  [4, '2×2'],
+                ].map(([k, label]) => (
+                  <button
+                    key={k}
+                    onClick={() => setWant(k as number)}
+                    aria-pressed={want === k}
+                    className={`rounded border px-1.5 py-0.5 transition ${
+                      want === k
+                        ? 'border-amber-300/50 bg-amber-300/10 text-amber-200'
+                        : 'border-border text-foreground/45 hover:text-foreground/80'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mt-4 overflow-x-auto" onMouseLeave={() => setPick(null)}>
               <table className="w-full min-w-[40rem] border-collapse">
                 <thead>
                   <tr className="font-mono2 text-[9px] text-foreground/35">
@@ -232,26 +259,41 @@ export default function Part7Consensus() {
                   </tr>
                 </thead>
                 <tbody>
-                  {P.matrix.map((r) => (
+                  {MATRIX.map((r) => (
                     <tr key={`${r.q}_${r.v}`} className="border-t border-border/40">
                       <td className="py-1 pr-3 font-mono2 text-[10px] text-foreground/55">
                         <span className="text-foreground/35">{Q_TEXT[r.q] ?? r.q}</span> {r.v}
                       </td>
                       {MODELS.map((m) => {
                         const n = r.by_model[m.id] ?? 0
+                        const a = alphaFor(n)
+                        const on = pick?.m === m.id && pick.q === r.q && pick.v === r.v
+                        /* an empty cell has nothing to preview, and a cell whose
+                           evidence is entirely held back has nothing either */
+                        const show = n > 0 && firingCells(m.id, r.q, r.v).cells.length > 0
+                        const enter = () => setPick(show ? { m: m.id, q: r.q, v: r.v, n } : null)
                         return (
                           <td key={m.id} className="p-0.5 text-center">
-                            <div
-                              className="mx-auto flex h-6 w-full items-center justify-center rounded-sm font-mono2 text-[9px]"
+                            <button
+                              onMouseEnter={enter}
+                              onFocus={enter}
+                              className={`mx-auto flex h-6 w-full items-center justify-center rounded-sm font-mono2 text-[9px] transition ${
+                                on ? 'ring-2 ring-amber-300/80' : ''
+                              }`}
                               style={{
-                                background: rgb('--c-em'),
-                                opacity: 0.08 + (n / P.n_cells) * 0.62,
-                                color: n / P.n_cells > 0.5 ? undefined : 'inherit',
+                                background: rgba('--c-em', a),
+                                /* past roughly half alpha the fill is bright enough that
+                                   the page's cream ink stops reading on it */
+                                color: a > 0.5 ? 'rgb(var(--bg))' : undefined,
                               }}
-                              title={`${short(m.id)}: ${n} of ${P.n_cells} prompts`}
+                              title={
+                                n === 0
+                                  ? `${short(m.id)}: outside this model's twenty most frequent assumptions — not "never"`
+                                  : `${short(m.id)}: ${n} of ${P.n_cells} prompts${show ? ' — show the images' : ''}`
+                              }
                             >
                               {n || ''}
-                            </div>
+                            </button>
                           </td>
                         )
                       })}
@@ -260,12 +302,24 @@ export default function Part7Consensus() {
                 </tbody>
               </table>
             </div>
+            {/* the ramp is not linear, so it has to show its own scale */}
+            <div className="mt-3 flex items-center gap-3">
+              <div className="flex h-3 flex-1 overflow-hidden rounded-sm">
+                {Array.from({ length: N_HI - N_LO + 1 }, (_, i) => (
+                  <div key={i} className="flex-1" style={{ background: rgba('--c-em', alphaFor(N_LO + i)) }} />
+                ))}
+              </div>
+              <span className="font-mono2 text-[9px] whitespace-nowrap text-foreground/35">
+                {N_LO} → {N_HI} of {P.n_cells} prompts · median {N_MED}
+              </span>
+            </div>
+            {pick && <EvidencePreview pick={pick} want={want} />}
           </div>
 
           <div className="mt-8 border-t border-border pt-6">
             <TierNote
               tier="evidence"
-              text={`All seven models scored by the same single-annotator instrument, headline tier only. Agreement is chance-corrected two ways, because the raw share is not interpretable on its own: Gwet's AC1 across models (${C.ac1.weighted.toFixed(3)}, item-weighted over ${C.ac1.n_questions} questions), and a ${C.null.n_perm}-shuffle permutation null that preserves each question's answer distribution. ${Object.keys(C.ac1.single_valued).length} questions had only one value ever observed — AC1 is arithmetically 1.0 there, so they are excluded from the statistic rather than allowed to inflate it. A model missing from a blank did not settle that attribute at the gate; it is absence, not disagreement, and it is never imputed.`}
+              text={`All seven models scored by the same single-annotator instrument, headline tier only. Agreement is chance-corrected two ways, because the raw share above is not interpretable on its own: Gwet's AC1 across models (${C.ac1.weighted.toFixed(3)}, item-weighted over ${C.ac1.n_questions} questions), and a ${C.null.n_perm}-shuffle permutation null that preserves each question's answer distribution — ${C.null.unanimous.observed} of the ${C.n_slots} blanks get the identical answer from all seven models against ${C.null.unanimous.mean} expected by chance, an excess of ${C.null.unanimous.excess} (p ${C.null.unanimous.p < 0.001 ? '< 0.001' : `= ${C.null.unanimous.p}`}). ${Object.keys(C.ac1.single_valued).length} questions had only one value ever observed — AC1 is arithmetically 1.0 there, so they are excluded from the statistic rather than allowed to inflate it. A model missing from a blank did not settle that attribute at the gate; it is absence, not disagreement, and it is never imputed.`}
             />
           </div>
         </Panel>

@@ -83,7 +83,7 @@ export const UMAP = umap.results as unknown as Record<
 // F5: silhouette range across situations (findings_summary.md: "0.10–0.27")
 export const SILHOUETTE_RANGE: [number, number] = [0.1, 0.27]
 
-// Scene 01 ("the unsaid"): what the plain wedding prompt leaves to the model, and
+// Scene 01 ("the unsaid"): what the default wedding prompt leaves to the model, and
 // what the model supplies — from the wedding-default VQA battery (gemma4, 50 seeds). Kept in the data layer so the chips can't silently drift from the stats.
 /* scene 01: derived from the blind-VQA export at load time, so the chips can
    never drift from the data again (they had: the hand-typed version said dress
@@ -95,7 +95,9 @@ export interface Decision { attr: string; answer: string; stat: string; share: n
     model is selected — the cross-model VQA is exported for all seven, so this scene
     follows the switcher instead of silently staying on SD 2.1 while the prose said
     "Stable Diffusion". Callers pass `modelVqa(model, sit, 'default')?.closed`. */
-export const decisionsFrom = (closed: Record<string, { v: string; n: number }[]>): Decision[] =>
+/** `limit = 0` returns every question the battery answered for that cell, which is
+    what scene 01 wants — the whole list, not a highlight reel. */
+export const decisionsFrom = (closed: Record<string, { v: string; n: number }[]>, limit = 8): Decision[] =>
   Object.entries(closed ?? {})
     .map(([q, answers]) => {
       const total = answers.reduce((s, a) => s + a.n, 0)
@@ -107,7 +109,7 @@ export const decisionsFrom = (closed: Record<string, { v: string; n: number }[]>
       }
     })
     .sort((a, b) => b.share - a.share)
-    .slice(0, 8)
+    .slice(0, limit || undefined)
 
 /** SD 2.1's own list, kept for callers that have no model in scope. */
 export const decisionsFor = (sit: Sit): Decision[] =>

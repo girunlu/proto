@@ -46,15 +46,30 @@
     --c-gray: 124 130 153;
     --c-gray-t: 170 176 196;
 
-    /* country tokens */
-    --c-us: 110 139 255;
-    --c-de: 139 124 246;
-    --c-jp: 224 164 88;
-    --c-in: 242 121 92;
-    --c-ng: 242 85 85;
-    --c-ru: 187 154 247;
-    --c-id: 242 144 124;
-    --c-eg: 255 122 147;
+    /* ── country tokens ───────────────────────────────────────────────────────
+       Eight categorical hues, replacing the blue→red ramp that used to encode
+       WEIRD→far. The ramp was unreadable as an identity channel: five of the
+       eight sat in the same orange/red family and US↔DE were ΔE 4.9 apart under
+       normal vision, so the scatter and the legend both asked the reader to tell
+       apart colours that are not tellable apart. Rank is not what these marks
+       carry — the country is — so they are now eight distinct hues, spread ≥24°
+       and assigned around the wheel in stride so that list-adjacent countries are
+       never hue-adjacent either.
+
+       Selected against src/index.css's own surfaces, not a generic one, and
+       validated as a set (OKLab ΔE ×100, all 28 pairs, protan/deutan/tritan):
+       worst CVD pair 8.6 dark / 7.7 light, worst normal-vision pair 17.7 / 20.0.
+       Every slot sits in the mode's lightness band and clears 3:1 on the surface.
+       Do not hand-edit one of these — a single nudge is what re-opens a collision
+       somewhere else in the set. Re-run the whole set through the validator. */
+    --c-us: 57 71 250;    /* blue    */
+    --c-de: 252 49 140;   /* pink    */
+    --c-ru: 14 118 70;    /* green   */
+    --c-id: 156 115 252;  /* violet  */
+    --c-jp: 191 57 13;    /* rust    */
+    --c-eg: 24 154 193;   /* teal    */
+    --c-in: 176 20 181;   /* magenta */
+    --c-ng: 163 139 21;   /* gold    */
 
     color-scheme: dark;
   }
@@ -96,14 +111,17 @@
     --c-gray: 100 116 139;
     --c-gray-t: 71 85 105;
 
-    --c-us: 59 98 217;
-    --c-de: 109 79 208;
-    --c-jp: 176 113 12;
-    --c-in: 209 74 40;
-    --c-ng: 200 30 30;
-    --c-ru: 124 58 237;
-    --c-id: 219 78 20;
-    --c-eg: 190 24 60;
+    /* same eight hues, re-stepped for the light surface — not an automatic
+       darkening of the dark set. NG is the one slot where both bands admit the
+       same step, so it is deliberately identical. */
+    --c-us: 49 45 246;
+    --c-de: 252 73 147;
+    --c-ru: 11 105 62;
+    --c-id: 151 105 251;
+    --c-jp: 173 50 10;
+    --c-eg: 23 148 185;
+    --c-in: 142 13 145;
+    --c-ng: 163 139 21;
 
     color-scheme: light;
   }

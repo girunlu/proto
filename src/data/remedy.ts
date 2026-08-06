@@ -62,6 +62,74 @@ export const debtAt = (m: ModelId, key: string, thr: number) =>
 export const DEBT_MODELS = Object.keys(R.debt) as ModelId[]
 export const DEBT_CELLS = Object.keys(R.debt.sd21 ?? {})
 
+/** the consistency gate that makes an assumption "headline" — CONSISTENCY_HEADLINE
+    in phase3_analysis/{cultural,cross_model}_attribute_tables.py. The prevalence
+    table counts headline-tier cards, so the same gate reproduces its cell list. */
+export const HEADLINE_GATE = 80
+
+/* ── what does not belong in the prevalence table ──────────────────────────────
+   Three ways a (question, answer) row can carry a count without being an
+   assumption the model made:
+
+   1. THE PROMPT ENTAILS IT. Asking for a family and being shown two generations
+      is not a decision made unasked. This is export_remedy.py's own CIRCULAR /
+      CIRCULAR_ALL table, ported — it already applies it to the debt list, and
+      build_prevalence deliberately does not, on the grounds that prevalence is a
+      distribution. That holds for the *statistic*; it does not hold for a table a
+      reader scans row by row for things the model believes.
+      Flattened across situations, because a matrix row has no situation. Exact
+      here: no pair in the table is circular in one situation and meaningful in
+      another (B2=table, F2=coffin and W1=white were deliberately left out of it).
+
+   2. IT IS A NON-ANSWER. "unclear" and "n-a" are the battery's abstentions, and
+      uiv2's open-answer hygiene already drops them for the same stated reason —
+      missing data presented as a finding is worse than no finding.
+
+   3. NOBODY IS IN THE PICTURE. "no headwear" is vacuous in a still life. Handled
+      per cell rather than per row, below, because unlike 1 and 2 it is true of
+      some of a row's prompts and not others. */
+const CIRCULAR = new Set([
+  'U05|wedding', 'U13|dress', 'U13|wedding', 'U13|veil',
+  'U14|wedding', 'U14|bride', 'U14|groom', 'U14|dressed',
+  'U13|plate', 'U13|plates', 'U13|bowl', 'U13|bowls', 'U13|food',
+  'U14|breakfast', 'U14|table', 'U14|dishes',
+  'FA2|yes', 'U14|family',
+  'U13|coffin',
+  'C1|celebration', 'U14|gathered',
+  'U13|desks', 'U14|desks',
+  'U05|clothing', 'U05|attire', 'U13|clothing',
+])
+const NON_ANSWER = new Set(['unclear', 'n-a', 'n/a'])
+
+/** does this (question, answer) belong in a list of things the model assumed? */
+export const isAssumption = (q: string, v: string) =>
+  !CIRCULAR.has(`${q}|${v.toLowerCase()}`) && !NON_ANSWER.has(v.toLowerCase())
+
+/** questions that describe the people in the picture */
+const PERSON_Q = new Set(['U05b', 'U06'])
+const settled = (m: ModelId, key: string, q: string, v: string) =>
+  (R.debt[m]?.[key] ?? []).some((r) => r[0] === q && r[1] === v && r[2] >= HEADLINE_GATE)
+
+/** Which prompts actually fired one row of the prevalence matrix, for one model.
+    The matrix ships counts only, so without this the reader is told "9 of 54" and
+    given no way to ask *which* 9 — the debt block is the same headline record at
+    full per-cell fidelity, so the list comes from there rather than from a second
+    export.
+
+    Reproduces `by_model` exactly for every non-circular non-zero pair in the
+    shipped matrix, minus `held`: prompts that settled "0 people" are not evidence
+    about headwear or clothing, and half of U06=no's cells are peopleless
+    breakfasts. They are reported, not silently dropped, because the count beside
+    them is the export's and still includes them. */
+export function firingCells(m: ModelId, q: string, v: string): { cells: string[]; held: number } {
+  const all = Object.entries(R.debt[m] ?? {})
+    .filter(([, rows]) => rows.some((r) => r[0] === q && r[1] === v && r[2] >= HEADLINE_GATE))
+    .map(([key]) => key)
+  if (!PERSON_Q.has(q)) return { cells: all, held: 0 }
+  const cells = all.filter((key) => !settled(m, key, 'U04', '0'))
+  return { cells, held: all.length - cells.length }
+}
+
 /** every (model, cell) count at one gate, for the strip plot and the median tick */
 export function debtSpread(m: ModelId, thr: number) {
   const cells = R.debt[m] ?? {}

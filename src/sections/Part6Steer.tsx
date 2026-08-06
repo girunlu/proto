@@ -47,8 +47,8 @@ export default function Part6Steer() {
 
   return (
     <SceneShell
-      number="16·b"
-      kicker="Part VI · the escape and its price · what a clause can move"
+      number="09"
+      kicker="Part III · the escape attempts · what a clause can move"
       title={<>Some things yield to a clause. <em className="font-display italic text-amber-200">Some things never move at all.</em></>}
     >
       <Reveal>

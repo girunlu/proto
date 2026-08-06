@@ -8,9 +8,17 @@ import Part2Mechanism from '../sections/Part2Mechanism'
 // import Part3Override from '../sections/Part3Override'
 import Part4Assumptions from '../sections/Part4Assumptions'
 import Part5Reality from '../sections/Part5Reality'
-import Part6Clinic from '../sections/Part6Clinic'
-import Part6Debt from '../sections/Part6Debt'
-import Part6Escape from '../sections/Part6Escape'
+// Scene 16·d, the prompt clinic ("try it yourself"), is DISMISSED 2026-08-06 —
+// unmounted, not deleted, same treatment as Part III. The file and remedy.json's
+// `clinic` block stay in the tree; nothing imports them. To bring it back: restore
+// this import and the <Part6Clinic /> below.
+// import Part6Clinic from '../sections/Part6Clinic'
+// Scene 16·a, the size of the bill, is DISMISSED 2026-08-06 — unmounted, not deleted.
+// Part VI now opens on scene 16. The file is intact (chart card, threshold slider,
+// predict-before-reveal) and remedy.json's `debt` block is untouched; restore this
+// import and the <Part6Debt /> below to bring the whole scene back.
+// import Part6Debt from '../sections/Part6Debt'
+import Part6Escape, { CfgScene } from '../sections/Part6Escape'
 import Part6Steer from '../sections/Part6Steer'
 import BranchAModels from '../sections/BranchAModels'
 import Part7Consensus from '../sections/Part7Consensus'
@@ -18,7 +26,7 @@ import Closing from '../sections/Closing'
 import { NavRail } from '../components/NavRail'
 import { ModelBar } from '../components/ModelBar'
 import { ModelProvider } from '../data/modelData'
-import { REAL_PHOTOS_N, REAL_QUESTIONNAIRE_N } from '../data/part5'
+import { REAL_PHOTOS_N } from '../data/part5'
 
 function PartDivider({ label, sub, violet }: { label: string; sub: string; violet?: boolean }) {
   return (
@@ -43,30 +51,29 @@ export default function Home() {
       <div id="start">
         <Overview />
       </div>
-      <PartDivider label="Part I · the default" sub="the unqualified prompt already has a nationality · real seeds, real geometry" />
+      <PartDivider label="Part I · the default" sub="the default prompt already has a nationality · real seeds, real geometry" />
       <div id="p1">
         <Part1Default />
       </div>
-      <PartDivider label="Part II · the mechanism" sub="how deep does the assumption sit? committed early, coarse to fine, unreachable by guidance" />
-      <div id="p2">
-        <Part2Mechanism />
-      </div>
-      <PartDivider label="Part IV · the assumptions, named" sub="every named assumption paired with the real 50-seed distribution it summarizes" />
+      <PartDivider label="Part II · the assumptions, named" sub="every named assumption paired with the real 50-seed distribution it summarizes" />
       <div id="p4">
         <Part4Assumptions />
       </div>
-      <PartDivider label="Part V · reality" sub={`${REAL_PHOTOS_N.toLocaleString()} real photographs of the same events · the blind questionnaire on ${REAL_QUESTIONNAIRE_N.toLocaleString()} of them`} />
+      <PartDivider label="Part III · the escape attempts" sub="the fixes everyone reaches for first — more guidance, more words — measured" />
+      <div id="p6">
+        <CfgScene />
+        <Part6Escape />
+        <Part6Steer />
+      </div>
+      <PartDivider label="Part IV · the mechanism" sub="how deep does the assumption sit? committed early, and not copied from the training data" />
+      <div id="p2">
+        <Part2Mechanism />
+      </div>
+      <PartDivider label="Part V · an outside reference" sub={`${REAL_PHOTOS_N.toLocaleString()} real photographs of the same events, gathered as neutrally as we could · a comparison, not a ground truth`} />
       <div id="p5">
         <Part5Reality />
       </div>
-      <PartDivider label="Part VI · the escape and its price" sub="you can change what is in the picture; you cannot change how few pictures there are" />
-      <div id="p6">
-        <Part6Debt />
-        <Part6Escape />
-        <Part6Steer />
-        <Part6Clinic />
-      </div>
-      <PartDivider violet label="Part VII · is it just this model?" sub="the identical frozen instrument, run in full on six more models · all real data" />
+      <PartDivider violet label="Part VI · is it just this model?" sub="the identical frozen instrument, run in full on six more models · all real data" />
       <div id="xa">
         <BranchAModels />
         <Part7Consensus />

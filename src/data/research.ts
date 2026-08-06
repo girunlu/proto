@@ -24,7 +24,7 @@ export const COUNTRY_MAP = Object.fromEntries(COUNTRIES.map((c) => [c.id, c])) a
   (typeof COUNTRIES)[number]
 >
 
-// Finding 1: DINOv3 cosine distance from the unqualified default's centroid (n=50, bootstrap CIs)
+// Finding 1: DINOv3 cosine distance from the default prompt's centroid (n=50, bootstrap CIs)
 export const DISTANCES: Record<Situation, Record<Country, number>> = {
   wedding: { US: 0.061, DE: 0.138, IN: 0.484, JP: 0.346, NG: 0.532 },
   funeral: { US: 0.052, DE: 0.113, IN: 0.318, JP: 0.109, NG: 0.346 },
@@ -179,7 +179,7 @@ export const ESCAPE = {
     load: [8, 6, 4, 3],
     escapeCost: 1,
     clause: 'with confetti and fireworks',
-    note: 'Egypt’s celebration default sits closer to the unqualified default (≈0.32 vs 0.55–0.63 for NG/DE/IN), so one clause pulls the whole distribution back. Resistance tracks how deeply the rehearsed scene is dug in, not the country name.',
+    note: 'Egypt’s celebration default sits closer to the default prompt (≈0.32 vs 0.55–0.63 for NG/DE/IN), so one clause pulls the whole distribution back. Resistance tracks how deeply the rehearsed scene is dug in, not the country name.',
   },
   peopleCount: 'People count (“6+”) resisted counter-specification in all 8 of 8 pairs, even when the prompt explicitly asked for “a small group of people.”',
   generalization: '7 of 8 pairs never escape within 3 levels; assumption load rises or holds flat. Specification relocates assumptions; it does not remove them.',
@@ -220,4 +220,4 @@ export const STATS = {
   prompts: 54,
 }
 
-export const THESIS = 'The default is Western; naming a country replaces it with one rehearsed scene; and that scene is settled in the first third of drawing.'
+export const THESIS = 'The default is Western; naming a country replaces it with one rehearsed scene; and that scene is settled in the first third of generation.'

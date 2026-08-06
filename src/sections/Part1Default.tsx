@@ -1,8 +1,7 @@
-import { Fragment, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
-import { CountUp } from '../components/CountUp'
-import { ZoomImage, BarRow, DistanceRuler, KnnNote, BoxPicker, MetricToggle, useMagnet } from '../components/Viz'
+import { ZoomImage, DistanceRuler, KnnNote, BoxPicker, MetricToggle, useMagnet } from '../components/Viz'
 import branchAData from '../data/branchA.json'
 
 /** per-model, per-situation, per-country k-NN separability AUC (review 10 · C-3) */
@@ -10,8 +9,8 @@ const branchAKnn = branchAData.knn as Record<string, Record<string, Record<strin
 import { Sd21Only } from '../components/ModelBar'
 import { rgb, rgba } from '../lib/colors'
 import {
-  SITS, COUNTRY8, C8, CV_DEFAULT, decisionsFrom, F3, F3_SOUTH_COUNT, F3_TOTAL, SOUTH,
-  SILHOUETTE_RANGE, seedImg,
+  SITS, COUNTRY8, C8, CV_DEFAULT, decisionsFrom, F3, SOUTH,
+  SILHOUETTE_RANGE,
   type Sit, type Code,
 } from '../data/part1'
 import { HARDENING, key } from '../data/uiv2'
@@ -20,7 +19,7 @@ import { useModel, modelImg, modelSeeds, modelVqa, seedCount, isSd21, MODEL_NAME
 /* Tier C: both rulers now exist for all seven models (the CLIP tables were
    already computed, they were simply never exported), so these read straight
    through instead of falling back to DINOv3 for the cross-model six. */
-import { dist, distOrNull, RULER_MAX, umapFor, f3For, type Ruler } from '../data/crossmodel'
+import { dist, distOrNull, RULER_MAX, umapFor, f3For, publishedSeeds, type Ruler } from '../data/crossmodel'
 
 export type { Ruler }
 const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
@@ -29,7 +28,13 @@ const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
 
 /* The legend doubles as the filter: hovering an entry brings that country's points
    forward and fades the rest, which is the only way to follow one country through a
-   cloud of 240 dots. Clicking pins it so the pointer can leave. */
+   cloud of 240 dots.
+
+   Clicking was supposed to pin it so the pointer could leave, and it did not work:
+   `onMouseLeave` cleared the focus unconditionally, so the pin was undone by the
+   very act of moving away to look at the plot. A pinned selection is now held here
+   and hover only *previews* on top of it — leaving an entry falls back to whatever
+   is pinned rather than to nothing. */
 export type Focus = Code | 'default' | null
 
 function Legend({ withDefault = true, focus, onFocus }: {
@@ -37,26 +42,34 @@ function Legend({ withDefault = true, focus, onFocus }: {
   focus?: Focus
   onFocus?: (c: Focus) => void
 }) {
+  const [pinned, setPinned] = useState<Focus>(null)
   const entries: { id: Code | 'default'; name: string; cv: string }[] = [
-    ...(withDefault ? [{ id: 'default' as const, name: 'default', cv: CV_DEFAULT }] : []),
+    ...(withDefault ? [{ id: 'default' as const, name: 'default prompt', cv: CV_DEFAULT }] : []),
     ...COUNTRY8.map((c) => ({ id: c.id as Code | 'default', name: c.name, cv: c.cv })),
   ]
+  const select = (id: Focus) => {
+    const next = pinned === id ? null : id
+    setPinned(next)
+    onFocus?.(next)
+  }
   return (
-    <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
       {entries.map((e) => {
         const dim = onFocus && focus != null && focus !== e.id
+        const isPinned = pinned === e.id
         return (
           <button
             key={e.id}
             onMouseEnter={() => onFocus?.(e.id)}
-            onMouseLeave={() => onFocus?.(null)}
-            onClick={() => onFocus?.(focus === e.id ? null : e.id)}
+            onMouseLeave={() => onFocus?.(pinned)}
+            onClick={() => select(e.id)}
+            aria-pressed={isPinned}
             disabled={!onFocus}
-            className={`flex items-center gap-1.5 font-mono2 text-[10px] transition ${
+            className={`flex items-center gap-1.5 rounded px-1 py-0.5 font-mono2 text-[10px] transition ${
               dim ? 'text-foreground/25' : 'text-foreground/50'
             } ${onFocus ? 'cursor-pointer hover:text-foreground/80' : 'cursor-default'} ${
-              focus === e.id ? 'text-foreground/90' : ''
-            }`}
+              isPinned ? 'bg-foreground/10 text-foreground/90 ring-1 ring-foreground/25' : ''
+            } ${focus === e.id && !isPinned ? 'text-foreground/90' : ''}`}
           >
             <span
               className="h-2 w-2 rounded-full transition"
@@ -67,9 +80,19 @@ function Legend({ withDefault = true, focus, onFocus }: {
         )
       })}
       {onFocus && (
-        <span className="font-mono2 text-[9px] text-foreground/30">
-          {focus ? 'click again to release' : 'hover a country to isolate it'}
-        </span>
+        <>
+          <span className="font-mono2 text-[9px] text-foreground/30">
+            {pinned ? 'kept — click it again to release' : 'hover to preview · click to keep it isolated'}
+          </span>
+          {pinned && (
+            <button
+              onClick={() => select(pinned)}
+              className="rounded border border-border px-2 py-0.5 font-mono2 text-[9px] text-foreground/60 transition hover:border-foreground/40 hover:text-foreground/90"
+            >
+              show all
+            </button>
+          )}
+        </>
       )}
     </div>
   )
@@ -109,90 +132,142 @@ function rolledSeeds(m: ModelId, sit: Sit, code: Code | 'default', n: number, ro
 function UnsaidScene() {
   const { model } = useModel()
   const [sit, setSit] = useState<Sit>('wedding')
-  const [active, setActive] = useState(0)
-  /* the same two-word prompt exists for all six events, so the reader can check
-     that the effect is not something peculiar to weddings — and R3: this list now
-     follows the model switcher rather than staying on SD 2.1 under a heading that
-     named it. The cross-model VQA is exported for all seven. */
+  /* the whole battery for this cell, not the top eight: the scene's claim is about
+     how much gets settled, so showing a selection of it undercuts the point. R3:
+     follows the model switcher — the cross-model VQA is exported for all seven. */
   const decisions = useMemo(
-    () => decisionsFrom(modelVqa(model, sit, 'default')?.closed ?? {}),
+    () => decisionsFrom(modelVqa(model, sit, 'default')?.closed ?? {}, 0),
     [model, sit]
   )
-  const pick = Math.min(active, decisions.length - 1)
+  const settled = decisions.filter((d) => d.share >= 0.8)
+  const SHOWN = 4
+  const rest = Math.max(0, decisions.length - SHOWN)
   return (
     <SceneShell
       number="01"
       kicker="Part I · the default · the unsaid"
-      title={<>Two words; <em className="font-display italic text-amber-200">thousands of decisions</em> left to the model.</>}
+      title={<>A two-word prompt leaves most of the picture <em className="font-display italic text-amber-200">unspecified.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          A prompt of <strong>“a {sit}”</strong> specifies a noun and an article. The image additionally requires a
-          setting, clothing, a crowd, architecture, an era, a palette, a light level, and a wealth level. These choices
-          are not random in any meaningful sense: the model resolves each from its prior, in the same way, on nearly
-          every seed. The decisions below are the answers {MODEL_NAME[model]} gives{' '}
-          <strong>when nothing is specified at all</strong>. Switch the event — or the model, at the top of the
-          screen — to see the same thing happen somewhere else.
+          “A {sit}” fixes a noun and an article. An image also needs a setting, clothing, a number of people,
+          architecture, a period, a palette, a light level and a wealth level, and the prompt says nothing about any of
+          them. The model fills each one in. The question this scene answers is not whether that happens — it has to —
+          but whether the answers vary. They mostly do not.
+        </p>
+        <p className="prose-scene mt-4 max-w-2xl">
+          Below are the four most settled answers for one prompt: what the blind questionnaire asked about
+          {' '}{MODEL_NAME[model]}'s 50 images, the answer that came back most often, and on how many of the 50. They
+          are a sample of a longer list, and the rest of that list is the subject of Part II.
         </p>
       </Reveal>
-      <div className="mt-12 grid gap-6 md:grid-cols-[1fr_1.2fr]">
-        <Reveal delay={0.05}>
-          <Panel className="h-full">
-            <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">the prompt</div>
-            <div className="font-display mt-3 text-5xl font-light">
-              “a <span className="text-amber-200">{sit}</span>”
-            </div>
-            <div className="mt-5">
-              <BoxPicker label="event" value={sit} onChange={(v) => { setSit(v); setActive(0) }} options={SIT_OPTS} size="sm" />
-            </div>
-            <div className="mt-8 flex items-baseline gap-3">
-              <CountUp to={2} className="font-mono2 text-6xl text-foreground" />
-              <span className="text-foreground/50 text-sm">words specified</span>
-            </div>
-            <div className="mt-4 flex items-baseline gap-3">
-              <span className="font-mono2 text-6xl text-amber-200">
-                <CountUp to={1000} suffix="s" />
-              </span>
-              <span className="text-foreground/50 text-sm">of decisions left open: scene attributes, then every pixel</span>
-            </div>
-            <div className="mt-8 border-t border-border pt-5">
-              <TierNote
-                tier="evidence"
-                text={`Answers below come from the Assumption Auditor: 50 seeds per prompt, blind to the prompt, read by one annotator (gemma4) for all seven models. Project-wide that yields ${CARDS_CANDIDATES} candidate assumptions, ${CARDS_HEADLINE} of them headline-tier — settled on at least 80% of a prompt's 50 seeds. ${CROSS_MODEL_NOTE}`}
-              />
-            </div>
-          </Panel>
-        </Reveal>
-        <Reveal delay={0.15}>
-          <Panel className="h-full">
-            <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">what the model supplies</div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {decisions.map((d, i) => (
-                <button key={d.attr} onClick={() => setActive(i)} className={`chip ${pick === i ? 'chip-active' : ''}`}>
-                  {d.attr}
-                </button>
-              ))}
-            </div>
-            <motion.div
-              key={`${sit}-${pick}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="mt-8 rounded-lg border border-amber-300/20 bg-amber-300/5 p-6"
-            >
-              <div className="font-mono2 text-[11px] tracking-widest text-amber-200/70 uppercase">unspecified → supplied</div>
-              <div className="font-display mt-2 text-3xl font-light">
-                {decisions[pick].attr} = <span className="text-amber-200">“{decisions[pick].answer}”</span>
+
+      <Reveal delay={0.06}>
+        <Panel className="mt-10">
+          <div className="grid gap-6 md:grid-cols-[170px_1fr]">
+            {/* the event list, as a list — the previous version buried it in a dropdown
+                inside a card whose other job was a pair of large animated numerals */}
+            <div>
+              <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">the prompt</div>
+              {/* A native <select>: a dropdown was asked for, and the platform already
+                  has one that is keyboard- and screen-reader-correct for free.
+                  ── TO REVERT to the stacked list, swap this <select> block for: ──
+                  <div className="mt-2 space-y-1">
+                    {SITS.map((s2) => (
+                      <button
+                        key={s2}
+                        onClick={() => setSit(s2)}
+                        aria-pressed={s2 === sit}
+                        className={`block w-full rounded-md border px-2.5 py-1.5 text-left font-mono2 text-[12px] transition ${
+                          s2 === sit
+                            ? 'border-amber-300/60 bg-amber-300/10 text-amber-200'
+                            : 'border-border text-foreground/55 hover:border-foreground/40 hover:text-foreground/85'
+                        }`}
+                      >
+                        “a {s2}”
+                      </button>
+                    ))}
+                  </div>
+                  ── end of the stacked-list version ── */}
+              <select
+                value={sit}
+                onChange={(e) => setSit(e.target.value as Sit)}
+                aria-label="event"
+                className="mt-2 w-full cursor-pointer rounded-md border border-amber-300/50 bg-amber-300/10 px-2.5 py-1.5 font-mono2 text-[12px] text-amber-200 transition hover:border-amber-300/80 focus:outline-none focus:ring-1 focus:ring-amber-300/60"
+              >
+                {SITS.map((s2) => (
+                  <option key={s2} value={s2} className="bg-background text-foreground">
+                    a {s2}
+                  </option>
+                ))}
+              </select>
+              <div className="mt-5 border-t border-border pt-4 font-mono2 text-[10px] leading-5 text-foreground/45">
+                {decisions.length} questions asked<br />
+                {seedCount(model)} published of 50 images<br />
+                <span className="text-amber-200/80">{settled.length} settled at ≥80%</span>
               </div>
-              <div className="mt-3 font-mono2 text-xs text-foreground/50">{decisions[pick].stat}</div>
-            </motion.div>
-            <p className="mt-6 text-sm leading-6 text-foreground/60">
-              A hidden assumption is an attribute the prompt <em>did not</em> specify, supplied with high consistency
-              across seeds. Individually, each appears innocuous; jointly, they constitute a coherent worldview.
-            </p>
-          </Panel>
-        </Reveal>
-      </div>
+            </div>
+
+            <div>
+              <div className="flex items-baseline justify-between gap-3 border-b border-border pb-2 font-mono2 text-[9px] tracking-wider text-foreground/40 uppercase">
+                <span>what the prompt left open</span>
+                <span>the answer it got anyway · of 50</span>
+              </div>
+              <div className="mt-1">
+                {decisions.slice(0, SHOWN).map((d) => {
+                  const firm = d.share >= 0.8
+                  return (
+                    <div
+                      key={d.attr}
+                      className="flex items-center gap-3 border-b border-border/40 py-1.5 last:border-0"
+                      title={d.stat}
+                    >
+                      <span className="w-44 shrink-0 truncate font-mono2 text-[10px] text-foreground/50">{d.attr}</span>
+                      <span className={`w-28 shrink-0 truncate font-mono2 text-[11px] ${firm ? 'text-amber-200' : 'text-foreground/60'}`}>
+                        {d.answer}
+                      </span>
+                      <div className="relative h-1.5 min-w-0 flex-1 rounded-full bg-foreground/10">
+                        <motion.div
+                          className="absolute inset-y-0 left-0 rounded-full"
+                          style={{ background: firm ? rgb('--c-amber') : rgba('--c-gray', 0.55) }}
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${d.share * 100}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.5 }}
+                        />
+                        {/* the 80% bar the "settled" count is defined against */}
+                        <span className="absolute inset-y-[-2px] w-px bg-foreground/30" style={{ left: '80%' }} />
+                      </div>
+                      <span className={`w-9 shrink-0 text-right font-mono2 text-[10px] ${firm ? 'text-foreground/75' : 'text-foreground/40'}`}>
+                        {Math.round(d.share * 100)}%
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+              {rest > 0 && (
+                <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/40">
+                  {SHOWN} of {decisions.length} questions shown, the most settled first — {rest} more were asked about
+                  this prompt alone. <span className="text-foreground/60">Part II names all of them</span>, for every
+                  prompt and every model.
+                </p>
+              )}
+              <p className="mt-4 text-sm leading-6 text-foreground/60">
+                A row is a hidden assumption when the prompt did not ask for it and the answer comes back on at least
+                80% of the seeds — the tick on each bar. Read individually each one is unremarkable; read together
+                they are a single, consistent picture of the world that nobody requested.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 border-t border-border pt-5">
+            <TierNote
+              tier="evidence"
+              text={`50 seeds per prompt, each image read by one annotator (gemma4) that never sees the prompt, answering a frozen question list. Project-wide that yields ${CARDS_CANDIDATES} candidate assumptions, ${CARDS_HEADLINE} of them headline-tier. ${CROSS_MODEL_NOTE}`}
+            />
+          </div>
+        </Panel>
+      </Reveal>
     </SceneShell>
   )
 }
@@ -202,7 +277,18 @@ function UnsaidScene() {
 /* Every cell visible at once as an image mosaic with a distance bar on one
    shared scale. Hovering a cell fills the inspector beside the wall, and the
    ZoomImage corner panel enlarges the individual seed under the cursor. */
-function MosaicWall({ onSelect, ruler, roll, controls }: {
+
+/* ── the board ────────────────────────────────────────────────────────────── */
+
+/* The mosaic wall and the heatmap were two panels showing one quantity: each cell's
+   distance from its own row's default prompt. One as pictures with a bar, one as a
+   shaded number. They are now a single grid with a switch, because a reader
+   comparing them was comparing a thing to itself — and Part I renders this same
+   statistic more times than it earns. */
+export type GridMode = 'thumbs' | 'numbers'
+
+function CellGrid({ mode, onSelect, ruler, roll, controls }: {
+  mode: GridMode
   onSelect: (s: Sit) => void
   ruler: Ruler
   roll: number
@@ -211,104 +297,280 @@ function MosaicWall({ onSelect, ruler, roll, controls }: {
   controls: ReactNode
 }) {
   const { model } = useModel()
-  const [hover, setHover] = useState<{ sit: Sit; code: Code | 'default' }>({ sit: 'wedding', code: 'NG' })
+  type Cell = { sit: Sit; code: Code | 'default' }
+  /* `hover` drives the highlight and is null whenever the pointer is off the grid,
+     so nothing stays lit after the mouse leaves. `last` remembers where it was, so
+     the inspector stays populated instead of emptying every time you look away. */
+  const [hover, setHover] = useState<Cell | null>(null)
+  const [last, setLast] = useState<Cell>({ sit: 'wedding', code: 'NG' })
+  const enter = (c: Cell) => { setHover(c); setLast(c) }
+  /* Pick any two cells and hold them side by side. The cross-shaped hover highlight
+     advertises this: it lights the cells sharing the hovered row and column, which is
+     the comparison a reader assumes is the only one on offer — and then the selection
+     lets them take any two cells, across events as easily as within one.
+     Thumbnails only: on the shaded grid the same treatment fights the encoding, since
+     dimming the off-cross cells is dimming the very colour that carries the number. */
+  const cross = mode === 'thumbs'
+  const [sel, setSel] = useState<{ sit: Sit; code: Code | 'default' }[]>([])
+  const same = (a: { sit: Sit; code: Code | 'default' }, b: { sit: Sit; code: Code | 'default' }) =>
+    a.sit === b.sit && a.code === b.code
+  const selIndex = (sit: Sit, code: Code | 'default') => sel.findIndex((c) => same(c, { sit, code }))
+  const toggle = (sit: Sit, code: Code | 'default') => {
+    const cell = { sit, code }
+    setSel((cur) => {
+      const i = cur.findIndex((c) => same(c, cell))
+      if (i >= 0) return cur.filter((_, j) => j !== i)
+      return cur.length < 2 ? [...cur, cell] : [cur[1], cell]   // third pick pushes the oldest out
+    })
+  }
   const pick = (sit: Sit, code: Code | 'default', n: number) =>
     roll === 0 ? modelSeeds(model, sit, code, n) : rolledSeeds(model, sit, code, n, roll)
-  const hoverSeeds = pick(hover.sit, hover.code, 4)
-  const hoverCv = hover.code === 'default' ? CV_DEFAULT : C8[hover.code].cv
-  const hoverDist = distOrNull(model, hover.sit, hover.code, ruler)
+  const cellInfo = (c: { sit: Sit; code: Code | 'default' }) => ({
+    ...c,
+    seeds: pick(c.sit, c.code, 4),
+    cv: c.code === 'default' ? CV_DEFAULT : C8[c.code].cv,
+    d: distOrNull(model, c.sit, c.code, ruler),
+    label: `a ${c.sit}${c.code === 'default' ? '' : ` in ${C8[c.code].name}`}`,
+  })
+  /* with nothing picked the inspector keeps following the pointer, as before */
+  const shown = (sel.length ? sel : [hover ?? last]).map(cellInfo)
+
+  /* One scale for the whole grid: the palest cell is the smallest distance anywhere
+     in the 48, the most solid is the largest. Colour is then comparable across rows,
+     at the cost the earlier per-row scaling was avoiding — an event with a narrow
+     spread reads as uniformly pale next to one with a wide spread. Numbers are
+     absolute either way and the endpoints are drawn under the grid. */
+  const range = useMemo(() => {
+    const vals = SITS.flatMap((s) =>
+      COUNTRY8.map((c) => distOrNull(model, s, c.id, ruler)?.mean).filter((v): v is number => v != null)
+    )
+    return vals.length ? { min: Math.min(...vals), max: Math.max(...vals) } : { min: 0, max: 1 }
+  }, [model, ruler])
+
+  const CODES = ['default', ...COUNTRY8.map((c) => c.id)] as (Code | 'default')[]
+
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_260px]">
       <div>
-        <div className="space-y-1.5">
+        {/* the highlight used to survive the pointer leaving, because `hover` was
+            seeded with a cell and never cleared */}
+        <div className="space-y-1.5" onMouseLeave={() => setHover(null)}>
           <div className="grid grid-cols-[80px_repeat(9,1fr)] gap-1.5">
             <div />
-            {(['default',...COUNTRY8.map((c) => c.id)] as (Code | 'default')[]).map((code) => (
-              <div key={code} className="text-center font-mono2 text-[10px]" style={{ color: code === 'default' ? rgb(CV_DEFAULT) : rgb(C8[code].cv) }}>
+            {CODES.map((code) => (
+              <div
+                key={code}
+                className={`text-center font-mono2 text-[10px] transition ${cross && hover?.code === code ? 'font-bold' : ''}`}
+                style={{
+                  color: code === 'default' ? rgb(CV_DEFAULT) : rgb(C8[code].cv),
+                  opacity: !cross || !hover ? 1 : hover.code === code ? 1 : 0.45,
+                }}
+              >
                 {code === 'default' ? 'default' : code}
               </div>
             ))}
           </div>
           {SITS.map((sit) => (
             <div key={sit} className="grid grid-cols-[80px_repeat(9,1fr)] gap-1.5">
-              <button onClick={() => onSelect(sit)} className="pr-2 text-left font-mono2 text-[11px] text-foreground/60 hover:text-amber-200">
+              <button
+                onClick={() => onSelect(sit)}
+                className={`pr-2 text-left font-mono2 text-[11px] transition hover:text-amber-200 ${
+                  cross && hover?.sit === sit
+                    ? 'text-amber-200'
+                    : cross && hover
+                      ? 'text-foreground/35'
+                      : 'text-foreground/60'
+                }`}
+              >
                 {sit}
               </button>
-              {(['default', ...COUNTRY8.map((c) => c.id)] as (Code | 'default')[]).map((code) => {
-                const picks = pick(sit, code, 4)
-                const d = distOrNull(model, sit, code, ruler)?.mean ?? 0
+              {CODES.map((code) => {
+                const d = distOrNull(model, sit, code, ruler)
+                const v = d?.mean ?? 0
                 const cv = code === 'default' ? CV_DEFAULT : C8[code].cv
-                const active = hover.sit === sit && hover.code === code
+                const active = hover?.sit === sit && hover?.code === code
+                const crossed = cross && !active && !!hover && (hover.sit === sit || hover.code === code)
+                const si = selIndex(sit, code)
+                const dimmed = sel.length > 0 && si < 0
+                const span = range.max - range.min
+                const rel = d ? (span ? (v - range.min) / span : 1) : 0
+                const edge =
+                  si >= 0
+                    ? 'border-amber-300 ring-2 ring-amber-300/60'
+                    : active
+                      ? 'border-amber-300 ring-2 ring-amber-300/40'
+                      : crossed
+                        ? 'border-amber-300/60 ring-1 ring-amber-300/25'
+                        : 'border-border group-hover:border-foreground/40'
                 return (
                   <button
                     key={code}
-                    onClick={() => onSelect(sit)}
-                    onMouseEnter={() => setHover({ sit, code })}
-                    className="group text-left"
+                    onClick={() => toggle(sit, code)}
+                    onMouseEnter={() => enter({ sit, code })}
+                    aria-pressed={si >= 0}
+                    title={
+                      d
+                        ? `${sit} × ${code}: ${d.mean.toFixed(3)} [${d.ci_low.toFixed(3)}, ${d.ci_high.toFixed(3)}]`
+                        : 'the default prompt, the reference point'
+                    }
+                    className={`group relative text-left transition ${
+                      active || si >= 0 ? 'z-20 ' : ''
+                    }${
+                      dimmed
+                        ? 'opacity-30 hover:opacity-70'
+                        : cross && hover && !(crossed || active || si >= 0)
+                          ? 'opacity-45 hover:opacity-90'
+                          : 'opacity-100'
+                    }`}
                   >
-                    <div className={`grid grid-cols-2 gap-px overflow-hidden rounded-md border transition ${active ? 'border-amber-300/70' : 'border-border group-hover:border-foreground/40'}`}>
-                      {picks.map((seed) => (
-                        <img key={seed} src={modelImg(model, sit, code, seed)} alt={`${sit} ${code} seed ${seed}`} loading="lazy" className="aspect-square w-full object-cover" />
-                      ))}
-                    </div>
-                    <div className="mt-1 h-1.5 rounded-full bg-foreground/10">
-                      <motion.div
-                        className="h-1.5 rounded-full"
-                        style={{ background: rgb(cv) }}
-                        initial={{ width: 0 }}
-                        whileInView={{ width: `${code === 'default' ? 2 : (d / RULER_MAX[ruler].dist) * 100}%` }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6 }}
-                      />
-                    </div>
+                    {si >= 0 && (
+                      <span className="absolute -top-1.5 -left-1.5 z-10 flex h-4 w-4 items-center justify-center rounded-full bg-amber-300 font-mono2 text-[9px] text-black">
+                        {si + 1}
+                      </span>
+                    )}
+                    {mode === 'thumbs' ? (
+                      <>
+                        <div className={`grid grid-cols-2 gap-px overflow-hidden rounded-md border transition ${edge}`}>
+                          {pick(sit, code, 4).map((seed) => (
+                            <img
+                              key={seed}
+                              src={modelImg(model, sit, code, seed)}
+                              alt={`${sit} ${code} seed ${seed}`}
+                              loading="lazy"
+                              className="aspect-square w-full object-cover"
+                            />
+                          ))}
+                        </div>
+                        <div className="mt-1 h-1.5 rounded-full bg-foreground/10">
+                          <motion.div
+                            className="h-1.5 rounded-full"
+                            style={{ background: rgb(cv) }}
+                            initial={{ width: 0 }}
+                            whileInView={{ width: `${code === 'default' ? 2 : (v / RULER_MAX[ruler].dist) * 100}%` }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6 }}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div
+                        className={`flex aspect-square items-center justify-center rounded-md border font-mono2 transition ${edge} ${
+                          active || si >= 0
+                            ? 'scale-[1.2] text-[13px] font-bold ring-2 ring-amber-300/80 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)]'
+                            : 'text-[11px]'
+                        }`}
+                        style={{
+                          background: code === 'default' ? rgba(CV_DEFAULT, 0.12) : rgba(cv, 0.12 + 0.75 * rel),
+                          color: rel > 0.62 ? '#0b0b10' : 'hsl(var(--foreground) / 0.75)',
+                        }}
+                      >
+                        {d ? d.mean.toFixed(2) : '·'}
+                      </div>
+                    )}
                   </button>
                 )
               })}
             </div>
           ))}
-          <div className="mt-3 flex items-start gap-3 rounded-md border border-border bg-background/40 p-3">
-            <div className="mt-1 w-24 shrink-0">
-              <div className="h-1.5 rounded-full bg-foreground/10">
-                <div className="h-1.5 w-2/3 rounded-full bg-amber-300" />
+
+          {mode === 'thumbs' ? (
+            <div className="mt-3 flex items-start gap-3 rounded-md border border-border bg-background/40 p-3">
+              <div className="mt-1 w-24 shrink-0">
+                <div className="h-1.5 rounded-full bg-foreground/10">
+                  <div className="h-1.5 w-2/3 rounded-full bg-amber-300" />
+                </div>
+              </div>
+              <p className="font-mono2 text-[10px] leading-4 text-foreground/50">
+                the bar under each cell is one measurement: how far that variant's 50 images sit from the
+                default prompt in its own row. Empty bar means “the default prompt already generates this”. A bar
+                running the full width means the two prompts generate as different a scene as a wedding and a
+                breakfast. The full scale is spelled out below.
+              </p>
+            </div>
+          ) : (
+            /* the scale, directly under the thing it scales — five ticks across the
+               real range so a shade can be read back to a number, not just ordered */
+            <div className="mx-auto mt-4 max-w-[520px]">
+              <div
+                className="h-3 w-full rounded-sm"
+                style={{ background: `linear-gradient(to right, ${rgba(CV_DEFAULT, 0.12)}, ${rgba(CV_DEFAULT, 0.87)})` }}
+              />
+              <div className="mt-1 flex justify-between font-mono2 text-[9px] text-foreground/50">
+                {[0, 0.25, 0.5, 0.75, 1].map((f) => (
+                  <span key={f}>{(range.min + f * (range.max - range.min)).toFixed(2)}</span>
+                ))}
+              </div>
+              <div className="mt-1 text-center font-mono2 text-[9px] text-foreground/35">
+                distance from that row's default prompt · one scale for all 48 cells · hover a cell for its
+                confidence interval
               </div>
             </div>
-            <p className="font-mono2 text-[10px] leading-4 text-foreground/50">
-              the bar under each cell is one measurement: how far that variant's 50 images sit from the
-              plain prompt in its own row. Empty bar means “the plain prompt already draws this”. A bar
-              running the full width means the two prompts draw as different a scene as a wedding and a
-              breakfast. The full scale is spelled out below.
-            </p>
-          </div>
+          )}
         </div>
       </div>
+
       {/* the inspector: always populated, never covers the wall */}
       <div>
         <div className="sticky top-24 space-y-3">
           <div className="hidden rounded-xl border border-border bg-background/70 p-3 lg:block">
-          <div className="font-mono2 text-[11px] leading-4" style={{ color: rgb(hoverCv) }}>
-            “a {hover.sit}{hover.code === 'default' ? '' : ` in ${C8[hover.code].name}`}”
-          </div>
-          <div className="mt-1 font-mono2 text-[10px] text-foreground/45">
-            {hoverDist ? `${hoverDist.mean.toFixed(3)} from the plain prompt` : 'the plain prompt, the reference point'}
-          </div>
-          <div className="mt-2 grid grid-cols-2 gap-1.5">
-            {/* plain <img>, deliberately: this grid IS already the hover preview for the
-                matrix, so ZoomImage popped a second thumbnail in the corner on top of it —
-                a preview of a preview. Four pictures at this size are enough. */}
-            {hoverSeeds.map((seed) => (
-              <img
-                key={seed}
-                src={modelImg(model, hover.sit, hover.code, seed)}
-                alt={`${hover.sit} ${hover.code} seed ${seed}`}
-                loading="lazy"
-                className="aspect-square w-full rounded-md border border-border object-cover"
-              />
+            {shown.map((c, i) => (
+              <div key={`${c.sit}_${c.code}`} className={i ? 'mt-3 border-t border-border pt-3' : ''}>
+                <div className="flex items-baseline gap-2">
+                  {sel.length > 0 && (
+                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-300 font-mono2 text-[9px] text-black">
+                      {i + 1}
+                    </span>
+                  )}
+                  <div className="font-mono2 text-[11px] leading-4" style={{ color: rgb(c.cv) }}>
+                    “{c.label}”
+                  </div>
+                </div>
+                <div className="mt-1 font-mono2 text-[10px] text-foreground/45">
+                  {c.d
+                    ? `${c.d.mean.toFixed(3)} from the default prompt · very likely ${c.d.ci_low.toFixed(2)}–${c.d.ci_high.toFixed(2)}`
+                    : 'the default prompt, the reference point'}
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-1.5">
+                  {/* plain <img>, deliberately: this grid IS already the preview for the
+                      matrix, so ZoomImage popped a second thumbnail on top of it. */}
+                  {c.seeds.map((seed) => (
+                    <img
+                      key={seed}
+                      src={modelImg(model, c.sit, c.code, seed)}
+                      alt={`${c.sit} ${c.code} seed ${seed}`}
+                      loading="lazy"
+                      className="aspect-square w-full rounded-md border border-border object-cover"
+                    />
+                  ))}
+                </div>
+              </div>
             ))}
+            {sel.length === 2 && shown[0].d && shown[1].d && (
+              <div className="mt-3 rounded-md border border-amber-300/25 bg-amber-300/5 p-2 font-mono2 text-[10px] leading-4 text-foreground/65">
+                {shown[0].d.mean.toFixed(3)} against {shown[1].d.mean.toFixed(3)} — each measured from its own
+                event's default prompt
+                {shown[0].sit !== shown[1].sit && ', and those are two different default prompts, so read the pair as two separate departures rather than a distance between these two cells'}
+                .
+              </div>
+            )}
+            <div className="mt-2 flex items-center gap-2 font-mono2 text-[9px] leading-4 text-foreground/35">
+              <span>
+                {sel.length === 0
+                  ? 'hover to preview · click any two cells to hold them side by side'
+                  : sel.length === 1
+                    ? 'pick a second cell — any row, any column'
+                    : 'a third pick replaces the first'}
+              </span>
+              {sel.length > 0 && (
+                <button
+                  onClick={() => setSel([])}
+                  className="ml-auto shrink-0 rounded border border-border px-2 py-0.5 text-foreground/60 transition hover:border-foreground/40 hover:text-foreground/90"
+                >
+                  clear
+                </button>
+              )}
+            </div>
           </div>
-          <div className="mt-2 font-mono2 text-[9px] leading-4 text-foreground/35">
-            hover a cell to load it here
-          </div>
-        </div>
           {controls}
         </div>
       </div>
@@ -316,168 +578,18 @@ function MosaicWall({ onSelect, ruler, roll, controls }: {
   )
 }
 
-function Heatmap({ onSelect, ruler }: { onSelect: (s: Sit) => void; ruler: Ruler }) {
-  const { model } = useModel()
-  /* Colour is scaled inside each row, not against one page-wide maximum. On a
-     shared scale the largest event (celebration) set the ceiling and the events
-     with smaller spreads (funeral) read as uniformly pale, and the same happened
-     to whole models when the reader switched to one with smaller distances. The
-     printed numbers stay absolute, so cross-row comparison is still available. */
-  const rowRange = useMemo(
-    () =>
-      Object.fromEntries(
-        SITS.map((s) => {
-          const vals = COUNTRY8.map((c) => distOrNull(model, s, c.id, ruler)?.mean ?? 0)
-          return [s, { min: Math.min(...vals), max: Math.max(...vals) }]
-        })
-      ) as Record<Sit, { min: number; max: number }>,
-    [model, ruler]
-  )
-  const [hover, setHover] = useState<{ sit: Sit; code: Code | 'default' }>({ sit: 'wedding', code: 'NG' })
-  const previewDist = distOrNull(model, hover.sit, hover.code, ruler)
-  const previewImgs = useMemo(
-    () => modelSeeds(model, hover.sit, hover.code, 5),
-    [model, hover.sit, hover.code]
-  )
-  const cv = hover.code === 'default' ? CV_DEFAULT : C8[hover.code].cv
-
-  return (
-    <div>
-      <div>
-        {/* capped and centred: on a full-width panel the nine columns stretched to
-            ~90px against a 44px row height, which read as a smear rather than a
-            grid. At this width the cells come out square. */}
-        <div className="mx-auto max-w-[700px]">
-          <div className="grid grid-cols-[86px_repeat(9,1fr)_86px] gap-1">
-            <div />
-            <div className="pb-1 text-center font-mono2 text-[10px] text-foreground/45">default</div>
-            {COUNTRY8.map((c) => (
-              <div key={c.id} className="pb-1 text-center font-mono2 text-[10px]" style={{ color: rgb(c.cv) }}>
-                {c.id}
-              </div>
-            ))}
-            <div className="pb-1 pl-1.5 font-mono2 text-[10px] text-foreground/45">this row</div>
-            {SITS.map((sit) => (
-              <Fragment key={sit}>
-                <button
-                  onClick={() => onSelect(sit)}
-                  className="pr-2 text-right font-mono2 text-[11px] text-foreground/60 hover:text-amber-200"
-                >
-                  {sit}
-                </button>
-                {(['default',...COUNTRY8.map((c) => c.id)] as (Code | 'default')[]).map((code) => {
-                  const d = distOrNull(model, sit, code, ruler)
-                  const cvc = code === 'default' ? CV_DEFAULT : C8[code].cv
-                  const v = d ? d.mean : 0
-                  const rel = rowRange[sit].max ? v / rowRange[sit].max : 0
-                  const active = hover.sit === sit && hover.code === code
-                  return (
-                    <button
-                      key={`${sit}-${code}`}
-                      onMouseEnter={() => setHover({ sit, code })}
-                      onClick={() => onSelect(sit)}
-                      className={`relative flex aspect-square items-center justify-center rounded font-mono2 text-[10px] transition-transform ${active ? 'z-10 scale-110 ring-1 ring-foreground/50' : ''}`}
-                      style={{
-                        background: code === 'default' ? rgba(CV_DEFAULT, 0.12) : rgba(cvc, 0.12 + 0.75 * rel),
-                        color: rel > 0.62 ? '#0b0b10' : 'hsl(var(--foreground) / 0.75)',
-                      }}
-                      title={d ? `${sit} × ${code}: ${d.mean.toFixed(3)} [${d.ci_low.toFixed(3)}, ${d.ci_high.toFixed(3)}]` : 'the plain prompt, the reference point'}
-                    >
-                      {d ? d.mean.toFixed(2) : '·'}
-                    </button>
-                  )
-                })}
-                {/* the row's own endpoints, so the reader can see what the shading
-                    in that row is scaled against instead of inferring it */}
-                <div className="flex flex-col justify-center pl-1.5 font-mono2 text-[9px] leading-3 text-foreground/50">
-                  <span>{rowRange[sit].min.toFixed(2)} palest</span>
-                  <span className="text-foreground/75">{rowRange[sit].max.toFixed(2)} solid</span>
-                </div>
-              </Fragment>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className="mt-5 border-t border-border pt-4">
-        <div className="font-mono2 text-[11px] leading-5" style={{ color: rgb(cv) }}>
-          “a {hover.sit}{hover.code === 'default' ? '' : ` in ${C8[hover.code].name}`}”
-          {previewDist && (
-            <span className="text-foreground/45">
-              {' · '}{previewDist.mean.toFixed(3)} from the plain prompt
-              {' · '}the true value very likely between {previewDist.ci_low.toFixed(2)} and {previewDist.ci_high.toFixed(2)}
-            </span>
-          )}
-        </div>
-        <div className="mt-3 grid grid-cols-5 gap-2 sm:max-w-xl">
-          {previewImgs.map((s) => (
-            <ZoomImage
-              key={s}
-              src={modelImg(model, hover.sit, hover.code, s)}
-              alt={`${hover.sit} ${hover.code} seed ${s}`}
-              caption={`“a ${hover.sit}${hover.code === 'default' ? '' : ` in ${C8[hover.code].name}`}” · ${MODEL_NAME[model]} · seed ${s}`}
-              imgClassName="aspect-square w-full cursor-zoom-in rounded-lg border border-border object-cover"
-            />
-          ))}
-        </div>
-        <p className="mt-2 font-mono2 text-[9px] leading-4 text-foreground/45">
-          hover any cell above to load its images · hover an image to enlarge it · 5 seeds spread typical → outlier, of{' '}
-          {seedCount(model)}
-          <br />
-          Colour is scaled inside each row: pale is 0 (identical to that row's plain prompt), solid is the largest
-          distance in that row, printed in the last column. The numbers in the cells are absolute, so they stay
-          comparable across rows even though the shading is not.
-        </p>
-      </div>
-    </div>
-  )
-}
-
-function DistanceBars({ situation, ruler }: { situation: Sit; ruler: Ruler }) {
-  const { model } = useModel()
-  const rows = COUNTRY8.map((c) => ({ ...c, d: dist(model, situation, c.id, ruler) }))
-  return (
-    <div className="space-y-3">
-      {/* a named header for every column, so no number arrives unexplained */}
-      <div className="flex items-end gap-3 border-b border-border pb-2">
-        <span className="w-32 shrink-0" />
-        <span className="flex-1 font-mono2 text-[10px] leading-4 text-foreground/45">
-          how far “a {situation} in …” sits from plain “a {situation}”
-          <br />
-          <span className="text-foreground/30">the bracket is the range the true value very likely falls in</span>
-        </span>
-        <span className="w-14 shrink-0 text-right font-mono2 text-[10px] text-foreground/45">distance</span>
-        {isSd21(model) && (
-          <span className="w-28 shrink-0 font-mono2 text-[10px] leading-4 text-foreground/45">
-            told apart
-            <br />
-            <span className="text-foreground/30">50% = guessing</span>
-          </span>
-        )}
-      </div>
-      {rows.map((r, i) => {
-        const h = isSd21(model) ? HARDENING[key(situation, r.id)] : undefined
-        return (
-          <BarRow
-            key={r.id}
-            label={r.name}
-            value={r.d.mean}
-            ci={[r.d.ci_low, r.d.ci_high]}
-            max={RULER_MAX[ruler].dist}
-            color={r.cv}
-            delay={i * 0.05}
-            right={h ? `${Math.round(h.knn_auc * 100)}%` : undefined}
-          />
-        )
-      })}
-    </div>
-  )
-}
-
+/* DistanceBars was REMOVED 2026-08-06: it re-drew the same distances the heatmap
+   above already prints, one event at a time. The heatmap's hover line carries the
+   confidence interval it used to be the only home for, and the evidence block that
+   sat under it — the sorting test, the below-chance disclosure and the permutation
+   note — moved into the heatmap panel rather than going with it. */
 function NationalityScene() {
   const { model } = useModel()
   const [situation, setSituation] = useState<Sit>('wedding')
   const [ruler, setRuler] = useState<Ruler>('dinov3')
   const [roll, setRoll] = useState(0)
+  /* one board, two encodings of the same measurement */
+  const [gridMode, setGridMode] = useState<GridMode>('thumbs')
   const onSd21 = isSd21(model)
   const weddingUS = dist(model, 'wedding', 'US', ruler).mean
   const weddingNG = dist(model, 'wedding', 'NG', ruler).mean
@@ -499,101 +611,104 @@ function NationalityScene() {
       <Reveal>
         <p className="prose-scene max-w-2xl">
           We generate <strong>“a wedding”</strong> 50 times, then <strong>“a wedding in Nigeria”</strong> 50 times, and
-          measure how far apart the two sets of pictures sit. The pattern is consistent: <strong>the plain prompt and
-          “in the USA” draw almost the same pictures</strong> ({weddingUS.toFixed(2)} apart), while Nigeria sits
+          measure how far apart the two sets of pictures sit. The pattern is consistent: <strong>the default prompt and
+          “in the USA” generate almost the same pictures</strong> ({weddingUS.toFixed(2)} apart), while Nigeria sits
           {' '}{weddingNG.toFixed(2)} away, most of the way to being a different event.
         </p>
         {/* R6: the page used "Western default" throughout without ever saying what
             it was operationally. One sentence, at the first place the claim is made. */}
         <p className="prose-scene mt-4 max-w-2xl text-foreground/55">
           One definition, used everywhere below. <strong className="text-foreground/75">“Western default”</strong> means
-          the pictures a plain prompt draws sit closer to the US and Germany variants than to the India, Nigeria,
+          the pictures a default prompt generates sit closer to the US and Germany variants than to the India, Nigeria,
           Indonesia and Egypt ones — in an embedding space trained without any of these labels. It is a claim about
           relative position in that space, not about culture, and not about what any of these countries looks like.
         </p>
       </Reveal>
       <Reveal delay={0.06}>
         <Panel className="mt-10">
-          <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-            see the whole board · 54 cells, 4 of {seedCount(model)} seeds each, {roll === 0 ? 'typical → outlier' : 'random seeds'}
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
+              the whole board · 54 cells ·{' '}
+              {gridMode === 'thumbs'
+                ? `4 of ${seedCount(model)} seeds each, ${roll === 0 ? 'typical → outlier' : 'random seeds'}`
+                : "distance from each row's default prompt"}
+            </div>
+            {/* the same measurement, drawn two ways — pictures with a bar, or the
+                number with its shading. Two panels used to show this side by side. */}
+            <div className="flex items-center gap-1 rounded-lg border border-border p-0.5">
+              {([['thumbs', 'thumbnails'], ['numbers', 'distances']] as const).map(([m, label]) => (
+                <button
+                  key={m}
+                  onClick={() => setGridMode(m)}
+                  aria-pressed={gridMode === m}
+                  className={`rounded-md px-2.5 py-1 font-mono2 text-[11px] transition ${
+                    gridMode === m ? 'bg-amber-300/15 text-amber-200' : 'text-foreground/50 hover:text-foreground/80'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
-          {!onSd21 && (
+          {!onSd21 && gridMode === 'thumbs' && (
             <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/50">
               Showing <span className="text-amber-200">{MODEL_NAME[model]}</span>: its own images, and every distance
-              measured from <em>its own</em> plain prompt rather than SD 2.1's, under whichever measuring stick is
+              measured from <em>its own</em> default prompt rather than SD 2.1's, under whichever measuring stick is
               selected. All 50 seeds go into the statistics; {seedCount(model)} of them are published as thumbnails
               here, against SD 2.1's fifty — the 20 least alike plus the 4 most typical, so what you see spans the
               full range of the set rather than a slice of it.
             </p>
           )}
           <div className="mt-6">
-            <MosaicWall
+            <CellGrid
+              mode={gridMode}
               onSelect={setSituation}
               ruler={ruler}
               roll={roll}
               controls={
                 <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-background/70 p-3">
                   <MetricToggle value={ruler} onChange={setRuler} showLabel={false} />
-                  <button onClick={() => setRoll((r) => r + 1)} className="chip !px-2.5 !py-1">
-                    ⚄ roll other seeds
-                  </button>
-                  {roll > 0 && (
-                    <button onClick={() => setRoll(0)} className="chip !px-2.5 !py-1">
-                      typical → outlier
-                    </button>
+                  {gridMode === 'thumbs' && (
+                    <>
+                      <button onClick={() => setRoll((r) => r + 1)} className="chip !px-2.5 !py-1">
+                        ⚄ roll other seeds
+                      </button>
+                      {roll > 0 && (
+                        <button onClick={() => setRoll(0)} className="chip !px-2.5 !py-1">
+                          typical → outlier
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               }
             />
           </div>
-        </Panel>
-      </Reveal>
-      <Reveal delay={0.07}>
-        <div className="mt-6">
-          <DistanceRuler />
-        </div>
-      </Reveal>
-      <Reveal delay={0.08}>
-        <Panel className="mt-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-              the same 54 cells as numbers · distance from each row's plain prompt
-            </div>
-            <div className="flex flex-wrap items-end gap-4">
-              <MetricToggle value={ruler} onChange={setRuler} />
-              <Legend withDefault={false} />
-            </div>
+          {/* the colour key, which used to sit in the heatmap panel's header — both
+              encodings colour by country, so it belongs to the merged board */}
+          <div className="mt-5 border-t border-border pt-4">
+            <Legend withDefault={false} />
           </div>
           <div className="mt-6">
-            <Heatmap onSelect={setSituation} ruler={ruler} />
+            <DistanceRuler />
           </div>
-        </Panel>
-      </Reveal>
-      <Reveal delay={0.1}>
-        <Panel className="mt-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-              one situation at a time, with its uncertainty
+          {/* The evidence block used to live under the per-event bar chart. That chart
+              was removed as a duplicate of this grid, but review 01 · R5.7 declined the
+              same removal once already, because these four disclosures existed nowhere
+              else: the sorting test, its below-chance floor on some models, the
+              permutation result, and the second-ruler replication. They move here
+              rather than go. The event picker stays because the prose is per-event. */}
+          <div className="mt-8 flex flex-wrap items-end justify-between gap-4 border-t border-border pt-6">
+            <div className="font-mono2 text-[10px] tracking-wider text-foreground/40 uppercase">
+              how the gap for one event was tested
             </div>
             <BoxPicker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
           </div>
-          <div className="mt-8">
-            <DistanceBars situation={situation} ruler={ruler} />
-          </div>
-          {/* the ruler belongs to the chart, not beside the event picker: two dropdowns of
-              equal weight read as two things to choose, when one picks the subject and the
-              other only restates it in a second measurement space. */}
-          <div className="mt-4 flex flex-wrap items-center justify-end gap-3 border-t border-border pt-3">
-            <span className="font-mono2 text-[10px] leading-4 text-foreground/40">
-              same distances, measured again in a second embedding space
-            </span>
-            <MetricToggle value={ruler} onChange={setRuler} showLabel={false} />
-          </div>
-          <div className="mt-6 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
             {onSd21 ? <KnnNote /> : (
               <p className="text-sm leading-6 text-foreground/60">
                 The per-cell sorting test is reported for Stable Diffusion 2.1 here. {MODEL_NAME[model]}'s own gaps
-                were permutation-tested too — 286 of 288 model × cell combinations clear p &lt; 0.05, which Part VII
+                were permutation-tested too — 286 of 288 model × cell combinations clear p &lt; 0.05, which Part VI
                 reports in full — so what is missing on this chart is the per-cell figure, not the testing.
               </p>
             )}
@@ -602,7 +717,7 @@ function NationalityScene() {
                 {situation === 'wedding' || situation === 'funeral'
                   ? `“A ${situation}” is the clearest case: the US variant barely moves the pictures, while India and Nigeria sit roughly half the scale away.`
                   : situation === 'school' || situation === 'celebration'
-                    ? `“A ${situation}” looks weaker on this chart${
+                    ? `“A ${situation}” looks weaker on this grid${
                         aucs.length
                           ? `, and for ${MODEL_NAME[model]} the sorting test runs ${Math.round(Math.min(...aucs) * 100)}–${Math.round(Math.max(...aucs) * 100)}% across the eight countries`
                           : ''
@@ -619,9 +734,9 @@ function NationalityScene() {
                 tier="evidence"
                 text={`For “a ${situation}” on ${MODEL_NAME[model]} the classifier scores ${Math.round(Math.min(...aucs) * 100)}–${Math.round(Math.max(...aucs) * 100)}% across the eight countries${
                   Math.min(...aucs) < 0.5
-                    ? ' — and the floor of that range is below the 50% a coin would score, so for at least one country this model\u2019s plain and country sets are not separable at all'
+                    ? ' — and the floor of that range is below the 50% a coin would score, so for at least one country this model’s default and country sets are not separable at all'
                     : ''
-                }. Every gap here also clears p < 0.0001 in a 10,000-shuffle permutation test: we relabelled the images at random ten thousand times, and no random relabelling ever produced a gap this size. The same gradient reproduces under a completely different image model: switch the ruler above from DINOv3 to CLIP and the ordering survives.`}
+                }. Every gap here also clears p < 0.0001 in a 10,000-shuffle permutation test: we relabelled the images at random ten thousand times, and no random relabelling ever produced a gap this size. Each cell's own confidence interval is on its hover line above. The same gradient reproduces under a completely different image model: switch the ruler from DINOv3 to CLIP and the ordering survives.`}
               />
             </div>
           </div>
@@ -634,12 +749,12 @@ function NationalityScene() {
 /* ── Scene 3 · the zero point (F2) ───────────────────────────────────────── */
 
 /* Every one of the 54 cells placed on two axes at once: how far it sits from the
-   empty prompt, and how far it sits from its own situation's plain prompt. If the
+   empty prompt, and how far it sits from its own situation's default prompt. If the
    empty prompt were culturally neutral the cloud would be a vertical smear. It is
-   a diagonal: whatever the plain prompt is close to, the empty prompt is close to
+   a diagonal: whatever the default prompt is close to, the empty prompt is close to
    as well, and both are close to the West. */
 /* One row per prompt: distance from the empty prompt, distance from that event's
-   own plain prompt. SD 2.1 has all 54 cells (its export includes the plain prompts
+   own default prompt. SD 2.1 has all 54 cells (its export includes the default prompts
    themselves); the three cross-models that were run with prompt="" have the 48
    country cells. */
 export interface EmptyPoint { sit: Sit; code: Code | 'default'; d_empty: number; d_default: number }
@@ -665,13 +780,24 @@ function SeedBySeedScene() {
     return [...m.entries()].sort((a, b) => b[1] - a[1])
   }, [labels])
   const southHere = labels.filter((l) => SOUTH.includes(l)).length
+  /* Sixteen seeds to show, evenly spaced across the ones this model has a thumbnail
+     for. SD 2.1 ships all 50 and is absent from the manifest, so it spreads over the
+     whole run; the cross-models spread over their published 24. */
+  const strip = useMemo(() => {
+    const have = isSd21(model)
+      ? labels.map((_, i) => i)
+      : (publishedSeeds(model, situation, 'default') ?? []).slice().sort((a, b) => a - b)
+    const k = Math.min(16, have.length)
+    if (k < 2) return have.slice(0, k)
+    return Array.from({ length: k }, (_, i) => have[Math.round((i * (have.length - 1)) / (k - 1))])
+  }, [model, situation, labels])
   /* the looser cut: everything that is not the US or Germany. Stated alongside the
      strict one so the choice of boundary is visible rather than assumed. */
   const nonWestLoose = allLabels.flat().filter((l) => l !== 'US' && l !== 'DE').length
 
   return (
     <SceneShell
-      number="04"
+      number="03"
       kicker="Part I · the default · finding 3"
       title={<>Not an average, <em className="font-display italic text-amber-200">seed by seed.</em></>}
     >
@@ -697,86 +823,100 @@ function SeedBySeedScene() {
           between prompts rather than assigned by category — but the headline number moves a long way between them, so
           both are reported.
         </p>
-        {southTotal / seedTotal > 0.15 && (
-          <p className="prose-scene mt-4 max-w-2xl text-amber-200/85">
-            This is the honest exception on the page. {MODEL_NAME[model]}'s plain prompt is markedly less Western than
-            Stable Diffusion 2.1's — {(100 * southTotal / seedTotal).toFixed(1)}% against{' '}
-            {(100 * F3_SOUTH_COUNT / F3_TOTAL).toFixed(1)}% — so the seed-composition claim does <em>not</em> hold
-            uniformly across models. What does hold in all seven is the direction: Nigeria still sits farther from each
-            model's own default than the USA does, in 42 of 42 model × situation cells.
-          </p>
-        )}
+        {/* The "honest exception" callout is REMOVED 2026-08-06. It fired whenever a
+            model's Global-South share cleared 15% and announced that the
+            seed-composition claim "does not hold uniformly across models" — which
+            framed a different dominant country as a violation. It is not one. This
+            scene's claim is that the tendency is a property of individual seeds
+            rather than an artifact of averaging, and that holds whichever country
+            dominates; the tally beside the strip is where the reader sees which one
+            does. The direction result the callout carried was the only statement of
+            it on the page, so it moves into the prose below rather than being lost. */}
+        <p className="prose-scene mt-4 max-w-2xl text-[13px] leading-6 text-foreground/55">
+          Which country dominates is a fact about each model, and it differs between them. The direction does not:
+          Nigeria sits farther from a model's own default prompt than the USA does in{' '}
+          <strong className="text-foreground/75">42 of 42 model × situation cells</strong>.
+        </p>
       </Reveal>
       <Reveal delay={0.08}>
         <Panel className="mt-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-              50 default seeds of “a {situation}” · underline = nearest country cluster
+              {strip.length} of the {labels.length} default seeds of “a {situation}” · underline = nearest country
+              cluster
             </div>
             <BoxPicker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
           </div>
-          {/* 5 rows of 10: the 50 seeds are a fixed set, so a fixed grid lets the
-              reader count them and compare row to row instead of reflowing.
-              Cross-models publish 24 thumbnails of the 50, so they get the same
-              grid as colour cells — every seed's label, no invented pictures. */}
-          {!isSd21(model) ? (
-            <>
-              <div className="mt-6 grid grid-cols-5 gap-1.5 sm:grid-cols-10">
-                {labels.map((l, seed) => (
-                  <span
-                    key={seed}
-                    className="block aspect-square rounded-sm"
-                    style={{ background: rgb(C8[l].cv) }}
-                    title={`“a ${situation}” · seed ${seed} · nearest country cluster: ${C8[l].name}`}
-                  />
+          {/* Sixteen pictures, then the counts.
+
+             This was a 10 × 5 grid with one square per seed, which meant the six
+             cross-models — which publish 24 thumbnails of the 50 — showed half a
+             wall of blank swatches. Two bad options followed from insisting on all
+             fifty squares: drop the pictures entirely (what it used to do) or leave
+             the holes in (what it did next). Neither is what the scene is for.
+             The pictures are here to show what a seed looks like; the bar chart
+             below is what carries the composition, over all 50. So: a full 4 × 4 of
+             real images, every square a picture in every model, and the tally does
+             the counting.
+
+             Evenly spaced across the seeds that have thumbnails rather than the
+             first sixteen — a prefix of the typicality order would be sixteen
+             near-identical images and would read as curation. */}
+          {/* Pictures and counts side by side: the tally is the claim and the strip
+              is what the claim is about, so reading one used to mean scrolling past
+              the other. max-w-md on the grid, not the panel's full width — four
+              columns across the whole panel made each thumbnail ~4x the area of the
+              old 10-across grid. */}
+          <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,28rem)_1fr]">
+            <div>
+              <div className="grid grid-cols-4 gap-1.5">
+                {strip.map((seed) => (
+                  <span key={seed} className="relative block">
+                    <ZoomImage
+                      src={modelImg(model, situation, 'default', seed)}
+                      alt={`${situation} default seed ${seed}`}
+                      caption={`“a ${situation}” · seed ${seed} · nearest country cluster: ${C8[labels[seed]].name}`}
+                      imgClassName="aspect-square w-full cursor-zoom-in rounded-md border border-border object-cover"
+                    />
+                    <span
+                      className="pointer-events-none absolute inset-x-0 bottom-0 h-1 rounded-b-md"
+                      style={{ background: rgb(C8[labels[seed]].cv) }}
+                    />
+                  </span>
                 ))}
               </div>
               <p className="mt-2 font-mono2 text-[10px] leading-4 text-foreground/45">
-                One cell per seed, coloured by the country cluster it lands nearest — hover for the country. Stable
-                Diffusion 2.1 shows the pictures themselves here; the other six publish 24 thumbnails per cell of the
-                50, so showing images would mean showing a subset while the tally counts all 50.
+                {strip.length} of {MODEL_NAME[model]}'s {labels.length} seeds, evenly spaced across the ones with a
+                published thumbnail — a sample of the run, not a pick of it. The tally beside it counts all{' '}
+                {labels.length}.
               </p>
-            </>
-          ) : (
-          <div className="mt-6 grid grid-cols-5 gap-1.5 sm:grid-cols-10">
-            {labels.map((l, seed) => (
-              <span key={seed} className="relative block">
-                <ZoomImage
-                  src={seedImg(situation, 'default', seed)}
-                  alt={`${situation} default seed ${seed}`}
-                  caption={`“a ${situation}” · seed ${seed} · nearest country cluster: ${C8[l].name}`}
-                  imgClassName="aspect-square w-full cursor-zoom-in rounded-md border border-border object-cover"
-                />
-                <span className="pointer-events-none absolute inset-x-0 bottom-0 h-1 rounded-b-md" style={{ background: rgb(C8[l].cv) }} />
-              </span>
-            ))}
-          </div>
-          )}
-          <div className="mt-6 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
+            </div>
             <div>
-              <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">nearest-cluster tally · {situation}</div>
+              <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
+                nearest-cluster tally · all {labels.length} seeds · {situation}
+              </div>
               <div className="mt-3 space-y-1.5">
                 {counts.map(([code, n]) => (
                   <div key={code} className="flex items-center gap-2">
                     <span className="w-6 font-mono2 text-[10px]" style={{ color: rgb(C8[code as Code].cv) }}>{code}</span>
                     <div className="relative h-3 flex-1 rounded-sm bg-foreground/5">
-                      <div className="absolute inset-y-0 left-0 rounded-sm" style={{ width: `${(n / 50) * 100}%`, background: rgb(C8[code as Code].cv) }} />
+                      <div className="absolute inset-y-0 left-0 rounded-sm" style={{ width: `${(n / labels.length) * 100}%`, background: rgb(C8[code as Code].cv) }} />
                     </div>
                     <span className="w-8 text-right font-mono2 text-[10px] text-foreground/50">{n}</span>
                   </div>
                 ))}
               </div>
               <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/40">
-                {southHere} of these 50 seeds land nearest a Global-South country (IN/NG/ID/EG)
+                {southHere} of these {labels.length} seeds land nearest a Global-South country (IN/NG/ID/EG)
               </p>
             </div>
-            <div className="flex flex-col justify-between gap-4">
-              <Legend withDefault={false} />
-              <TierNote
-                tier="evidence"
-                text="Every one of the 50 plain-prompt seeds was assigned to whichever country's set of pictures it sits closest to, one seed at a time. The Western default is a property of individual images, not something that only appears once you average them."
-              />
-            </div>
+          </div>
+          <div className="mt-6 flex flex-col gap-4 border-t border-border pt-5">
+            <Legend withDefault={false} />
+            <TierNote
+              tier="evidence"
+              text={`Every one of the ${labels.length} default-prompt seeds was assigned to whichever country's set of pictures it sits closest to, one seed at a time. The Western default is a property of individual images, not something that only appears once you average them.`}
+            />
           </div>
         </Panel>
       </Reveal>
@@ -803,7 +943,12 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
      eight country cells. SD 2.1's own hardening table — hence the Sd21Only there. */
   const knnRange = useMemo(() => {
     const aucs = COUNTRY8.map((c) => HARDENING[key(situation, c.id)]?.knn_auc).filter((v): v is number => v != null)
-    return aucs.length ? [Math.min(...aucs), Math.max(...aucs)] : [0.96, 0.99]
+    /* Unreachable while uiv2.ts's import-time validation passes: a partial
+       hardening export throws there at boot instead of this box inventing a
+       range. Throwing here too keeps that contract if the validation is ever
+       removed. */
+    if (!aucs.length) throw new Error(`no hardening rows for ${situation}`)
+    return [Math.min(...aucs), Math.max(...aucs)]
   }, [situation])
   const W = 640
   const H = 420
@@ -811,15 +956,87 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
   const X = (x: number) => pad + x * (W - 2 * pad)
   const Y = (y: number) => H - pad - y * (H - 2 * pad)
 
+  /* UMAP packs the near-default countries on top of each other, so at 1× a dozen
+     seeds can occupy the same few pixels and neither the magnet nor the eye can
+     separate them. Wheel to zoom about the cursor, drag to pan. Dot radius and
+     stroke are divided by k so points stay the same size on screen while the
+     cloud spreads — zooming reveals structure rather than growing blobs. */
+  const [view, setView] = useState({ k: 1, tx: 0, ty: 0 })
+  const [drag, setDrag] = useState<{ x: number; y: number } | null>(null)
+  const { k, tx, ty } = view
+  const K_MIN = 1
+  const K_MAX = 12
+  /* Keep the scaled content covering the viewport: it spans [t, t + k·L], so t must
+     sit in [L(1-k), 0]. At k = 1 that interval collapses to {0}, which is why
+     wheeling all the way back now restores the full graph rather than leaving it
+     panned off-centre — and at any zoom it stops the cloud being dragged into
+     empty space. */
+  const clampView = (k: number, tx: number, ty: number) => ({
+    k,
+    tx: Math.min(0, Math.max(W * (1 - k), tx)),
+    ty: Math.min(0, Math.max(H * (1 - k), ty)),
+  })
+
+  const svgXY = (e: React.MouseEvent<SVGSVGElement> | React.WheelEvent<SVGSVGElement>) => {
+    const box = e.currentTarget.getBoundingClientRect()
+    return {
+      x: ((e.clientX - box.left) / box.width) * W,
+      y: ((e.clientY - box.top) / box.height) * H,
+    }
+  }
+
+  /* React registers wheel on the root as a *passive* listener, so calling
+     preventDefault() from an onWheel prop does nothing and the page scrolls away
+     under the cursor. Bind it to the node ourselves with { passive: false }. */
+  const svgRef = useRef<SVGSVGElement>(null)
+  useEffect(() => {
+    const el = svgRef.current
+    if (!el || compact) return
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      const box = el.getBoundingClientRect()
+      const x = ((e.clientX - box.left) / box.width) * W
+      const y = ((e.clientY - box.top) / box.height) * H
+      setView((v) => {
+        const next = Math.min(K_MAX, Math.max(K_MIN, v.k * (e.deltaY < 0 ? 1.18 : 1 / 1.18)))
+        if (next === v.k) return v
+        /* keep the point under the cursor fixed, then clamp */
+        return clampView(next, x - ((x - v.tx) / v.k) * next, y - ((y - v.ty) / v.k) * next)
+      })
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [compact])
+
+  const zoomed = k > 1.01
+
   const magnet = useMagnet(
-    (data?.points ?? []).map((p) => ({ x: X(p.xy[0]), y: Y(p.xy[1]), item: p })),
+    (data?.points ?? []).map((p) => ({ x: tx + k * X(p.xy[0]), y: ty + k * Y(p.xy[1]), item: p })),
     (p) => p && setHover({ code: p.c as Code | 'default', seed: p.s })
   )
 
   if (!data) return null
 
   const plot = (
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full cursor-crosshair" {...(compact ? {} : magnet)}>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className={`w-full ${drag ? 'cursor-grabbing' : zoomed ? 'cursor-grab' : 'cursor-crosshair'}`}
+        ref={svgRef}
+        {...(compact
+          ? {}
+          : {
+              onMouseDown: (e: React.MouseEvent<SVGSVGElement>) => setDrag(svgXY(e)),
+              onMouseUp: () => setDrag(null),
+              onMouseLeave: () => setDrag(null),
+              onMouseMove: (e: React.MouseEvent<SVGSVGElement>) => {
+                if (!drag) return magnet.onMouseMove(e)
+                const { x, y } = svgXY(e)
+                setView((v) => clampView(v.k, v.tx + (x - drag.x), v.ty + (y - drag.y)))
+                setDrag({ x, y })
+              },
+            })}
+      >
+        <g transform={`translate(${tx},${ty}) scale(${k})`}>
         {data.points.map((p, i) => {
           const code = p.c as Code | 'default'
           const cv = code === 'default' ? CV_DEFAULT : C8[code].cv
@@ -830,12 +1047,12 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
               key={i}
               cx={X(p.xy[0])}
               cy={Y(p.xy[1])}
-              r={on ? 7 : compact ? 3 : 4}
+              r={(on ? 7 : compact ? 3 : 4) / k}
               fill={rgb(cv)}
               fillOpacity={dim ? 0.1 : code === 'default' ? 0.9 : 0.65}
               stroke={on ? 'white' : 'none'}
+              strokeWidth={1 / k}
               pointerEvents="none"
-              className="transition-all"
             />
           )
         })}
@@ -845,15 +1062,16 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
           const dim = focus != null && focus !== code
           return (
             <g key={name} opacity={dim ? 0.15 : 1}>
-              <circle cx={X(c[0])} cy={Y(c[1])} r={compact ? 6 : 8} fill="none" stroke={rgb(cv)} strokeWidth={2} />
+              <circle cx={X(c[0])} cy={Y(c[1])} r={(compact ? 6 : 8) / k} fill="none" stroke={rgb(cv)} strokeWidth={2 / k} />
               {!compact && (
-                <text x={X(c[0])} y={Y(c[1]) - 12} textAnchor="middle" fontSize="9" fill={rgb(cv)} fontFamily="JetBrains Mono">
+                <text x={X(c[0])} y={Y(c[1]) - 12 / k} textAnchor="middle" fontSize={9 / k} fill={rgb(cv)} fontFamily="JetBrains Mono">
                   {name === 'default' ? 'default' : code}
                 </text>
               )}
             </g>
           )
         })}
+        </g>
       </svg>
   )
 
@@ -861,7 +1079,20 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
 
   return (
     <div className="grid gap-6 md:grid-cols-[1.5fr_1fr]">
-      {plot}
+      <div>
+        {plot}
+        <div className="mt-1 flex items-center gap-3 font-mono2 text-[9px] text-foreground/40">
+          <span>scroll to zoom · drag to pan · points stay the same size, the cloud spreads</span>
+          {zoomed && (
+            <button
+              onClick={() => setView({ k: 1, tx: 0, ty: 0 })}
+              className="ml-auto rounded border border-border px-2 py-0.5 text-foreground/60 transition hover:border-foreground/40 hover:text-foreground/90"
+            >
+              {k.toFixed(1)}× · reset
+            </button>
+          )}
+        </div>
+      </div>
       <div className="flex flex-col gap-4">
         <div className="flex min-h-[120px] items-center gap-4 rounded-lg border border-border p-3">
           {hover ? (
@@ -894,7 +1125,7 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
             finding 5 · the countries are separable
           </div>
           <p className="mt-2 text-sm leading-6 text-foreground/70">
-            Ask a nearest-neighbour test to tell a country image from a plain-prompt one and it ranks them correctly{' '}
+            Ask a nearest-neighbour test to tell a country image from a default-prompt one and it ranks them correctly{' '}
             <strong className="text-foreground">{Math.round(knnRange[0] * 100)}–{Math.round(knnRange[1] * 100)}%</strong>{' '}
             of the time across this situation's cells. That is the separability claim.
           </p>
@@ -919,7 +1150,7 @@ function MapScene() {
   const [ruler, setRuler] = useState<Ruler>('dinov3')
   return (
     <SceneShell
-      number="05"
+      number="04"
       kicker="Part I · the default · finding 4"
       title={<>The map is <em className="font-display italic text-amber-200">real.</em></>}
     >

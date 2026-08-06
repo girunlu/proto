@@ -3,12 +3,11 @@ import { useEffect, useState } from 'react'
 const STOPS = [
   { id: 'start', label: '— · what this is' },
   { id: 'p1', label: 'I · the default' },
-  { id: 'p2', label: 'II · the mechanism' },
-  // p3 (the override) dismissed 2026-08-04 — the section is unmounted in Home.tsx
-  { id: 'p4', label: 'IV · assumptions' },
-  { id: 'p5', label: 'V · reality' },
-  { id: 'p6', label: 'VI · the escape' },
-  { id: 'xa', label: 'VII · across models' },
+  { id: 'p4', label: 'II · assumptions' },
+  { id: 'p6', label: 'III · the escape' },
+  { id: 'p2', label: 'IV · the mechanism' },
+  { id: 'p5', label: 'V · outside reference' },
+  { id: 'xa', label: 'VI · across models' },
   { id: 'closing', label: '∴ · closing' },
 ]
 

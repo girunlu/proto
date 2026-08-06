@@ -265,12 +265,12 @@ export function KnnNote({ auc }: { auc?: number }) {
       {/* R5.1: this described a classification procedure ("sort them into two
           piles", "scores 50%") for a ranking statistic. AUC is the probability
           that a randomly chosen country image outranks a randomly chosen
-          plain-prompt one — so the wording is now a ranking, not an accuracy. */}
+          default-prompt one — so the wording is now a ranking, not an accuracy. */}
       <p className="mt-2 max-w-2xl text-[13px] leading-6 text-foreground/65">
         A distance can look small and still matter, so we ran a second, blunter check. Take one
-        plain-prompt image and one country image at random, and ask a simple program which is which,
+        default-prompt image and one country image at random, and ask a simple program which is which,
         using nothing but the pictures. The score is how often it puts the country image on the right
-        side of the line. If both prompts drew the same world it is guessing, and scores{' '}
+        side of the line. If both prompts generated the same world it is guessing, and scores{' '}
         <strong className="text-foreground">50%</strong>. A score of{' '}
         <strong className="text-foreground">100%</strong> means the two sets never overlap.
         {auc != null && (

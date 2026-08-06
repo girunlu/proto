@@ -15,11 +15,11 @@ import { openForModel, shiftFor, type ShiftRow } from '../data/crossmodel'
 
 const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
 const CODE_OPTS = [
-  { value: 'default' as const, label: 'no country' },
+  { value: 'default' as const, label: 'default prompt' },
 ...COUNTRY8.map((c) => ({ value: c.id, label: c.name, cv: c.cv })),
 ]
 
-/* ── Scene 13 · the assumptions, named (F14 + F15) ───────────────────────── */
+/* ── Scene 05 · the assumptions, named (F14 + F15) ───────────────────────── */
 
 const STRIP_N = 10
 
@@ -294,11 +294,11 @@ function ForcedControl({ sit, code }: { sit: Sit; code: Code | 'default' }) {
       {FORCED_U12.plain && FORCED_U12.non_western && (
         <p className="mt-3 border-t border-sky-300/20 pt-2.5 text-[12px] leading-5 text-foreground/55">
           Across the whole study, the continent question is the one worth sitting with. Forced to name one, the
-          plain prompt says <strong className="text-foreground/80">Europe or North America</strong> in{' '}
+          default prompt says <strong className="text-foreground/80">Europe or North America</strong> in{' '}
           {Math.round((FORCED_U12.plain.west_share_of_named ?? 0) * 100)}% of the answers that named a continent
           at all — while prompts naming a non-Western country land on a non-Western continent{' '}
           {100 - Math.round((FORCED_U12.non_western.west_share_of_named ?? 0) * 100)}% of the time. The model can
-          read the pictures; on the unqualified prompt what it reads is Western.
+          read the pictures; on the default prompt what it reads is Western.
         </p>
       )}
     </div>
@@ -355,7 +355,7 @@ function AttentionMaps({ sit, code }: { sit: Sit; code: Code | 'default' }) {
           </figure>
         ))}
         <p className="max-w-[220px] text-[12px] leading-5 text-foreground/50">
-          Bright regions are where that single word of the prompt is being attended to while the picture is drawn.
+          Bright regions are where that single word of the prompt is being attended to while the picture is generated.
           Step through the seeds: the country word does not land on a flag or a map, it spreads across the clothing,
           the crowd and the venue. That is the payload.
         </p>
@@ -375,8 +375,8 @@ function NamedScene() {
 
   return (
     <SceneShell
-      number="13"
-      kicker="Part IV · the assumptions, named · findings 14–15"
+      number="05"
+      kicker="Part II · the assumptions, named · findings 14–15"
       title={<>Named, not implied, <em className="font-display italic text-amber-200">with the distribution they describe.</em></>}
     >
       <Reveal>
@@ -420,7 +420,7 @@ function NamedScene() {
           <div className="mt-6">
             <div className="flex items-center justify-between gap-3">
               <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-                “a {sit}{code === 'default' ? '' : ` in ${C8[code].name}`}” · what it draws
+                “a {sit}{code === 'default' ? '' : ` in ${C8[code].name}`}” · what it generates
               </div>
               <span className="font-mono2 text-[10px] text-foreground/40">
                 {cellData.headline_n} firm · {cellData.secondary_n} weaker
@@ -502,9 +502,9 @@ function NamedScene() {
   )
 }
 
-/* ── Scene 14 · cards carry the geometry (F16) ───────────────────────────── */
+/* ── Scene 06 · cards carry the geometry (F16) ───────────────────────────── */
 
-/* one attribute's contribution to the plain→country movement. The plain answer is
+/* one attribute's contribution to the default→country movement. The plain answer is
    shown next to the country answer on every row, because the single most useful
    thing a reader can see here is how often they are the same. */
 /* Half of all rows sit under 0.1 — up to 15 in a single cell — and a stack of
@@ -604,7 +604,7 @@ function BridgeScene() {
      an attribute's answer explained. That never compared the two prompts' answers,
      so an attribute with the SAME answer in both could top the chart off two stray
      seeds — and one that was constant across all 50 seeds was dropped entirely.
-     `share` is the fraction of the plain→country movement predicted by this
+     `share` is the fraction of the default→country movement predicted by this
      attribute's ANSWER DISTRIBUTION changing — not by its majority label flipping.
      Those are different things: 2,845 of the 3,597 rows whose top answer is identical
      in both prompts still carry a share, one as high as 0.70, because the split
@@ -627,15 +627,15 @@ function BridgeScene() {
 
   return (
     <SceneShell
-      number="14"
-      kicker="Part IV · the assumptions, named · finding 16"
+      number="06"
+      kicker="Part II · the assumptions, named · finding 16"
       title={<>The assumptions that <em className="font-display italic text-amber-200">change</em> are the distance.</>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
           Two separate instruments have been used so far: a geometric one that measures how far apart two sets of
           pictures sit, and a linguistic one that names what is in them. Do they agree? Here is the honest way to ask.
-          Take every attribute in the questionnaire and check how its answers are distributed for the plain prompt and
+          Take every attribute in the questionnaire and check how its answers are distributed for the default prompt and
           for the country prompt. Then ask how much of the measured movement between the two you would predict from
           that change in answers alone. An attribute that answers the same way in both predicts nothing, and should
           score nothing — which is the whole test.
@@ -713,7 +713,7 @@ function BridgeScene() {
           <div className="mt-8 border-t border-border pt-5">
             <TierNote
               tier="evidence"
-              text={`Pool the plain prompt's 50 images and this cell's 50, give every answer its own centre over that pooled set, and predict the movement from the change in answer proportions alone; the bar is that prediction's share of the actual movement. DINOv3 embeddings, ${MODEL_NAME[model]}'s own answers${isSd21(model) ? '' : `, from the cross-model run — ${CROSS_MODEL_NOTE.charAt(0).toLowerCase()}${CROSS_MODEL_NOTE.slice(1)}`}. Shares are per attribute and deliberately do not sum to 1: each attribute splits the same movement its own way, so this is not a pie. It attributes the gap; it is not a second, independent measurement of it.`}
+              text={`Pool the default prompt's 50 images and this cell's 50, give every answer its own centre over that pooled set, and predict the movement from the change in answer proportions alone; the bar is that prediction's share of the actual movement. DINOv3 embeddings, ${MODEL_NAME[model]}'s own answers${isSd21(model) ? '' : `, from the cross-model run — ${CROSS_MODEL_NOTE.charAt(0).toLowerCase()}${CROSS_MODEL_NOTE.slice(1)}`}. Shares are per attribute and deliberately do not sum to 1: each attribute splits the same movement its own way, so this is not a pie. It attributes the gap; it is not a second, independent measurement of it.`}
             />
           </div>
         </Panel>
@@ -728,7 +728,7 @@ function BridgeScene() {
    not already do in place. The claim itself survives in the Closing methods panel
    ("nothing rests on one measuring stick"). */
 
-/* ── Part IV ─────────────────────────────────────────────────────────────── */
+/* ── Part II ─────────────────────────────────────────────────────────────── */
 
 export default function Part4Assumptions() {
   return (
