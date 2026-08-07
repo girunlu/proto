@@ -277,7 +277,7 @@ function SharedWorldview() {
             ))}
           </div>
           <p className="mt-2 font-mono2 text-[10px] leading-4 text-foreground/40">
-            For each model, the seed furthest from the pooled centre of all seven models' output — the most
+            For each model, the seed furthest from the pooled centre of all seven models' output: the most
             different pictures the ecosystem has to offer for this prompt.
           </p>
 
@@ -355,7 +355,7 @@ function StrongerClaims() {
       </div>
       <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
         Stronger versions of the claim, tested across all {models.length} models × {SITS.length} events.
-        Only the first holds without exception — and it is the one this page states.
+        Only the first holds without exception, and it is the one this page states.
       </p>
       <div className="mt-5 space-y-2">
         {results.map((r) => {
@@ -491,14 +491,14 @@ export default function BranchAModels() {
             Is “…in Nigeria” farther from each model's own default than “…in the USA”? Not{' '}
             <em>usually</em>. <strong>Always.</strong> The Western default is not a property of one
             checkpoint; it is a property of how these systems are made. And the furthest country from the default is
-            never the US or Germany — in <strong>{FURTHEST.south} of {FURTHEST.cells}</strong> model × event cells it
+            never the US or Germany: in <strong>{FURTHEST.south} of {FURTHEST.cells}</strong> model × event cells it
             is India, Nigeria or Egypt, whichever model, whichever event.
           </p>
         </Reveal>
         <Reveal delay={0.05}>
           <div className="mt-6 max-w-2xl">
             <InfoBox title="technical detail · the replication setup">
-              The frozen grid (54 prompts × 50 fixed seeds, identical instrument) re-run on Flux.1-dev, Kolors, SDXL, SD 3.5 Large, Qwen-Image and Hunyuan-DiT; a cell clears when the country-named set sits farther from the model's own default than the US set at permutation p &lt; 0.05. With 288 simultaneous tests, the counts are Benjamini–Hochberg corrected (5% false-discovery rate): 286 of 288 distance gaps survive; the homogeneity count falls 168 → 158 in either direction and 134 → 130 of the 196 predicted-direction cells, with a wide per-model spread — 18 of 48 in Qwen-Image up to 36 of 48 in SD 2.1 and SD 3.5 Large.
+              The frozen grid (54 prompts × 50 fixed seeds, identical instrument) re-run on Flux.1-dev, Kolors, SDXL, SD 3.5 Large, Qwen-Image and Hunyuan-DiT; a cell clears when the country-named set sits farther from the model's own default than the US set at permutation p &lt; 0.05. With 288 simultaneous tests, the counts are Benjamini–Hochberg corrected (5% false-discovery rate): 286 of 288 distance gaps survive; the homogeneity count falls 168 → 158 in either direction and 134 → 130 of the 196 predicted-direction cells, with a wide per-model spread: 18 of 48 in Qwen-Image up to 36 of 48 in SD 2.1 and SD 3.5 Large.
             </InfoBox>
           </div>
         </Reveal>

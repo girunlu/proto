@@ -114,7 +114,7 @@ function CfgChart({ situation, highlight, onHover, onPick }: {
               onMouseLeave={() => onHover(null)}
               onClick={() => onPick(c.id)}
             >
-              <title>{`${c.name} — click to keep it singled out`}</title>
+              <title>{`${c.name} · click to keep it singled out`}</title>
             </path>
           </g>
         )
@@ -447,7 +447,7 @@ export default function Part6Escape() {
       <Reveal>
         <p className="prose-scene max-w-2xl">
           If “a wedding in Nigeria” comes out outdoors on every seed, the obvious fix is to say so: write “a wedding in
-          Nigeria, indoors.” We built that ladder one clause per named assumption, up to three clauses deep — eight
+          Nigeria, indoors.” We built that ladder one clause per named assumption, up to three clauses deep: eight
           event-and-country pairs on Stable Diffusion 2.1, and the two Nigeria pairs on {prose(XM_LADDER_NAMES)}, each
           from its own list of assumptions. The answer:{' '}
           <strong className="text-foreground/90">the clauses do work, and the escape still does not happen.</strong>{' '}
@@ -468,7 +468,7 @@ export default function Part6Escape() {
           {!isSd21(model) && (
             <p className={`mt-3 mb-4 rounded-md border px-3 py-2 font-mono2 text-[10px] leading-4 ${xm ? 'border-border bg-foreground/[0.04] text-foreground/70' : 'border-amber-300/30 bg-amber-300/5 text-amber-200/90'}`}>
               {xm
-                ? `${MODEL_NAME[model]} has its own ladder for the two Nigeria pairs, with its own clauses chosen from its own headline assumptions — not the same words SD 2.1 was given.`
+                ? `${MODEL_NAME[model]} has its own ladder for the two Nigeria pairs, with its own clauses chosen from its own headline assumptions, not the same words SD 2.1 was given.`
                 : `${MODEL_NAME[model]} has no counter-specification ladder: only Stable Diffusion 2.1 (all eight pairs) and Kolors, SD 3.5 Large and Qwen-Image (the two Nigeria pairs) have one, so this scene stays on Stable Diffusion 2.1.`}
             </p>
           )}
@@ -575,7 +575,7 @@ export default function Part6Escape() {
                   </div>
                   <p className="mt-2 font-mono2 text-[10px] leading-4 text-foreground/40">
                     {xm
-                      ? `The clauses at this rung asked for ${(pair.targeted?.[cur.id] ?? []).map((q: string) => Q_TEXT[q] ?? q).join(', ') || 'nothing yet'} — and those attributes are excluded from this list. Everything above moved without being asked.`
+                      ? `The clauses at this rung asked for ${(pair.targeted?.[cur.id] ?? []).map((q: string) => Q_TEXT[q] ?? q).join(', ') || 'nothing yet'}, and those attributes are excluded from this list. Everything above moved without being asked.`
                       : `Only the first clause was asked for. Everything else here moved on its own, because the model's idea of an indoor ${C8[code].name} ${sit} comes with its own furniture.`}
                   </p>
                 </div>
@@ -630,8 +630,8 @@ export default function Part6Escape() {
                     ? `is ${deltaFromBaseline} higher`
                     : `is ${-deltaFromBaseline} lower`}
                 {deltaFromBaseline >= 0
-                  ? ' — asking for an assumption to go away does not take it off the tray.'
-                  : ' — the clauses did retire more than they recruited here, the shallow-escape case.'}
+                  ? '. Asking for an assumption to go away does not take it off the tray.'
+                  : '. The clauses did retire more than they recruited here, the shallow-escape case.'}
               </p>
             </div>
             <div>
@@ -652,7 +652,7 @@ export default function Part6Escape() {
                 {baseline.prompt}”. Attribute-level steering works.{' '}
                 {(cur.intraset ?? 0) >= (baseline.intraset ?? 0) - 0.02
                   ? 'Distribution-level escape does not happen: the set stays as narrow as it was, or narrower.'
-                  : 'Here the clauses did loosen the set a little — the one thing on this page that moves in the direction the remedy promises, and it moves by ' +
+                  : 'Here the clauses did loosen the set a little: the one thing on this page that moves in the direction the remedy promises, and it moves by ' +
                     ((baseline.intraset ?? 0) - (cur.intraset ?? 0)).toFixed(2) +
                     '.'}
               </p>
@@ -684,7 +684,7 @@ export default function Part6Escape() {
               <div className="space-y-2 text-sm leading-6 text-foreground/70">
                 {pairSummary.map((r) => (
                   <p key={r.k}>
-                    • <strong>a {r.label}</strong>: {r.loads.join(' → ')} —{' '}
+                    • <strong>a {r.label}</strong>: {r.loads.join(' → ')} ·{' '}
                     {r.delta < 0
                       ? `${-r.delta} fewer assumptions than the country prompt alone, so the clauses here do retire more than they recruit`
                       : r.delta === 0

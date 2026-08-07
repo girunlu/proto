@@ -51,8 +51,8 @@ export default function Part6Steer() {
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          The ladder walks one prompt at a time. Pool every counter-specified rung instead —{' '}
-          {total.n} side-effect observations across {N_STEER_MODELS} models — and ask, per attribute: when a clause
+          The ladder walks one prompt at a time. Pool every counter-specified rung instead,{' '}
+          {total.n} side-effect observations across {N_STEER_MODELS} models, and ask, per attribute: when a clause
           was added, how often did the answer actually change?
         </p>
       </Reveal>
@@ -65,7 +65,7 @@ export default function Part6Steer() {
           <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/65">
             Every clause was written to change one specific thing, and that target is{' '}
             <strong className="text-amber-200">left out of these bars</strong>: what you see is the side effects, the
-            decisions nobody asked about. Clauses usually do move their own target — that is them working.
+            decisions nobody asked about. Clauses usually do move their own target; that is them working.
           </p>
 
           <div className="mt-6 space-y-1">
@@ -143,12 +143,12 @@ export default function Part6Steer() {
           <div className="mt-8 grid gap-6 border-t border-border pt-6 md:grid-cols-2">
             <div className="space-y-3 text-sm leading-6 text-foreground/70">
               <p>
-                Pooled, <strong>{total.k} of {total.n}</strong> observations flipped — about{' '}
+                Pooled, <strong>{total.k} of {total.n}</strong> observations flipped, about{' '}
                 <strong>one in {oneIn}</strong>.
               </p>
               {u12 && (
                 <p className="rounded-md border border-red-400/25 bg-red-400/5 px-3 py-2">
-                  The one to sit with: <strong>which continent the image looks like</strong> —{' '}
+                  The one to sit with: <strong>which continent the image looks like</strong>.{' '}
                   <strong>{u12.k} of {u12.n}</strong>, and not one was a clause working. No ladder ever aimed at it,
                   so those flips are collateral from asking for something else.
                 </p>
@@ -193,7 +193,7 @@ export default function Part6Steer() {
           <div className="mt-8 border-t border-border pt-6">
             <TierNote
               tier="evidence"
-              text={`${total.n} untargeted attribute observations from every counter-specified rung — ${STEER_N_CELLS} cells across ${N_LADDERS} ladders on ${N_STEER_MODELS} models, not a designed sweep; six of SD 2.1's eight ladders ship an empty switch table.`}
+              text={`${total.n} untargeted attribute observations from every counter-specified rung · ${STEER_N_CELLS} cells across ${N_LADDERS} ladders on ${N_STEER_MODELS} models, not a designed sweep; six of SD 2.1's eight ladders ship an empty switch table.`}
             />
           </div>
         </Panel>

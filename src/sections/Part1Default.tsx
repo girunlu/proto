@@ -82,7 +82,7 @@ function Legend({ withDefault = true, focus, onFocus }: {
       {onFocus && (
         <>
           <span className="font-mono2 text-[9px] text-foreground/30">
-            {pinned ? 'pinned — click to release' : 'click to pin'}
+            {pinned ? 'pinned · click to release' : 'click to pin'}
           </span>
           {pinned && (
             <button
@@ -150,7 +150,7 @@ function UnsaidScene() {
       <Reveal>
         <p className="prose-scene max-w-2xl">
           “A {sit}” fixes a noun and an article; the setting, clothing, period, light and wealth level it says nothing
-          about. The model fills each gap in anyway — and the answers barely vary.
+          about. The model fills each gap in anyway, and the answers barely vary.
         </p>
       </Reveal>
 
@@ -247,7 +247,7 @@ function UnsaidScene() {
               </div>
               <p className="mt-4 text-sm leading-6 text-foreground/60">
                 A row is a hidden assumption when the prompt did not ask for it and the answer returns on at least 80%
-                of the seeds — the tick on each bar. Each is unremarkable alone; together they are one consistent
+                of the seeds: the tick on each bar. Each is unremarkable alone; together they are one consistent
                 picture of the world that nobody requested.
               </p>
             </div>
@@ -256,7 +256,7 @@ function UnsaidScene() {
           <div className="mt-6 border-t border-border pt-5">
             <TierNote
               tier="evidence"
-              text={`50 seeds per prompt, each image read blind by one annotator (gemma4) against a frozen question list — ${CARDS_CANDIDATES} candidate assumptions project-wide, ${CARDS_HEADLINE} headline-tier. ${CROSS_MODEL_NOTE}`}
+              text={`50 seeds per prompt, each image read blind by one annotator (gemma4) against a frozen question list: ${CARDS_CANDIDATES} candidate assumptions project-wide, ${CARDS_HEADLINE} headline-tier. ${CROSS_MODEL_NOTE}`}
             />
           </div>
         </Panel>
@@ -539,7 +539,7 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
             ))}
             {sel.length === 2 && shown[0].d && shown[1].d && (
               <div className="mt-3 rounded-md border border-amber-300/25 bg-amber-300/5 p-2 font-mono2 text-[10px] leading-4 text-foreground/65">
-                {shown[0].d.mean.toFixed(3)} against {shown[1].d.mean.toFixed(3)} — each measured from its own
+                {shown[0].d.mean.toFixed(3)} against {shown[1].d.mean.toFixed(3)}, each measured from its own
                 event's default prompt
                 {shown[0].sit !== shown[1].sit && ', and those are two different default prompts, so read the pair as two separate departures rather than a distance between these two cells'}
                 .
@@ -550,7 +550,7 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
                 {sel.length === 0
                   ? 'click any two cells to compare them'
                   : sel.length === 1
-                    ? 'pick a second cell — any row, any column'
+                    ? 'pick a second cell (any row, any column)'
                     : 'a third pick replaces the first'}
               </span>
               {sel.length > 0 && (
@@ -612,7 +612,7 @@ function NationalityScene() {
         <p className="prose-scene mt-4 max-w-2xl text-foreground/55">
           One definition, used everywhere below. <strong className="text-foreground/75">“Western default”</strong> means
           the pictures a default prompt generates sit closer to the US and Germany variants than to the India, Nigeria,
-          Indonesia and Egypt ones — in an embedding space trained without any of these labels. It is a claim about
+          Indonesia and Egypt ones, in an embedding space trained without any of these labels. It is a claim about
           relative position in that space, not about culture, and not about what any of these countries looks like.
         </p>
       </Reveal>
@@ -705,14 +705,14 @@ function NationalityScene() {
             {onSd21 ? <KnnNote /> : (
               <p className="text-sm leading-6 text-foreground/60">
                 The per-cell sorting test is measured on Stable Diffusion 2.1 only. {MODEL_NAME[model]}'s own gaps
-                are permutation-tested too — 286 of 288 model × cell combinations clear p &lt; 0.05 — so what is
+                are permutation-tested too (286 of 288 model × cell combinations clear p &lt; 0.05), so what is
                 missing on this chart is the per-cell figure, not the testing.
               </p>
             )}
             <div className="space-y-3">
               {(situation === 'school' || situation === 'celebration') && (
                 <p className="text-sm leading-6 text-foreground/60">
-                  {`“A ${situation}” looks diffuse on this grid — not the same as absent${
+                  {`“A ${situation}” looks diffuse on this grid, not the same as absent${
                     aucs.length && Math.min(...aucs) < 0.5
                       ? ', but on its weakest cell the sorting test scores below the 50% a coin would, so read no separation into it'
                       : ''
@@ -723,7 +723,7 @@ function NationalityScene() {
                 tier="evidence"
                 text={`For “a ${situation}” on ${MODEL_NAME[model]} the classifier scores ${Math.round(Math.min(...aucs) * 100)}–${Math.round(Math.max(...aucs) * 100)}% across the eight countries${
                   Math.min(...aucs) < 0.5
-                    ? ' — the floor is below the 50% a coin would score, so at least one country is not separable from the default at all'
+                    ? ': the floor is below the 50% a coin would score, so at least one country is not separable from the default at all'
                     : ''
                 }; every gap also clears p < 0.0001 in a 10,000-shuffle permutation test, and the ordering survives under a CLIP ruler.`}
               />
@@ -971,7 +971,7 @@ function SeedBySeedScene() {
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          A mean could hide a mixture — half the default seeds Western, half not, cancelling out. So each default seed
+          A mean could hide a mixture: half the default seeds Western, half not, cancelling out. So each default seed
           is labeled by the country cluster it lies nearest: of {MODEL_NAME[model]}'s {seedTotal} default seeds,{' '}
           <strong>{southTotal} ({(100 * southTotal / seedTotal).toFixed(1)}%) land nearest India, Nigeria, Indonesia
           or Egypt</strong>.
@@ -995,7 +995,7 @@ function SeedBySeedScene() {
             does. The direction result the callout carried was the only statement of
             it on the page, so it moves into the prose below rather than being lost. */}
         <p className="prose-scene mt-4 max-w-2xl text-[13px] leading-6 text-foreground/55">
-          Which country dominates differs by model; the direction does not — Nigeria sits farther from a model's own
+          Which country dominates differs by model; the direction does not: Nigeria sits farther from a model's own
           default prompt than the USA in{' '}
           <strong className="text-foreground/75">42 of 42 model × situation cells</strong>.
         </p>
@@ -1003,7 +1003,7 @@ function SeedBySeedScene() {
       <Reveal delay={0.05}>
         <div className="mt-6 max-w-2xl">
           <InfoBox title="technical detail · why seed by seed">
-            Per-seed label: the argmin over the eight country centroids of cosine distance in embedding space, applied to each default-prompt embedding (50 seeds for SD 2.1; cross-models publish 24 thumbnails). The tally is the histogram of those labels; the scatter reuses scene 03's UMAP fit. Flux is the one real exception — 28.3% of its default seeds land nearest a Global-South cluster against SD 2.1's 5.3% — shown rather than hidden.
+            Per-seed label: the argmin over the eight country centroids of cosine distance in embedding space, applied to each default-prompt embedding (50 seeds for SD 2.1; cross-models publish 24 thumbnails). The tally is the histogram of those labels; the scatter reuses scene 03's UMAP fit. Flux is the one real exception (28.3% of its default seeds land nearest a Global-South cluster against SD 2.1's 5.3%), shown rather than hidden.
           </InfoBox>
         </div>
       </Reveal>
@@ -1034,7 +1034,7 @@ function SeedBySeedScene() {
                 ))}
               </div>
               <p className="mt-2 font-mono2 text-[10px] leading-4 text-foreground/45">
-                evenly spaced across the seeds with a published thumbnail — a sample of the run, not a pick of it.
+                evenly spaced across the seeds with a published thumbnail: a sample of the run, not a pick of it.
               </p>
               <div className="mt-5 border-t border-border pt-4">
                 <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
@@ -1307,14 +1307,14 @@ function MapScene() {
       <Reveal>
         <p className="prose-scene max-w-2xl">
           Flatten the embedding space to two dimensions and the structure is visible to the naked eye. Non-Western
-          countries are pulled toward <strong>shared attractors</strong> — Nigeria's nearest cluster is India in 4–5
-          of 6 situations — not toward their own faithful depictions.
+          countries are pulled toward <strong>shared attractors</strong> (Nigeria's nearest cluster is India in 4–5
+          of 6 situations), not toward their own faithful depictions.
         </p>
       </Reveal>
       <Reveal delay={0.05}>
         <div className="mt-6 max-w-2xl">
           <InfoBox title="technical detail · what this map is">
-            One UMAP fit per (model, situation) over all nine variants' embeddings, coordinates normalised to [0,1]; rings are cluster centroids in the projection. The separability number is nearest-neighbour classification accuracy (k-NN AUC) computed in the full embedding space, not on this 2D projection — silhouette scores run only 0.10–0.27, which is why the map is labelled a view, not the evidence.
+            One UMAP fit per (model, situation) over all nine variants' embeddings, coordinates normalised to [0,1]; rings are cluster centroids in the projection. The separability number is nearest-neighbour classification accuracy (k-NN AUC) computed in the full embedding space, not on this 2D projection. Silhouette scores run only 0.10–0.27, which is why the map is labelled a view, not the evidence.
           </InfoBox>
         </div>
       </Reveal>

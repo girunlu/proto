@@ -67,7 +67,7 @@ export default function Home() {
       <div id="p4">
         <Part4Assumptions />
       </div>
-      <PartDivider label="Part III · the escape" sub="counter-specifying the named assumptions, one clause at a time — measured" />
+      <PartDivider label="Part III · the escape" sub="counter-specifying the named assumptions, one clause at a time · measured" />
       <div id="p3">
         <Part6Escape />
       </div>
@@ -87,7 +87,7 @@ export default function Home() {
         <BranchAModels />
         <Part7Consensus />
       </div>
-      <PartDivider label="extras · more attempts at undoing the default" sub="the guidance knob, and what a clause can move — measured, off the main line of the argument" />
+      <PartDivider label="extras · more attempts at undoing the default" sub="the guidance knob, and what a clause can move · measured, off the main line of the argument" />
       <div id="p6">
         {showExtras ? (
           <>
