@@ -126,10 +126,9 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.6 }}
         >
-          Your prompt is never the whole input. It is read inside a worldview the model learned before you arrived:
-          decisions about who a person looks like, which culture is the default, and what “realistic” means. You cannot
-          see that second condition, and you cannot opt out of it. This explorable makes it visible: where it lives,
-          when it locks in, and what it costs to override.
+          Your prompt is never the whole input — it is read inside a worldview the model already learned: who a person
+          looks like, which culture is the default, what “realistic” means. This explorable makes it visible, and
+          measures what overriding it costs.
         </motion.p>
 
         <motion.p
@@ -151,9 +150,9 @@ export default function Hero() {
         >
           <p className="font-display text-xl leading-7 text-foreground/85 italic md:text-2xl">“{THESIS}”</p>
           <p className="mt-3 font-mono2 text-[11px] tracking-wider text-foreground/40 uppercase">
-            6 situations × 9 prompt variants × 50 fixed seeds, run in full on seven text-to-image models — that grid is
-            18,900 images; with the guidance sweep, the counter-specification ladders and the empty-prompt runs,{' '}
-            {STATS.images.toLocaleString()} were generated and measured in total
+            6 situations × 9 prompt variants × 50 fixed seeds on seven text-to-image models — 18,900 images; with the
+            guidance sweep, counter-specification ladders and empty-prompt runs, {STATS.images.toLocaleString()}+ in
+            total
           </p>
         </motion.div>
       </div>

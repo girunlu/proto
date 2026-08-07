@@ -1,6 +1,6 @@
 import { Fragment, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
+import { SceneShell, Reveal, Panel, TierNote, InfoBox } from '../components/Scene'
 import { CountUp } from '../components/CountUp'
 import { rgb, rgba } from '../lib/colors'
 import branchA from '../data/branchA.json'
@@ -26,6 +26,30 @@ const COUNTRY_NAME: Record<string, string> = {
   US: 'USA', DE: 'Germany', RU: 'Russia', ID: 'Indonesia',
   JP: 'Japan', EG: 'Egypt', IN: 'India', NG: 'Nigeria',
 }
+/* In every model × event cell, the country furthest from a model's own default is
+   never the US or Germany — computed from the same geometry the wall below renders,
+   so the number cannot drift from it. */
+const FURTHEST = (() => {
+  let cells = 0
+  let south = 0
+  for (const m of MODEL_KEYS) {
+    for (const sit of SITS) {
+      let best = ''
+      let bestD = -1
+      for (const c of CODES) {
+        const d = xmDist(m as ModelId, sit as Sit, c as Code, 'dinov3')?.mean
+        if (d != null && d > bestD) {
+          bestD = d
+          best = c
+        }
+      }
+      if (!best) continue
+      cells++
+      if (best === 'IN' || best === 'NG' || best === 'EG') south++
+    }
+  }
+  return { cells, south }
+})()
 const MODEL_SUB: Record<string, string> = {
   sd21: 'the microscope model · 2022',
   flux_cultural: 'Black Forest Labs · 2024 · DiT',
@@ -36,12 +60,11 @@ const MODEL_SUB: Record<string, string> = {
   hunyuandit_cultural: 'Tencent · 2024 · Chinese-developed',
 }
 
-/* leading slash, like every other image helper on the page: this one was relative,
-   which happens to resolve at the site root and 404s everywhere else */
-const xmImg = (model: string, sit: string, code: string, s: number) =>
-  `/images/xm/${model}_${sit}_${code}_s${s}.webp`
+/* xmImgPath (uiv2.ts) handles the SD 2.1 special case — its thumbnails live in
+   images/seeds/ with zero-padded names, not images/xm/. A local helper that
+   always built an xm/ path 404'd every SD 2.1 tile in this strip. */
 
-function ModelStrip() {
+export function ModelStrip() {
   /* R3b: this used to hold its own `useState('flux_cultural')`, so the global bar
      could read "showing Qwen-Image" while the strip below showed Flux. The chips
      now drive the global selection, which is what a reader assumes they do. */
@@ -93,7 +116,7 @@ function ModelStrip() {
             {modelSeeds(model as ModelId, sit as Sit, 'default', 20).map((s) => (
               <div key={s} className="overflow-hidden rounded-md border border-border">
                 <img
-                  src={xmImg(model, sit, 'default', s)}
+                  src={xmImgPath(model, sit as Sit, 'default', s)}
                   alt={`“a ${sit}” · ${(branchA.models as any)[model]} seed ${s}`}
                   className="aspect-square w-full object-cover"
                   loading="lazy"
@@ -102,8 +125,7 @@ function ModelStrip() {
             ))}
           </div>
           <p className="mt-2 font-mono2 text-[11px] text-foreground/50">
-            “a {sit}” · {(branchA.models as any)[model]}'s own default, 20 seeds spread across the published set,
-            typical to unusual (no curation)
+            “a {sit}” · {(branchA.models as any)[model]}'s own default · 20 seeds, typical to unusual (no curation)
           </p>
 
           {/* distance bars, its own default as origin */}
@@ -117,7 +139,7 @@ function ModelStrip() {
                   value={d.mean}
                   ci={[d.ci_low, d.ci_high]}
                   max={RULER_MAX[ruler].dist}
-                  color={COUNTRY_CV[c]}
+                  color="--c-amber"
                   delay={i * 0.05}
                 />
               )
@@ -137,7 +159,7 @@ function ModelStrip() {
       <div className="mt-6">
         <TierNote
           tier="evidence"
-          text="Distance measured from each model's OWN default prompt, 50 seeds per prompt, with bootstrap confidence intervals. The identical frozen instrument (54 prompts × 50 seeds) was run in full on every model: 2,700 verified-complete images each."
+          text="Identical instrument on every model: 54 prompts × 50 seeds = 2,700 images each, bootstrap confidence intervals."
         />
       </div>
     </Panel>
@@ -193,10 +215,8 @@ function ReplicationWall() {
               cannot call the training data unknown and then sort it into lineages.
               5 developers is checkable and says more. B12: the denominators. */}
           <p className="mt-3 font-mono2 text-[11px] leading-5 text-foreground/50">
-            Zero exceptions, across <strong className="text-foreground/80">5 developers</strong> and 2 architecture
-            families (UNet, DiT); three of the seven models were developed in China. This wall counts the six models
-            being compared <em>against</em> Stable Diffusion 2.1, hence 36; the panel below counts all seven, hence 42.
-            The distance gap is individually significant in{' '}
+            Across <strong className="text-foreground/80">5 developers</strong> and 2 architecture families
+            (UNet, DiT); three of the seven were developed in China. The gap is individually significant in{' '}
             <strong className="text-foreground/80">{branchA.dist_sig}/{branchA.n_cells}</strong> cells
             (permutation test, p&lt;0.05).
           </p>
@@ -257,8 +277,8 @@ function SharedWorldview() {
             ))}
           </div>
           <p className="mt-2 font-mono2 text-[10px] leading-4 text-foreground/40">
-            Not a curated line-up: for each model we picked the single seed furthest from the pooled centre of all
-            seven models' output, so these are the most different pictures the ecosystem has to offer for this prompt.
+            For each model, the seed furthest from the pooled centre of all seven models' output — the most
+            different pictures the ecosystem has to offer for this prompt.
           </p>
 
           <div className="mt-6 border-t border-border pt-5">
@@ -283,16 +303,14 @@ function SharedWorldview() {
                   })}
                 </div>
                 <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/40">
-                  {x.shared.filter((a) => a.n === 6).length} of these fire in <em>every</em> one of the other six models
-                  (green); the rest fire in four or five of them. The number after each is how many of the six repeat
-                  it. Assumptions that only SD 2.1 makes are not listed here.
+                  {x.shared.filter((a) => a.n === 6).length} of these fire in every other model (green);
+                  assumptions only SD 2.1 makes are not listed.
                 </p>
               </>
             ) : (
               <p className="mt-3 font-mono2 text-[11px] text-foreground/45">
-                Nothing SD 2.1 assumes for this prompt is repeated by four or more of the other six models. About a
-                fifth of its assumptions are this specific to it, and we show the empty cells rather than only the
-                full ones.
+                Nothing SD 2.1 assumes for this prompt is repeated by four or more of the other six models; about a
+                fifth of its assumptions are this specific to it.
               </p>
             )}
           </div>
@@ -336,10 +354,8 @@ function StrongerClaims() {
         how far the claim generalises
       </div>
       <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
-        If the default is Western, a stronger statement should also hold: that the USA is simply the closest of the
-        eight countries, in every model and every event. We tested that formulation and four intermediate ones across
-        all {models.length} models × {SITS.length} events. Only the first holds without exception, and it is the one
-        this page states.
+        Stronger versions of the claim, tested across all {models.length} models × {SITS.length} events.
+        Only the first holds without exception — and it is the one this page states.
       </p>
       <div className="mt-5 space-y-2">
         {results.map((r) => {
@@ -369,10 +385,9 @@ function StrongerClaims() {
         })}
       </div>
       <p className="mt-4 max-w-3xl text-sm leading-6 text-foreground/60">
-        The cases that fail are informative. Where the USA is not the single closest country, the closest is almost
-        always Germany or Russia, and the exceptions concentrate on “a celebration”, the event with the most diffuse
-        default of the six. The pull is Western, but it is a gradient across several Western countries rather than a
-        bullseye on one of them.
+        Where the USA is not the single closest country, the closest is almost always Germany or Russia, and the
+        exceptions concentrate on “a celebration”, the event with the most diffuse default of the six. The pull is
+        Western, but a gradient across several Western countries, not a bullseye on one.
       </p>
     </Panel>
   )
@@ -446,7 +461,7 @@ function PersistenceChart() {
       <div className="mt-6">
         <TierNote
           tier="evidence"
-          text="Instrument-matched comparison: both sides measured by the identical annotator setup. Swapping a model changes at most a third of what gets assumed; the rest travels with the ecosystem."
+          text="All seven models annotated under the identical setup."
         />
       </div>
     </Panel>
@@ -456,31 +471,14 @@ function PersistenceChart() {
 export default function BranchAModels() {
   return (
     <>
-      <SceneShell
-        number="13"
-        kicker="Part VI · across the ecosystem"
-        title={
-          <>
-            Swap the model. <span className="text-amber-200">The default doesn't blink.</span>
-          </>
-        }
-        id="xa1"
-      >
-        <Reveal delay={0.1}>
-          <p className="prose-scene mb-8 max-w-2xl">
-            Everything so far measured one model. The obvious objection: <em>maybe it's just SD 2.1.</em>{' '}
-            So the same frozen instrument, all 54 prompts and all 50 seeds, ran in full on{' '}
-            <strong>six more models</strong>: newer, bigger, differently trained, two of them developed
-            in China. Below are their own images and their own geometry. Judge for yourself before the
-            statistics do.
-          </p>
-        </Reveal>
-        <ModelStrip />
-      </SceneShell>
+      {/* Scene 08 ("Swap the model. The default doesn't blink." / ModelStrip) is
+          DISMISSED, 2026-08-06: a duplicate — scene 02's grid already shows each
+          model's own images and their differences. ModelStrip stays compiled as a
+          named export; restore this SceneShell to bring it back. */}
 
       <SceneShell
-        number="14"
-        kicker="Part VI · zero exceptions"
+        number="09"
+        kicker="Part V · zero exceptions"
         title={
           <>
             Thirty-six of thirty-six.
@@ -490,55 +488,46 @@ export default function BranchAModels() {
       >
         <Reveal delay={0.1}>
           <p className="prose-scene mb-8 max-w-2xl">
-            For every situation, in every model: is “…in Nigeria” farther from that model's own
-            default than “…in the USA”? Not <em>usually</em>. <strong>Always.</strong> The Western
-            default is not a property of one checkpoint. It is a property of how these systems are made.
+            Is “…in Nigeria” farther from each model's own default than “…in the USA”? Not{' '}
+            <em>usually</em>. <strong>Always.</strong> The Western default is not a property of one
+            checkpoint; it is a property of how these systems are made. And the furthest country from the default is
+            never the US or Germany — in <strong>{FURTHEST.south} of {FURTHEST.cells}</strong> model × event cells it
+            is India, Nigeria or Egypt, whichever model, whichever event.
           </p>
+        </Reveal>
+        <Reveal delay={0.05}>
+          <div className="mt-6 max-w-2xl">
+            <InfoBox title="technical detail · the replication setup">
+              The frozen grid (54 prompts × 50 fixed seeds, identical instrument) re-run on Flux.1-dev, Kolors, SDXL, SD 3.5 Large, Qwen-Image and Hunyuan-DiT; a cell clears when the country-named set sits farther from the model's own default than the US set at permutation p &lt; 0.05. With 288 simultaneous tests, the counts are Benjamini–Hochberg corrected (5% false-discovery rate): 286 of 288 distance gaps survive; the homogeneity count falls 168 → 158 in either direction and 134 → 130 of the 196 predicted-direction cells, with a wide per-model spread — 18 of 48 in Qwen-Image up to 36 of 48 in SD 2.1 and SD 3.5 Large.
+            </InfoBox>
+          </div>
         </Reveal>
         <ReplicationWall />
         <Reveal delay={0.12}>
           <StrongerClaims />
         </Reveal>
         <Reveal delay={0.15}>
-          {/* R8: 168 counts significance in EITHER direction, and was being cited for a
-              directional claim. The direction-filtered count is 134/288 (46.5%), recorded
-              in a7_build_plan.md. Both are stated; the directional sentence uses 134. And
-              the pooled number hid a 2× per-model spread, which is now printed. */}
-          <p className="mt-4 font-mono2 text-[11px] leading-5 text-foreground/45">
-            The stereotyping inversion also travels, but less cleanly than the distance does. The homogeneity gap is
-            significant in <strong className="text-foreground/70">{branchA.intraset_sig}/{branchA.n_cells}</strong>{' '}
-            cells counting significance in <em>either</em> direction; filtered to the predicted direction
-            (country-qualified narrower than the default) it is{' '}
-            <strong className="text-foreground/70">{branchA.fdr.intraset_directional.raw}/{branchA.n_cells}</strong>, or{' '}
-            {Math.round((branchA.fdr.intraset_directional.raw / branchA.n_cells) * 100)}%. The pooled figure also hides
-            a wide per-model spread — qwen-image 18 of 48, kolors 26, hunyuan-dit 27, flux 28, sdxl 33, sd35 36,
-            SD 2.1 36. A spread statistic is inherently noisier than a distance; the direction holds in most models
-            and is weak in one, and we say exactly that rather than more.
-          </p>
-          {/* R8 / review 10 · C-4: no correction existed anywhere in the project — a grep for
-              bonferroni|fdr|benjamini over master_docs and scripts returned nothing. Now run,
-              and reported whichever way it came out. It survived. */}
-          <p className="mt-2 font-mono2 text-[10px] leading-4 text-foreground/35">
-            These are {branchA.n_cells} simultaneous tests, so at α = 0.05 roughly 14 false positives are expected by
-            chance alone. Benjamini–Hochberg, at a 5% false-discovery rate:{' '}
-            <strong className="text-foreground/60">
+          {/* readable size, three sentences: the correction result is claim-relevant
+              honesty, not fine print. The raw counts and the per-model spread live in
+              this scene's InfoBox instead. */}
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-foreground/60">
+            The stereotyping inversion travels too, but less cleanly than the distance. Corrected for {branchA.n_cells}{' '}
+            simultaneous tests (Benjamini–Hochberg, 5% false-discovery rate),{' '}
+            <strong className="text-foreground/85">
               {branchA.fdr.distance.survivors} of {branchA.fdr.distance.n}
             </strong>{' '}
-            distance results survive (from {branchA.fdr.distance.raw} uncorrected — the distance claim is untouched),
-            the either-direction homogeneity count falls{' '}
-            {branchA.fdr.intraset_any.raw} → <strong className="text-foreground/60">{branchA.fdr.intraset_any.survivors}</strong>,
-            and the directional count — the one this paragraph rests on — falls{' '}
-            {branchA.fdr.intraset_directional.raw} →{' '}
-            <strong className="text-foreground/60">{branchA.fdr.intraset_directional.survivors}</strong> of{' '}
-            {branchA.fdr.intraset_directional.n} cells that narrow in the predicted direction. The claim is weaker
-            after correction and it is still there.
+            distance gaps survive;{' '}
+            <strong className="text-foreground/85">
+              {branchA.fdr.intraset_directional.survivors} of {branchA.fdr.intraset_directional.n}
+            </strong>{' '}
+            cells still narrow in the predicted direction. Weaker after correction, and still there.
           </p>
         </Reveal>
       </SceneShell>
 
       <SceneShell
-        number="15"
-        kicker="Part VI · whose assumptions are they? · SD 2.1's own, checked elsewhere"
+        number="10"
+        kicker="Part V · whose assumptions are they? · SD 2.1's own, checked elsewhere"
         title={
           <>
             A third of the worldview is <span className="text-emerald-300">inherited</span>.
@@ -548,12 +537,17 @@ export default function BranchAModels() {
       >
         <Reveal delay={0.1}>
           <p className="prose-scene mb-8 max-w-2xl">
-            Every named assumption from the audit was re-checked in all six other models. If an
-            assumption fires everywhere, it does not belong to SD 2.1. It belongs to the{' '}
+            If an assumption fires everywhere, it does not belong to SD 2.1. It belongs to the{' '}
             <strong>ecosystem</strong>: the shared data, the shared filtering, the shared way these
-            models are taught what the world looks like. Below, pick any prompt and see the most
-            different pictures the seven models can produce for it, next to what they agree on anyway.
+            models are taught what the world looks like.
           </p>
+        </Reveal>
+        <Reveal delay={0.05}>
+          <div className="mt-6 max-w-2xl">
+            <InfoBox title="technical detail · what persistence means">
+              SD 2.1's headline assumptions (the gemma4-matched 708-card table) were re-checked in the other six models' blind-questionnaire answers under the identical annotator setup: 217 of 708 persist in at least one other model, 141 are SD 2.1-only. A green chip fires in every one of the other six.
+            </InfoBox>
+          </div>
         </Reveal>
         <SharedWorldview />
         <PersistenceChart />

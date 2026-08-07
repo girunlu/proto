@@ -86,8 +86,8 @@ function InversionScene() {
     onSd21 ? VENDI_CELL[key(sit, c)] : c === 'default' ? undefined : realityFor(model, sit, c)?.gen_vendi
   return (
     <SceneShell
-      number="11"
-      kicker="Part III · the override · finding 6 · the most novel result"
+      number="X1"
+      kicker="extras · the override · finding 6 · the most novel result"
       title={<>Naming a country <em className="font-display italic text-red-300">narrows</em> the output below the default prompt.</>}
     >
       <Reveal>
@@ -345,8 +345,8 @@ function SpecificityScene() {
   const [which, setWhich] = useState<'wedding' | 'celebration'>('wedding')
   return (
     <SceneShell
-      number="12"
-      kicker="Part III · the override · finding 7"
+      number="X2"
+      kicker="extras · the override · finding 7"
       title={<>The collapse is <em className="font-display italic text-red-300">specifically cultural.</em></>}
     >
       <Reveal>
@@ -428,7 +428,7 @@ function SpecificityScene() {
           <div className="mt-6 border-t border-border pt-5">
             <TierNote
               tier="evidence"
-              text="Matched neutral qualifiers (“a large …”, “… in the rain”, “… in 1985”) on the same events, same 50-seed protocol, same measurement. The variety collapse is culture-specific; the extra assumption load that any qualifier brings is not, which is scene 16."
+              text="Matched neutral qualifiers (“a large …”, “… in the rain”, “… in 1985”) on the same events, same 50-seed protocol, same measurement. The variety collapse is culture-specific; the extra assumption load that any qualifier brings is not — that load is the ladder scene below (X4)."
             />
           </div>
         </Panel>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
-import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
+import { SceneShell, Reveal, Panel, TierNote, InfoBox } from '../components/Scene'
 import { ZoomImage, DistanceRuler, KnnNote, BoxPicker, MetricToggle, useMagnet } from '../components/Viz'
 import branchAData from '../data/branchA.json'
 
@@ -82,7 +82,7 @@ function Legend({ withDefault = true, focus, onFocus }: {
       {onFocus && (
         <>
           <span className="font-mono2 text-[9px] text-foreground/30">
-            {pinned ? 'kept — click it again to release' : 'hover to preview · click to keep it isolated'}
+            {pinned ? 'pinned — click to release' : 'click to pin'}
           </span>
           {pinned && (
             <button
@@ -141,7 +141,6 @@ function UnsaidScene() {
   )
   const settled = decisions.filter((d) => d.share >= 0.8)
   const SHOWN = 4
-  const rest = Math.max(0, decisions.length - SHOWN)
   return (
     <SceneShell
       number="01"
@@ -150,16 +149,17 @@ function UnsaidScene() {
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          “A {sit}” fixes a noun and an article. An image also needs a setting, clothing, a number of people,
-          architecture, a period, a palette, a light level and a wealth level, and the prompt says nothing about any of
-          them. The model fills each one in. The question this scene answers is not whether that happens — it has to —
-          but whether the answers vary. They mostly do not.
+          “A {sit}” fixes a noun and an article; the setting, clothing, period, light and wealth level it says nothing
+          about. The model fills each gap in anyway — and the answers barely vary.
         </p>
-        <p className="prose-scene mt-4 max-w-2xl">
-          Below are the four most settled answers for one prompt: what the blind questionnaire asked about
-          {' '}{MODEL_NAME[model]}'s 50 images, the answer that came back most often, and on how many of the 50. They
-          are a sample of a longer list, and the rest of that list is the subject of Part II.
-        </p>
+      </Reveal>
+
+      <Reveal delay={0.05}>
+        <div className="mt-6 max-w-2xl">
+          <InfoBox title="technical detail · how the counting works">
+            Every cell is 50 images from fixed seeds (SD 2.1: DDIM, 30 steps, 768×768). A vision-language annotator (gemma4) answers a frozen question battery for each image, blind to the prompt: 13 questions in every cell, 17–18 per cell. A question is settled when one answer covers ≥ 80% of the cell's 50 images.
+          </InfoBox>
+        </div>
       </Reveal>
 
       <Reveal delay={0.06}>
@@ -245,17 +245,10 @@ function UnsaidScene() {
                   )
                 })}
               </div>
-              {rest > 0 && (
-                <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/40">
-                  {SHOWN} of {decisions.length} questions shown, the most settled first — {rest} more were asked about
-                  this prompt alone. <span className="text-foreground/60">Part II names all of them</span>, for every
-                  prompt and every model.
-                </p>
-              )}
               <p className="mt-4 text-sm leading-6 text-foreground/60">
-                A row is a hidden assumption when the prompt did not ask for it and the answer comes back on at least
-                80% of the seeds — the tick on each bar. Read individually each one is unremarkable; read together
-                they are a single, consistent picture of the world that nobody requested.
+                A row is a hidden assumption when the prompt did not ask for it and the answer returns on at least 80%
+                of the seeds — the tick on each bar. Each is unremarkable alone; together they are one consistent
+                picture of the world that nobody requested.
               </p>
             </div>
           </div>
@@ -263,7 +256,7 @@ function UnsaidScene() {
           <div className="mt-6 border-t border-border pt-5">
             <TierNote
               tier="evidence"
-              text={`50 seeds per prompt, each image read by one annotator (gemma4) that never sees the prompt, answering a frozen question list. Project-wide that yields ${CARDS_CANDIDATES} candidate assumptions, ${CARDS_HEADLINE} of them headline-tier. ${CROSS_MODEL_NOTE}`}
+              text={`50 seeds per prompt, each image read blind by one annotator (gemma4) against a frozen question list — ${CARDS_CANDIDATES} candidate assumptions project-wide, ${CARDS_HEADLINE} headline-tier. ${CROSS_MODEL_NOTE}`}
             />
           </div>
         </Panel>
@@ -387,7 +380,6 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
               {CODES.map((code) => {
                 const d = distOrNull(model, sit, code, ruler)
                 const v = d?.mean ?? 0
-                const cv = code === 'default' ? CV_DEFAULT : C8[code].cv
                 const active = hover?.sit === sit && hover?.code === code
                 const crossed = cross && !active && !!hover && (hover.sit === sit || hover.code === code)
                 const si = selIndex(sit, code)
@@ -444,7 +436,7 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
                         <div className="mt-1 h-1.5 rounded-full bg-foreground/10">
                           <motion.div
                             className="h-1.5 rounded-full"
-                            style={{ background: rgb(cv) }}
+                            style={{ background: rgb('--c-amber') }}
                             initial={{ width: 0 }}
                             whileInView={{ width: `${code === 'default' ? 2 : (v / RULER_MAX[ruler].dist) * 100}%` }}
                             viewport={{ once: true }}
@@ -460,7 +452,10 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
                             : 'text-[11px]'
                         }`}
                         style={{
-                          background: code === 'default' ? rgba(CV_DEFAULT, 0.12) : rgba(cv, 0.12 + 0.75 * rel),
+                          /* one hue, one grade: colour used to carry country identity,
+                             which the column header already carries — shade alone now
+                             carries the number */
+                          background: code === 'default' ? rgba(CV_DEFAULT, 0.12) : rgba('--c-amber', 0.10 + 0.78 * rel),
                           color: rel > 0.62 ? '#0b0b10' : 'hsl(var(--foreground) / 0.75)',
                         }}
                       >
@@ -482,9 +477,7 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
               </div>
               <p className="font-mono2 text-[10px] leading-4 text-foreground/50">
                 the bar under each cell is one measurement: how far that variant's 50 images sit from the
-                default prompt in its own row. Empty bar means “the default prompt already generates this”. A bar
-                running the full width means the two prompts generate as different a scene as a wedding and a
-                breakfast. The full scale is spelled out below.
+                default prompt in its own row.
               </p>
             </div>
           ) : (
@@ -493,7 +486,7 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
             <div className="mx-auto mt-4 max-w-[520px]">
               <div
                 className="h-3 w-full rounded-sm"
-                style={{ background: `linear-gradient(to right, ${rgba(CV_DEFAULT, 0.12)}, ${rgba(CV_DEFAULT, 0.87)})` }}
+                style={{ background: `linear-gradient(to right, ${rgba('--c-amber', 0.10)}, ${rgba('--c-amber', 0.88)})` }}
               />
               <div className="mt-1 flex justify-between font-mono2 text-[9px] text-foreground/50">
                 {[0, 0.25, 0.5, 0.75, 1].map((f) => (
@@ -501,8 +494,7 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
                 ))}
               </div>
               <div className="mt-1 text-center font-mono2 text-[9px] text-foreground/35">
-                distance from that row's default prompt · one scale for all 48 cells · hover a cell for its
-                confidence interval
+                distance from that row's default prompt · one scale for all 48 cells · hover a cell for its interval
               </div>
             </div>
           )}
@@ -556,7 +548,7 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
             <div className="mt-2 flex items-center gap-2 font-mono2 text-[9px] leading-4 text-foreground/35">
               <span>
                 {sel.length === 0
-                  ? 'hover to preview · click any two cells to hold them side by side'
+                  ? 'click any two cells to compare them'
                   : sel.length === 1
                     ? 'pick a second cell — any row, any column'
                     : 'a third pick replaces the first'}
@@ -610,10 +602,10 @@ function NationalityScene() {
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          We generate <strong>“a wedding”</strong> 50 times, then <strong>“a wedding in Nigeria”</strong> 50 times, and
-          measure how far apart the two sets of pictures sit. The pattern is consistent: <strong>the default prompt and
-          “in the USA” generate almost the same pictures</strong> ({weddingUS.toFixed(2)} apart), while Nigeria sits
-          {' '}{weddingNG.toFixed(2)} away, most of the way to being a different event.
+          We generate <strong>“a wedding”</strong> and <strong>“a wedding in Nigeria”</strong> 50 times each, and
+          measure how far apart the two sets of pictures sit: <strong>the default prompt and “in the USA” generate
+          almost the same pictures</strong> ({weddingUS.toFixed(2)} apart), while Nigeria sits{' '}
+          {weddingNG.toFixed(2)} away.
         </p>
         {/* R6: the page used "Western default" throughout without ever saying what
             it was operationally. One sentence, at the first place the claim is made. */}
@@ -623,6 +615,13 @@ function NationalityScene() {
           Indonesia and Egypt ones — in an embedding space trained without any of these labels. It is a claim about
           relative position in that space, not about culture, and not about what any of these countries looks like.
         </p>
+      </Reveal>
+      <Reveal delay={0.05}>
+        <div className="mt-6 max-w-2xl">
+          <InfoBox title="technical detail · how distance is measured">
+            Embeddings: DINOv3-7B, with CLIP as a second ruler via the toggle. Each cell value is the cosine distance between the default-prompt set and a country-named set (50 seeds each); the interval comes from resampling those seeds (bootstrap). Mosaics show the four least-alike images per cell by embedding distance. The separability figure is how accurately a nearest-neighbour classifier tells the two sets apart (k-NN AUC), measured against a 10,000-shuffle null.
+          </InfoBox>
+        </div>
       </Reveal>
       <Reveal delay={0.06}>
         <Panel className="mt-10">
@@ -652,11 +651,9 @@ function NationalityScene() {
           </div>
           {!onSd21 && gridMode === 'thumbs' && (
             <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/50">
-              Showing <span className="text-amber-200">{MODEL_NAME[model]}</span>: its own images, and every distance
-              measured from <em>its own</em> default prompt rather than SD 2.1's, under whichever measuring stick is
-              selected. All 50 seeds go into the statistics; {seedCount(model)} of them are published as thumbnails
-              here, against SD 2.1's fifty — the 20 least alike plus the 4 most typical, so what you see spans the
-              full range of the set rather than a slice of it.
+              Showing <span className="text-amber-200">{MODEL_NAME[model]}</span>: its own images, every distance
+              measured from <em>its own</em> default prompt. All 50 seeds go into the statistics; the{' '}
+              {seedCount(model)} published thumbnails span the 20 least alike plus the 4 most typical.
             </p>
           )}
           <div className="mt-6">
@@ -707,36 +704,28 @@ function NationalityScene() {
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             {onSd21 ? <KnnNote /> : (
               <p className="text-sm leading-6 text-foreground/60">
-                The per-cell sorting test is reported for Stable Diffusion 2.1 here. {MODEL_NAME[model]}'s own gaps
-                were permutation-tested too — 286 of 288 model × cell combinations clear p &lt; 0.05, which Part VI
-                reports in full — so what is missing on this chart is the per-cell figure, not the testing.
+                The per-cell sorting test is measured on Stable Diffusion 2.1 only. {MODEL_NAME[model]}'s own gaps
+                are permutation-tested too — 286 of 288 model × cell combinations clear p &lt; 0.05 — so what is
+                missing on this chart is the per-cell figure, not the testing.
               </p>
             )}
             <div className="space-y-3">
-              <p className="text-sm leading-6 text-foreground/60">
-                {situation === 'wedding' || situation === 'funeral'
-                  ? `“A ${situation}” is the clearest case: the US variant barely moves the pictures, while India and Nigeria sit roughly half the scale away.`
-                  : situation === 'school' || situation === 'celebration'
-                    ? `“A ${situation}” looks weaker on this grid${
-                        aucs.length
-                          ? `, and for ${MODEL_NAME[model]} the sorting test runs ${Math.round(Math.min(...aucs) * 100)}–${Math.round(Math.max(...aucs) * 100)}% across the eight countries`
-                          : ''
-                      }. Diffuse is not the same as absent${
-                        aucs.length && Math.min(...aucs) < 0.5
-                          ? `, but the bottom of that range is below the 50% a coin scores — on that cell the sorting test does not merely fail, it is worse than chance, and no separation should be read into it`
-                          : aucs.length && Math.min(...aucs) < 0.6
-                            ? ', though at the bottom of that range it is close to it'
-                            : ''
-                      }.`
-                    : `The gradient holds for “a ${situation}”: near-default countries cluster tightly, distant countries sit apart.`}
-              </p>
+              {(situation === 'school' || situation === 'celebration') && (
+                <p className="text-sm leading-6 text-foreground/60">
+                  {`“A ${situation}” looks diffuse on this grid — not the same as absent${
+                    aucs.length && Math.min(...aucs) < 0.5
+                      ? ', but on its weakest cell the sorting test scores below the 50% a coin would, so read no separation into it'
+                      : ''
+                  }.`}
+                </p>
+              )}
               <TierNote
                 tier="evidence"
                 text={`For “a ${situation}” on ${MODEL_NAME[model]} the classifier scores ${Math.round(Math.min(...aucs) * 100)}–${Math.round(Math.max(...aucs) * 100)}% across the eight countries${
                   Math.min(...aucs) < 0.5
-                    ? ' — and the floor of that range is below the 50% a coin would score, so for at least one country this model’s default and country sets are not separable at all'
+                    ? ' — the floor is below the 50% a coin would score, so at least one country is not separable from the default at all'
                     : ''
-                }. Every gap here also clears p < 0.0001 in a 10,000-shuffle permutation test: we relabelled the images at random ten thousand times, and no random relabelling ever produced a gap this size. Each cell's own confidence interval is on its hover line above. The same gradient reproduces under a completely different image model: switch the ruler from DINOv3 to CLIP and the ordering survives.`}
+                }; every gap also clears p < 0.0001 in a 10,000-shuffle permutation test, and the ordering survives under a CLIP ruler.`}
               />
             </div>
           </div>
@@ -759,6 +748,183 @@ function NationalityScene() {
    country cells. */
 export interface EmptyPoint { sit: Sit; code: Code | 'default'; d_empty: number; d_default: number }
 
+/* Every default seed as a gray dot in the same projection scene 03's map uses.
+   The rings are the eight country centroids; hover magnet-snaps to the nearest
+   dot, shows its image, and draws a line to the centroid its embedding sits
+   nearest, in that country's colour — the tally's assignment, drawn. The labels
+   are computed in the full embedding space, not in this projection, so a line can
+   visibly cross into another cloud: the projection is a view, the labels are the
+   measurement. Wheel-zoom and drag-pan are the same machinery as the map: UMAP
+   packs the near-default countries on top of each other, so at 1× neither the
+   magnet nor the eye can separate them. */
+function SeedScatter({ situation, labels }: { situation: Sit; labels: Code[] }) {
+  const { model } = useModel()
+  const [hover, setHover] = useState<number | null>(null)
+  const data = umapFor(model, situation, 'dinov3')
+  const pts = useMemo(() => (data?.points ?? []).filter((p) => p.c === 'default'), [data])
+  /* cross-models publish 24 of their 50 thumbnails; hovering an unpublished seed
+     shows its label without an image rather than a broken tile */
+  const thumbed = useMemo(
+    () => (isSd21(model) ? null : new Set(publishedSeeds(model, situation, 'default') ?? [])),
+    [model, situation]
+  )
+  const W = 640
+  const H = 420
+  const pad = 26
+  const X = (x: number) => pad + x * (W - 2 * pad)
+  const Y = (y: number) => H - pad - y * (H - 2 * pad)
+  /* Keep the scaled content covering the viewport: it spans [t, t + k·L], so t must
+     sit in [L(1-k), 0]. At k = 1 that interval collapses to {0}, which is why
+     wheeling all the way back restores the full plot. */
+  const [view, setView] = useState({ k: 1, tx: 0, ty: 0 })
+  const [drag, setDrag] = useState<{ x: number; y: number } | null>(null)
+  const { k, tx, ty } = view
+  const clampView = (k: number, tx: number, ty: number) => ({
+    k,
+    tx: Math.min(0, Math.max(W * (1 - k), tx)),
+    ty: Math.min(0, Math.max(H * (1 - k), ty)),
+  })
+  const svgXY = (e: React.MouseEvent<SVGSVGElement>) => {
+    const box = e.currentTarget.getBoundingClientRect()
+    return {
+      x: ((e.clientX - box.left) / box.width) * W,
+      y: ((e.clientY - box.top) / box.height) * H,
+    }
+  }
+  /* React registers wheel on the root as a *passive* listener, so preventDefault()
+     from an onWheel prop does nothing and the page scrolls away under the cursor.
+     Bind it to the node ourselves with { passive: false }. */
+  const svgRef = useRef<SVGSVGElement>(null)
+  useEffect(() => {
+    const el = svgRef.current
+    if (!el) return
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      const box = el.getBoundingClientRect()
+      const x = ((e.clientX - box.left) / box.width) * W
+      const y = ((e.clientY - box.top) / box.height) * H
+      setView((v) => {
+        const next = Math.min(12, Math.max(1, v.k * (e.deltaY < 0 ? 1.18 : 1 / 1.18)))
+        if (next === v.k) return v
+        /* keep the point under the cursor fixed, then clamp */
+        return clampView(next, x - ((x - v.tx) / v.k) * next, y - ((y - v.ty) / v.k) * next)
+      })
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [])
+  const zoomed = k > 1.01
+  const magnet = useMagnet(
+    pts.map((p) => ({ x: tx + k * X(p.xy[0]), y: ty + k * Y(p.xy[1]), item: p.s })),
+    (s) => setHover(s)
+  )
+  if (!data) return null
+  return (
+    <div>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className={`w-full ${drag ? 'cursor-grabbing' : zoomed ? 'cursor-grab' : 'cursor-crosshair'}`}
+        ref={svgRef}
+        onMouseDown={(e) => setDrag(svgXY(e))}
+        onMouseUp={() => setDrag(null)}
+        onMouseLeave={() => {
+          setDrag(null)
+          setHover(null)
+        }}
+        onMouseMove={(e) => {
+          if (!drag) return magnet.onMouseMove(e)
+          const { x, y } = svgXY(e)
+          setView((v) => clampView(v.k, v.tx + (x - drag.x), v.ty + (y - drag.y)))
+          setDrag({ x, y })
+        }}
+      >
+        <g transform={`translate(${tx},${ty}) scale(${k})`}>
+          {pts.map((p) => {
+            const on = hover === p.s
+            return (
+              <circle
+                key={p.s}
+                cx={X(p.xy[0])}
+                cy={Y(p.xy[1])}
+                r={(on ? 7 : 4) / k}
+                fill={rgb(CV_DEFAULT)}
+                fillOpacity={on ? 1 : 0.75}
+                stroke={on ? 'white' : 'none'}
+                strokeWidth={1 / k}
+                pointerEvents="none"
+              />
+            )
+          })}
+          {COUNTRY8.map((c) => {
+            const cen = data.centroids[c.id]
+            if (!cen) return null
+            return (
+              <g key={c.id} pointerEvents="none">
+                <circle cx={X(cen[0])} cy={Y(cen[1])} r={8 / k} fill="none" stroke={rgb(c.cv)} strokeWidth={2 / k} />
+                <text x={X(cen[0])} y={Y(cen[1]) - 12 / k} textAnchor="middle" fontSize={9 / k} fill={rgb(c.cv)} fontFamily="JetBrains Mono">
+                  {c.id}
+                </text>
+              </g>
+            )
+          })}
+          {/* the hovered seed's assignment, drawn: a line to its nearest centroid in
+              that country's colour */}
+          {hover != null && (() => {
+            const p = pts.find((q) => q.s === hover)
+            const cen = data.centroids[labels[hover]]
+            if (!p || !cen) return null
+            return (
+              <line
+                x1={X(p.xy[0])}
+                y1={Y(p.xy[1])}
+                x2={X(cen[0])}
+                y2={Y(cen[1])}
+                stroke={rgb(C8[labels[hover]].cv)}
+                strokeWidth={1.5 / k}
+                strokeDasharray={`${5 / k} ${4 / k}`}
+                pointerEvents="none"
+              />
+            )
+          })()}
+        </g>
+      </svg>
+      <div className="mt-1 flex items-center gap-3 font-mono2 text-[9px] text-foreground/40">
+        <span>scroll to zoom · drag to pan</span>
+        {zoomed && (
+          <button
+            onClick={() => setView({ k: 1, tx: 0, ty: 0 })}
+            className="ml-auto rounded border border-border px-2 py-0.5 text-foreground/60 transition hover:border-foreground/40 hover:text-foreground/90"
+          >
+            {k.toFixed(1)}× · reset
+          </button>
+        )}
+      </div>
+      <div className="mt-3 flex min-h-[96px] items-center gap-4 rounded-lg border border-border p-3">
+        {hover != null ? (
+          <>
+            {(thumbed == null || thumbed.has(hover)) && (
+              <ZoomImage
+                src={modelImg(model, situation, 'default', hover)}
+                alt={`${situation} default seed ${hover}`}
+                caption={`“a ${situation}” · seed ${hover} · nearest country cluster: ${C8[labels[hover]].name}`}
+                imgClassName="h-20 w-20 cursor-zoom-in rounded-lg border border-border object-cover"
+              />
+            )}
+            <div className="font-mono2 text-[11px] leading-5 text-foreground/55">
+              “a {situation}” · seed {hover}
+              <br />
+              nearest cluster:{' '}
+              <span style={{ color: rgb(C8[labels[hover]].cv) }}>{C8[labels[hover]].name}</span>
+            </div>
+          </>
+        ) : (
+          <p className="p-2 font-mono2 text-[11px] text-foreground/35">hover a dot to see its image and nearest cluster</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function SeedBySeedScene() {
   const { model } = useModel()
   const [situation, setSituation] = useState<Sit>('wedding')
@@ -780,9 +946,14 @@ function SeedBySeedScene() {
     return [...m.entries()].sort((a, b) => b[1] - a[1])
   }, [labels])
   const southHere = labels.filter((l) => SOUTH.includes(l)).length
-  /* Sixteen seeds to show, evenly spaced across the ones this model has a thumbnail
-     for. SD 2.1 ships all 50 and is absent from the manifest, so it spreads over the
-     whole run; the cross-models spread over their published 24. */
+  /* the looser cut: everything that is not the US or Germany. Stated alongside the
+     strict one so the choice of boundary is visible rather than assumed. */
+  const nonWestLoose = allLabels.flat().filter((l) => l !== 'US' && l !== 'DE').length
+  /* Sixteen seeds to show as pictures, evenly spaced across the ones this model has
+     a thumbnail for. SD 2.1 ships all 50 and is absent from the manifest, so it
+     spreads over the whole run; the cross-models spread over their published 24.
+     Evenly spaced rather than a prefix of the typicality order — the first sixteen
+     would be near-identical images and would read as curation. */
   const strip = useMemo(() => {
     const have = isSd21(model)
       ? labels.map((_, i) => i)
@@ -791,37 +962,28 @@ function SeedBySeedScene() {
     if (k < 2) return have.slice(0, k)
     return Array.from({ length: k }, (_, i) => have[Math.round((i * (have.length - 1)) / (k - 1))])
   }, [model, situation, labels])
-  /* the looser cut: everything that is not the US or Germany. Stated alongside the
-     strict one so the choice of boundary is visible rather than assumed. */
-  const nonWestLoose = allLabels.flat().filter((l) => l !== 'US' && l !== 'DE').length
 
   return (
     <SceneShell
-      number="03"
+      number="04"
       kicker="Part I · the default · finding 3"
       title={<>Not an average, <em className="font-display italic text-amber-200">seed by seed.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          A mean could hide a mixture: maybe half the default seeds are Western and half are not, cancelling out. For
-          every default seed we ask which country's cluster it lies closest to. Across all {seedTotal} default seeds of{' '}
-          <strong>{MODEL_NAME[model]}</strong>, <strong>{southTotal} ({(100 * southTotal / seedTotal).toFixed(1)}%)
-          land nearest India, Nigeria, Indonesia or Egypt</strong>. The rest land nearest the US, Germany, or the
-          mid-band countries Russia and Japan.
+          A mean could hide a mixture — half the default seeds Western, half not, cancelling out. So each default seed
+          is labeled by the country cluster it lies nearest: of {MODEL_NAME[model]}'s {seedTotal} default seeds,{' '}
+          <strong>{southTotal} ({(100 * southTotal / seedTotal).toFixed(1)}%) land nearest India, Nigeria, Indonesia
+          or Egypt</strong>.
         </p>
         {/* Review 10 · C-2 and R6: this statistic depends entirely on where "non-Western"
             is cut, and the page used the strict cut without saying so. Recompute with Japan
             and Russia as non-Western and SD 2.1 goes from 5.3% to 35%. Both are now stated. */}
         <p className="prose-scene mt-4 max-w-2xl text-[13px] leading-6 text-foreground/55">
-          <strong className="text-foreground/75">That percentage depends on where the line is drawn, so here is the
-          line.</strong> “Non-Western” above means the four Global-South countries only. Russia and Japan are
-          high-income countries that this study's own geometry places between the two groups, and counting them as
-          Western is a choice rather than a fact. Count them the other way — anything that is not the US or Germany —
-          and {MODEL_NAME[model]}'s share becomes{' '}
-          <strong className="text-foreground/75">{((100 * nonWestLoose) / seedTotal).toFixed(1)}%</strong> instead of{' '}
-          {((100 * southTotal) / seedTotal).toFixed(1)}%. Neither cut changes the direction result, which is measured
-          between prompts rather than assigned by category — but the headline number moves a long way between them, so
-          both are reported.
+          <strong className="text-foreground/75">That percentage depends on where the line is drawn.</strong> Above,
+          “non-Western” means the four Global-South countries only; Russia and Japan sit between the two groups in
+          this study's own geometry. Count everything that is not the US or Germany instead and the share becomes{' '}
+          <strong className="text-foreground/75">{((100 * nonWestLoose) / seedTotal).toFixed(1)}%</strong>.
         </p>
         {/* The "honest exception" callout is REMOVED 2026-08-06. It fired whenever a
             model's Global-South share cleared 15% and announced that the
@@ -833,40 +995,26 @@ function SeedBySeedScene() {
             does. The direction result the callout carried was the only statement of
             it on the page, so it moves into the prose below rather than being lost. */}
         <p className="prose-scene mt-4 max-w-2xl text-[13px] leading-6 text-foreground/55">
-          Which country dominates is a fact about each model, and it differs between them. The direction does not:
-          Nigeria sits farther from a model's own default prompt than the USA does in{' '}
+          Which country dominates differs by model; the direction does not — Nigeria sits farther from a model's own
+          default prompt than the USA in{' '}
           <strong className="text-foreground/75">42 of 42 model × situation cells</strong>.
         </p>
+      </Reveal>
+      <Reveal delay={0.05}>
+        <div className="mt-6 max-w-2xl">
+          <InfoBox title="technical detail · why seed by seed">
+            Per-seed label: the argmin over the eight country centroids of cosine distance in embedding space, applied to each default-prompt embedding (50 seeds for SD 2.1; cross-models publish 24 thumbnails). The tally is the histogram of those labels; the scatter reuses scene 03's UMAP fit. Flux is the one real exception — 28.3% of its default seeds land nearest a Global-South cluster against SD 2.1's 5.3% — shown rather than hidden.
+          </InfoBox>
+        </div>
       </Reveal>
       <Reveal delay={0.08}>
         <Panel className="mt-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-              {strip.length} of the {labels.length} default seeds of “a {situation}” · underline = nearest country
-              cluster
+              all {labels.length} default seeds of “a {situation}” · dot colour = nearest country cluster
             </div>
             <BoxPicker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
           </div>
-          {/* Sixteen pictures, then the counts.
-
-             This was a 10 × 5 grid with one square per seed, which meant the six
-             cross-models — which publish 24 thumbnails of the 50 — showed half a
-             wall of blank swatches. Two bad options followed from insisting on all
-             fifty squares: drop the pictures entirely (what it used to do) or leave
-             the holes in (what it did next). Neither is what the scene is for.
-             The pictures are here to show what a seed looks like; the bar chart
-             below is what carries the composition, over all 50. So: a full 4 × 4 of
-             real images, every square a picture in every model, and the tally does
-             the counting.
-
-             Evenly spaced across the seeds that have thumbnails rather than the
-             first sixteen — a prefix of the typicality order would be sixteen
-             near-identical images and would read as curation. */}
-          {/* Pictures and counts side by side: the tally is the claim and the strip
-              is what the claim is about, so reading one used to mean scrolling past
-              the other. max-w-md on the grid, not the panel's full width — four
-              columns across the whole panel made each thumbnail ~4x the area of the
-              old 10-across grid. */}
           <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,28rem)_1fr]">
             <div>
               <div className="grid grid-cols-4 gap-1.5">
@@ -886,37 +1034,39 @@ function SeedBySeedScene() {
                 ))}
               </div>
               <p className="mt-2 font-mono2 text-[10px] leading-4 text-foreground/45">
-                {strip.length} of {MODEL_NAME[model]}'s {labels.length} seeds, evenly spaced across the ones with a
-                published thumbnail — a sample of the run, not a pick of it. The tally beside it counts all{' '}
-                {labels.length}.
+                evenly spaced across the seeds with a published thumbnail — a sample of the run, not a pick of it.
               </p>
+              <div className="mt-5 border-t border-border pt-4">
+                <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
+                  nearest-cluster tally · all {labels.length} seeds · {situation}
+                </div>
+                <div className="mt-3 space-y-1.5">
+                  {counts.map(([code, n]) => (
+                    <div key={code} className="flex items-center gap-2">
+                      <span className="w-6 font-mono2 text-[10px]" style={{ color: rgb(C8[code as Code].cv) }}>{code}</span>
+                      <div className="relative h-3 flex-1 rounded-sm bg-foreground/5">
+                        <div className="absolute inset-y-0 left-0 rounded-sm" style={{ width: `${(n / labels.length) * 100}%`, background: rgb('--c-amber') }} />
+                      </div>
+                      <span className="w-8 text-right font-mono2 text-[10px] text-foreground/50">{n}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/40">
+                  {southHere} of these {labels.length} seeds land nearest a Global-South country (IN/NG/ID/EG)
+                </p>
+              </div>
             </div>
             <div>
               <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-                nearest-cluster tally · all {labels.length} seeds · {situation}
+                the same seeds in the map's projection · rings = cluster centroids
               </div>
-              <div className="mt-3 space-y-1.5">
-                {counts.map(([code, n]) => (
-                  <div key={code} className="flex items-center gap-2">
-                    <span className="w-6 font-mono2 text-[10px]" style={{ color: rgb(C8[code as Code].cv) }}>{code}</span>
-                    <div className="relative h-3 flex-1 rounded-sm bg-foreground/5">
-                      <div className="absolute inset-y-0 left-0 rounded-sm" style={{ width: `${(n / labels.length) * 100}%`, background: rgb(C8[code as Code].cv) }} />
-                    </div>
-                    <span className="w-8 text-right font-mono2 text-[10px] text-foreground/50">{n}</span>
-                  </div>
-                ))}
+              <div className="mt-3">
+                <SeedScatter situation={situation} labels={labels} />
               </div>
-              <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/40">
-                {southHere} of these {labels.length} seeds land nearest a Global-South country (IN/NG/ID/EG)
-              </p>
             </div>
           </div>
-          <div className="mt-6 flex flex-col gap-4 border-t border-border pt-5">
+          <div className="mt-6 border-t border-border pt-5">
             <Legend withDefault={false} />
-            <TierNote
-              tier="evidence"
-              text={`Every one of the ${labels.length} default-prompt seeds was assigned to whichever country's set of pictures it sits closest to, one seed at a time. The Western default is a property of individual images, not something that only appears once you average them.`}
-            />
           </div>
         </Panel>
       </Reveal>
@@ -1082,7 +1232,7 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
       <div>
         {plot}
         <div className="mt-1 flex items-center gap-3 font-mono2 text-[9px] text-foreground/40">
-          <span>scroll to zoom · drag to pan · points stay the same size, the cloud spreads</span>
+          <span>scroll to zoom · drag to pan</span>
           {zoomed && (
             <button
               onClick={() => setView({ k: 1, tx: 0, ty: 0 })}
@@ -1112,7 +1262,7 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
               </div>
             </>
           ) : (
-            <p className="p-2 font-mono2 text-[11px] text-foreground/35">hover any point to see the image it represents</p>
+            <p className="p-2 font-mono2 text-[11px] text-foreground/35">hover a point to see its image</p>
           )}
         </div>
         {/* R5.6 / B11: this box used to read "silhouette 0.10–0.27, so the clustering
@@ -1127,12 +1277,12 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
           <p className="mt-2 text-sm leading-6 text-foreground/70">
             Ask a nearest-neighbour test to tell a country image from a default-prompt one and it ranks them correctly{' '}
             <strong className="text-foreground">{Math.round(knnRange[0] * 100)}–{Math.round(knnRange[1] * 100)}%</strong>{' '}
-            of the time across this situation's cells. That is the separability claim.
+            of the time across this situation's cells.
           </p>
           <p className="mt-2 text-[13px] leading-5 text-foreground/50">
-            The clusters you see here are looser than they look: silhouette scores run{' '}
-            {SILHOUETTE_RANGE[0].toFixed(2)}–{SILHOUETTE_RANGE[1].toFixed(2)}, and 0.10 is barely above noise. The
-            countries are separable without being tidy, and the projection is a view, never the evidence.
+            The clusters are looser than they look: silhouette scores run{' '}
+            {SILHOUETTE_RANGE[0].toFixed(2)}–{SILHOUETTE_RANGE[1].toFixed(2)}, barely above noise at the low end. The
+            projection is a view, not the evidence.
           </p>
           <Sd21Only />
         </div>
@@ -1150,17 +1300,23 @@ function MapScene() {
   const [ruler, setRuler] = useState<Ruler>('dinov3')
   return (
     <SceneShell
-      number="04"
+      number="03"
       kicker="Part I · the default · finding 4"
       title={<>The map is <em className="font-display italic text-amber-200">real.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          Flatten the embedding space to two dimensions and the structure is visible to the naked eye: defaults and
-          near-default countries overlap, distant countries drift apart, and non-Western countries are pulled toward{' '}
-          <strong>shared attractors</strong> (Nigeria's nearest cluster is India in 4–5 of 6 situations), not toward
-          their own faithful depictions.
+          Flatten the embedding space to two dimensions and the structure is visible to the naked eye. Non-Western
+          countries are pulled toward <strong>shared attractors</strong> — Nigeria's nearest cluster is India in 4–5
+          of 6 situations — not toward their own faithful depictions.
         </p>
+      </Reveal>
+      <Reveal delay={0.05}>
+        <div className="mt-6 max-w-2xl">
+          <InfoBox title="technical detail · what this map is">
+            One UMAP fit per (model, situation) over all nine variants' embeddings, coordinates normalised to [0,1]; rings are cluster centroids in the projection. The separability number is nearest-neighbour classification accuracy (k-NN AUC) computed in the full embedding space, not on this 2D projection — silhouette scores run only 0.10–0.27, which is why the map is labelled a view, not the evidence.
+          </InfoBox>
+        </div>
       </Reveal>
       <Reveal delay={0.08}>
         <Panel className="mt-10">
@@ -1203,7 +1359,7 @@ UMAP of real {ruler === 'dinov3' ? 'DINOv3' : 'CLIP'} embeddings · {board ? 'al
             <Legend focus={focus} onFocus={setFocus} />
             <TierNote
               tier="evidence"
-              text="30 sampled images per prompt, with each prompt's true centre marked. Every pairwise country gap carries a bootstrap confidence interval, and the clustering scores are reported across all six events, not just the clearest one."
+              text="30 sampled images per prompt; every pairwise country gap carries a bootstrap confidence interval, and clustering scores are reported across all six events."
             />
           </div>
         </Panel>
@@ -1219,8 +1375,8 @@ export default function Part1Default() {
     <>
       <UnsaidScene />
       <NationalityScene />
-      <SeedBySeedScene />
       <MapScene />
+      <SeedBySeedScene />
     </>
   )
 }

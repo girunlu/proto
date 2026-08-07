@@ -215,7 +215,11 @@ export const STATS = {
   // Job 5 completed 2026-08-03: 600 more local (sdxl + hunyuandit own-clause
   // ladders, 2 pairs x 3 rungs x 50 seeds each), taking the own-clause table to
   // 6 of 7 models.
-  images: 59016, // 56,016 local (incl. 30 pulled-back Flux empty-prior + 2,700 steer round 2 + 600 Job 5) + 3,000 Flux Job A still remote (A40)
+  images: 30000, /* rendered as a floor ("30,000+" / "more than 30,000"). The job ledger says
+    59,016 (56,016 local incl. 30 pulled-back Flux empty-prior + 2,700 steer round 2 + 600
+    Job 5, plus 3,000 Flux Job A still remote), but the last count verified on disk was
+    33,936 (2026-07-31) and the later additions survive only in the ledger — with the
+    generation repo gone, the page states the defensible floor, not the ledger. */
   seeds: 50,
   prompts: 54,
 }

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 
 export function Reveal({ children, delay = 0, className }: { children: ReactNode; delay?: number; className?: string }) {
   return (
@@ -49,6 +49,25 @@ export function Panel({ children, className = '' }: { children: ReactNode; class
   return (
     <div className={`rounded-xl border border-border bg-card/80 p-6 shadow-[0_0_60px_-20px_rgba(0,0,0,0.8)] md:p-8 ${className}`}>
       {children}
+    </div>
+  )
+}
+
+/* An expandable background/mechanism note: one short paragraph, there for readers
+   who want it, out of the way of the visuals for everyone else. */
+export function InfoBox({ title, children }: { title: string; children: ReactNode }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="rounded-lg border border-border bg-background/40">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between px-3.5 py-2.5 font-mono2 text-[10px] tracking-wider text-foreground/45 uppercase transition hover:text-foreground/80"
+      >
+        {title}
+        <span className="text-foreground/30">{open ? '−' : '+'}</span>
+      </button>
+      {open && <div className="px-3.5 pb-3.5 text-[13px] leading-6 text-foreground/60">{children}</div>}
     </div>
   )
 }

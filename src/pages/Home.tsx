@@ -1,13 +1,19 @@
+import { useState } from 'react'
 import Hero from '../sections/Hero'
 import Overview from '../sections/Overview'
 import Part1Default from '../sections/Part1Default'
 import Part2Mechanism from '../sections/Part2Mechanism'
-// Part III (the override) is DISMISSED, 2026-08-04 — unmounted, not deleted. The file
-// and its data stay in the tree; nothing imports them. To bring it back: restore this
-// import, the divider and <div id="p3"> below, and the NavRail entry.
+// The override (old Part III) is DISMISSED, 2026-08-06 — it spent a day mounted in the
+// extras section for review and came back out: the stereotyping-inversion scene and the
+// specifically-cultural control are out of the flow. Unmounted, not deleted.
 // import Part3Override from '../sections/Part3Override'
 import Part4Assumptions from '../sections/Part4Assumptions'
-import Part5Reality from '../sections/Part5Reality'
+// Part V (the outside reference, scene 12) is DISMISSED, 2026-08-06 — the collected
+// reference-photograph set is not reliable enough to anchor a comparison. Unmounted,
+// not deleted: the file and part5.ts's data stay in the tree. To bring it back:
+// restore this import, the divider and <div id="p5"> below, and the NavRail/Overview
+// entries.
+// import Part5Reality from '../sections/Part5Reality'
 // Scene 16·d, the prompt clinic ("try it yourself"), is DISMISSED 2026-08-06 —
 // unmounted, not deleted, same treatment as Part III. The file and remedy.json's
 // `clinic` block stay in the tree; nothing imports them. To bring it back: restore
@@ -26,7 +32,6 @@ import Closing from '../sections/Closing'
 import { NavRail } from '../components/NavRail'
 import { ModelBar } from '../components/ModelBar'
 import { ModelProvider } from '../data/modelData'
-import { REAL_PHOTOS_N } from '../data/part5'
 
 function PartDivider({ label, sub, violet }: { label: string; sub: string; violet?: boolean }) {
   return (
@@ -42,6 +47,9 @@ function PartDivider({ label, sub, violet }: { label: string; sub: string; viole
 }
 
 export default function Home() {
+  /* the technique scenes (override + escape attempts) stay out of the main flow and
+     out of the initial page weight — mounted only on request */
+  const [showExtras, setShowExtras] = useState(false)
   return (
     <ModelProvider>
     <main className="relative">
@@ -59,24 +67,57 @@ export default function Home() {
       <div id="p4">
         <Part4Assumptions />
       </div>
-      <PartDivider label="Part III · the escape attempts" sub="the fixes everyone reaches for first — more guidance, more words — measured" />
-      <div id="p6">
-        <CfgScene />
+      <PartDivider label="Part III · the escape" sub="counter-specifying the named assumptions, one clause at a time — measured" />
+      <div id="p3">
         <Part6Escape />
-        <Part6Steer />
       </div>
-      <PartDivider label="Part IV · the mechanism" sub="how deep does the assumption sit? committed early, and not copied from the training data" />
+      <PartDivider label="Part IV · the mechanism" sub="how deep does the assumption sit? settled in the first third of denoising" />
       <div id="p2">
         <Part2Mechanism />
       </div>
-      <PartDivider label="Part V · an outside reference" sub={`${REAL_PHOTOS_N.toLocaleString()} real photographs of the same events, gathered as neutrally as we could · a comparison, not a ground truth`} />
+      {/* Part V · an outside reference — DISMISSED 2026-08-06 (unreliable reference set).
+          Restore the import above and this block to bring it back:
+      <PartDivider label="Part V · an outside reference" sub="real photographs of the same events, gathered as neutrally as we could · a comparison, not a ground truth" />
       <div id="p5">
         <Part5Reality />
       </div>
-      <PartDivider violet label="Part VI · is it just this model?" sub="the identical frozen instrument, run in full on six more models · all real data" />
+      */}
+      <PartDivider violet label="Part V · is it just this model?" sub="the identical frozen instrument, run in full on six more models · all real data" />
       <div id="xa">
         <BranchAModels />
         <Part7Consensus />
+      </div>
+      <PartDivider label="extras · more attempts at undoing the default" sub="the guidance knob, and what a clause can move — measured, off the main line of the argument" />
+      <div id="p6">
+        {showExtras ? (
+          <>
+            <CfgScene />
+            <Part6Steer />
+            <div className="mx-auto max-w-6xl px-6 pt-12 text-center">
+              <button
+                onClick={() => {
+                  setShowExtras(false)
+                  document.getElementById('p6')?.scrollIntoView({ behavior: 'smooth' })
+                }}
+                className="rounded-md border border-border px-4 py-2 font-mono2 text-xs text-foreground/60 transition hover:border-amber-300/50 hover:text-amber-200"
+              >
+                hide the extras
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="mx-auto max-w-6xl px-6 pt-10 text-center">
+            <button
+              onClick={() => setShowExtras(true)}
+              className="rounded-md border border-border px-4 py-2 font-mono2 text-xs text-foreground/60 transition hover:border-amber-300/50 hover:text-amber-200"
+            >
+              show the two scenes
+            </button>
+            <p className="mt-3 font-mono2 text-[10px] tracking-wider text-foreground/35">
+              the guidance knob · what a clause can move
+            </p>
+          </div>
+        )}
       </div>
       <div id="closing">
         <Closing />

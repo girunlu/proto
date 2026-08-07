@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
+import { SceneShell, Reveal, Panel, TierNote, InfoBox } from '../components/Scene'
 
 import { rgb, rgba } from '../lib/colors'
 import { Q_TEXT } from '../data/uiv2'
@@ -126,18 +126,24 @@ export default function Part7Consensus() {
 
   return (
     <SceneShell
-      number="16"
-      kicker="Part VI · is it just this model? · the shared prior"
+      number="11"
+      kicker="Part V · is it just this model? · the shared prior"
       title={<>They do not merely lean the same way. They fill the same blanks with <em className="font-display italic text-emerald-300">the same words.</em></>}
       id="xa4"
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          The scene above asks a one-sided question: do <em>Stable Diffusion 2.1's</em> assumptions survive in the other
-          six? That makes one model the reference frame, and a reader is entitled to ask why. So ask it symmetrically
-          instead: across every (prompt, question) blank any model fills — <strong>{C.n_slots} of them</strong> — how
-          much of what a model assumes is its own, and how much is everyone's?
+          Across every (prompt, question) blank any model fills — <strong>{C.n_slots} of them</strong> — how much of
+          what a model assumes is its own, and how much is everyone's?
         </p>
+      </Reveal>
+
+      <Reveal delay={0.05}>
+        <div className="mt-6 max-w-2xl">
+          <InfoBox title="technical detail · reading the matrix">
+            Rows: headline-tier named assumptions; columns: models; a cell's number is how many of that model's 54 cells fire the assumption above the naming threshold. Blank = outside that model's twenty most frequent — a cutoff, not an absence — and blanks are never imputed. Cross-model agreement is chance-corrected with Gwet's AC1 (an agreement score that discounts matches expected by luck) over the shared questions, against a permutation null.
+          </InfoBox>
+        </div>
       </Reveal>
 
       <Reveal delay={0.1}>
@@ -146,8 +152,6 @@ export default function Part7Consensus() {
             {MODEL_NAME[model]} · what it shares, what it adds, where it stands alone
           </div>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/70">
-            The page opens with <span className="font-mono2 text-[13px]">image ~ P(· | prompt, W)</span> and then never
-            takes <span className="font-mono2 text-[13px]">W</span> apart. This is the decomposition:{' '}
             <span className="font-mono2 text-[13px]">W = W_shared ⊕ W_model</span>, measured.
           </p>
 
@@ -208,9 +212,7 @@ export default function Part7Consensus() {
               ))}
             </div>
             <p className="mt-4 max-w-3xl text-sm leading-6 text-foreground/70">
-              This is the layer the page was missing between “here is one prompt's card list” and “here are hundreds of
-              cards in total”. Read it as the model's standing view of the world: what it believes before the prompt
-              narrows anything down. Every model's top row is the same one — it is always daytime.
+              The model's standing view of the world, before the prompt narrows anything down.
             </p>
           </div>
 
@@ -219,9 +221,7 @@ export default function Part7Consensus() {
               the same assumptions, all seven models · read a column for a worldview, a row for the ecosystem's
             </div>
             <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-              <p className="font-mono2 text-[9px] text-foreground/35">
-                hover any number to see the prompts it counts, and the images that fired them
-              </p>
+              <p className="font-mono2 text-[9px] text-foreground/35">hover a number for its images</p>
               <div className="flex items-center gap-1 font-mono2 text-[9px] text-foreground/35">
                 <span className="mr-1">preview</span>
                 {[
@@ -302,6 +302,9 @@ export default function Part7Consensus() {
                 </tbody>
               </table>
             </div>
+            <p className="mt-2 font-mono2 text-[10px] leading-4 text-foreground/40">
+              a blank cell means the assumption ranked outside that model's twenty most frequent — not zero, and not missing data
+            </p>
             {/* the ramp is not linear, so it has to show its own scale */}
             <div className="mt-3 flex items-center gap-3">
               <div className="flex h-3 flex-1 overflow-hidden rounded-sm">
@@ -319,7 +322,7 @@ export default function Part7Consensus() {
           <div className="mt-8 border-t border-border pt-6">
             <TierNote
               tier="evidence"
-              text={`All seven models scored by the same single-annotator instrument, headline tier only. Agreement is chance-corrected two ways, because the raw share above is not interpretable on its own: Gwet's AC1 across models (${C.ac1.weighted.toFixed(3)}, item-weighted over ${C.ac1.n_questions} questions), and a ${C.null.n_perm}-shuffle permutation null that preserves each question's answer distribution — ${C.null.unanimous.observed} of the ${C.n_slots} blanks get the identical answer from all seven models against ${C.null.unanimous.mean} expected by chance, an excess of ${C.null.unanimous.excess} (p ${C.null.unanimous.p < 0.001 ? '< 0.001' : `= ${C.null.unanimous.p}`}). ${Object.keys(C.ac1.single_valued).length} questions had only one value ever observed — AC1 is arithmetically 1.0 there, so they are excluded from the statistic rather than allowed to inflate it. A model missing from a blank did not settle that attribute at the gate; it is absence, not disagreement, and it is never imputed.`}
+              text={`All seven models scored by the same single-annotator instrument, headline tier only; agreement is chance-corrected by Gwet's AC1 across models (${C.ac1.weighted.toFixed(3)}, item-weighted over ${C.ac1.n_questions} questions) and a ${C.null.n_perm}-shuffle permutation null (${C.null.unanimous.observed} of ${C.n_slots} blanks unanimous vs ${C.null.unanimous.mean} expected by chance, p ${C.null.unanimous.p < 0.001 ? '< 0.001' : `= ${C.null.unanimous.p}`}), with absent models never imputed.`}
             />
           </div>
         </Panel>

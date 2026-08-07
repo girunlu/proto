@@ -141,16 +141,15 @@ export function CfgScene() {
   const shown = [1, 4, 12, 15]
   return (
     <SceneShell
-      number="07"
-      kicker="Part III · the escape attempts · finding 11"
+      number="X1"
+      kicker="extras · the escape attempts · finding 11"
       title={<>The knob that <em className="font-display italic text-amber-200">doesn't help.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
           Every image tool has a guidance slider: turn it up and the model is pushed harder to obey the words you
           typed. If the cultural gap were a matter of the model half-listening, pushing harder would close it. It does
-          not. The gap opens almost entirely between guidance 1 and 4, then sits flat all the way to 15, in every one
-          of the six events. The guidance sweep was generated for Stable Diffusion 2.1 only.
+          not.
         </p>
         <Sd21Only />
       </Reveal>
@@ -197,9 +196,7 @@ export function CfgScene() {
               })}
             </div>
             <p className="mt-2 font-mono2 text-[10px] text-foreground/55">
-              hover a line in the chart or a country here to single it out · click either to keep it that way — the
-              picture strip below follows the same choice. Click again, or use the button above, to bring every line
-              back to equal weight
+              click a line or country to pin it
             </p>
           </div>
 
@@ -224,18 +221,13 @@ export function CfgScene() {
                 </figure>
               ))}
             </div>
-            <p className="mt-2 font-mono2 text-[9px] text-foreground/35">same seed throughout, so any change is the guidance and nothing else</p>
           </div>
 
-          <div className="mt-6 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
+          <div className="mt-6 border-t border-border pt-5">
             <TierNote
               tier="evidence"
-              text="Distance from the default prompt at each guidance level, 50 seeds per point with bootstrap confidence intervals. It holds in all six events; wedding × Nigeria is the flattest of all, 0.491 at guidance 4 and 0.488 at guidance 15."
+              text="50 seeds per point, bootstrap confidence intervals; the near-default lines have barely a gap to open, the finding is about the far ones."
             />
-            <p className="text-sm leading-6 text-foreground/60">
-              An honest caveat: the near-default lines (USA, Germany) look flat partly because there is barely a gap
-              there to open. The finding is about the far lines. No amount of guidance closes those.
-            </p>
           </div>
         </Panel>
       </Reveal>
@@ -448,24 +440,19 @@ export default function Part6Escape() {
 
   return (
     <SceneShell
-      number="08"
-      kicker="Part III · the escape attempts · findings 20–21"
+      number="07"
+      kicker="Part III · the escape · findings 20–21"
       title={<>Counter-specification: the obvious remedy, <em className="font-display italic text-amber-200">measured.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
           If “a wedding in Nigeria” comes out outdoors on every seed, the obvious fix is to say so: write “a wedding in
-          Nigeria, indoors.” We built that ladder one clause per named assumption, up to three clauses deep, and
-          measured what happened at every rung — eight event-and-country pairs on Stable Diffusion 2.1, and the two
-          Nigeria pairs on {prose(XM_LADDER_NAMES)}, each from its own list of assumptions.
-        </p>
-        <p className="prose-scene mt-4 max-w-2xl">
-          The answer, before the ladder rather than after it:{' '}
+          Nigeria, indoors.” We built that ladder one clause per named assumption, up to three clauses deep — eight
+          event-and-country pairs on Stable Diffusion 2.1, and the two Nigeria pairs on {prose(XM_LADDER_NAMES)}, each
+          from its own list of assumptions. The answer:{' '}
           <strong className="text-foreground/90">the clauses do work, and the escape still does not happen.</strong>{' '}
-          You can change what is in the picture. You cannot change how few pictures there are. The rest of this scene is
-          why those two sentences are not a contradiction — and the reason has a shape:{' '}
-          <em className="text-amber-200">prompting is additive in an entangled concept space. You can add constraints.
-          You can never subtract a prior.</em>
+          <em className="text-amber-200">Prompting is additive in an entangled concept space: you can add constraints,
+          you can never subtract a prior.</em>
         </p>
       </Reveal>
 
@@ -475,15 +462,14 @@ export default function Part6Escape() {
             mechanism 1 · entanglement · the ladder · {MODEL_NAME[ladderModel]}
           </div>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/70">
-            A concept like “an indoor Nigerian wedding” arrives with its own furniture. Flipping one attribute does not
-            move the set, because the other attributes were never independent knobs — which is why the two panels below
-            disagree: the answers change while the pictures stay the same handful of pictures.
+            A concept like “an indoor Nigerian wedding” arrives with its own furniture: flipping one attribute does not
+            move the set, because the other attributes were never independent knobs.
           </p>
           {!isSd21(model) && (
             <p className={`mt-3 mb-4 rounded-md border px-3 py-2 font-mono2 text-[10px] leading-4 ${xm ? 'border-border bg-foreground/[0.04] text-foreground/70' : 'border-amber-300/30 bg-amber-300/5 text-amber-200/90'}`}>
               {xm
-                ? `${MODEL_NAME[model]} was run up its own ladder for the two Nigeria pairs, and the clauses below are its own — chosen from its own headline assumptions, so they are not the same words SD 2.1 was given.`
-                : `${MODEL_NAME[model]} has no counter-specification ladder: only Stable Diffusion 2.1 (all eight pairs) and Kolors, SD 3.5 Large and Qwen-Image (the two Nigeria pairs) were run. The default and country prompts exist for every model, but a ladder needs the counter-specified rungs, so this scene stays on Stable Diffusion 2.1.`}
+                ? `${MODEL_NAME[model]} has its own ladder for the two Nigeria pairs, with its own clauses chosen from its own headline assumptions — not the same words SD 2.1 was given.`
+                : `${MODEL_NAME[model]} has no counter-specification ladder: only Stable Diffusion 2.1 (all eight pairs) and Kolors, SD 3.5 Large and Qwen-Image (the two Nigeria pairs) have one, so this scene stays on Stable Diffusion 2.1.`}
             </p>
           )}
           {/* boxes, like every other selector on the page since the Tier-B pass */}
@@ -556,10 +542,7 @@ export default function Part6Escape() {
               the whole ladder in one projection · every seed of every rung
             </div>
             <p className="mt-2 max-w-3xl text-[13px] leading-5 text-foreground/55">
-              A UMAP of the same embeddings the numbers above are computed from, fitted over all five rungs at once —
-              the same projection Part I uses, read the same way. The default prompt is one cloud, the country prompt is
-              another, and the counter-specified rungs stay alongside the country prompt rather than travelling back
-              toward the default one. Escaping an attribute does not move the set.
+              A UMAP of the same embeddings the numbers above are computed from, fitted over all rungs at once.
             </p>
             <div className="mt-4">
               <LadderMap model={ladderModel} pair={pairKey} rung={cur.id} onPick={setRungId} />
@@ -681,8 +664,8 @@ export default function Part6Escape() {
               tier="evidence"
               text={
                 isSd21(ladderModel)
-                  ? 'Eight pairs (wedding and celebration × Nigeria, India, Germany, Egypt) × 50 seeds per rung, the full questionnaire run at every rung. Ladders stop early where a pair had too few named assumptions to counter-specify further.'
-                  : `Two pairs (wedding and celebration × Nigeria) × 50 seeds per rung, the same questionnaire at every rung. The clauses are this model's own, chosen from its own headline assumptions, so the ladder is not a replay of SD 2.1's — and the count here is measured against the country-named prompt, not the default one.`
+                  ? 'Eight pairs (wedding and celebration × Nigeria, India, Germany, Egypt) × 50 seeds per rung, full questionnaire at every rung; ladders stop early where a pair had too few named assumptions to counter-specify.'
+                  : `Two pairs (wedding and celebration × Nigeria) × 50 seeds per rung, same questionnaire at every rung; the clauses are this model's own and the count is measured against the country-named prompt, not the default.`
               }
             />
             {isSd21(ladderModel) ? (
