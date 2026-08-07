@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 const STOPS = [
-  { id: 'start', label: '— · what this is' },
+  { id: 'start', label: '· what this is' },
   { id: 'p1', label: 'I · the default' },
   { id: 'p4', label: 'II · assumptions' },
   { id: 'p3', label: 'III · the escape' },

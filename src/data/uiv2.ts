@@ -38,7 +38,7 @@ export const HARDENING = ui.hardening as unknown as Record<CellKey, Hardening>
   const bad = entries.filter(([, h]) => typeof h?.knn_auc !== 'number')
   if (entries.length !== 48 || bad.length) {
     throw new Error(
-      `ui_v2.json: hardening table incomplete — ${entries.length}/48 cells, ${bad.length} missing knn_auc`,
+      `ui_v2.json: hardening table incomplete: ${entries.length}/48 cells, ${bad.length} missing knn_auc`,
     )
   }
 }

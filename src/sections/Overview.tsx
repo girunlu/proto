@@ -54,14 +54,14 @@ const MOVES: { id: string; part: string; claim: string; how: string }[] = [
 export default function Overview() {
   return (
     <SceneShell
-      number="—"
+      number="·"
       kicker="before you start"
       title={<>One argument, <em className="font-display italic text-amber-200">five moves.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          Everything on this page comes from one frozen experiment: six everyday situations — a wedding, a funeral, a
-          celebration, a family, a breakfast, a school — each written nine ways, once plainly and once for each of
+          Everything on this page comes from one frozen experiment: six everyday situations (a wedding, a funeral, a
+          celebration, a family, a breakfast, a school), each written nine ways, once plainly and once for each of
           eight countries. That is <strong>{STATS.prompts} prompts</strong>, generated{' '}
           <strong>{STATS.seeds} times each on the same fixed seeds</strong>, in <strong>{MODELS.length} models</strong>
           , for <strong>more than {STATS.images.toLocaleString()} images</strong> in total.
@@ -112,7 +112,7 @@ export default function Overview() {
               nothing rests on one picture
             </div>
             <p className="mt-2 text-[13px] leading-5 text-foreground/65">
-              A single image shows what a statistic is about, never carries it — the headline gaps survive relabelling
+              A single image shows what a statistic is about, never carries it. The headline gaps survive relabelling
               the images ten thousand times.
             </p>
           </div>

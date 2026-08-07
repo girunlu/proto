@@ -97,7 +97,7 @@ function LockupCurve({ direction, activeStep, onPick }: {
       )}
       {!fit && (
         <text x={W / 2} y={padT + 12} textAnchor="middle" fontSize="9" fill="hsl(var(--svg-fg))" fontFamily={MONO}>
-          no clean logistic fit for this direction — the five measured points are all there is
+          no clean logistic fit for this direction: the five measured points are all there is
         </text>
       )}
       {pts.map((p, i) => (
@@ -598,7 +598,7 @@ export function LaionScene() {
           <div className="mt-5 border-t border-border pt-5">
             <p className="max-w-3xl text-sm leading-6 text-foreground/70">
               The six no-country prompts drop out of the right panel: a default prompt has no distance from itself.
-              Whatever narrows these outputs is clearly measurable — the right panel finds it easily — it is simply
+              Whatever narrows these outputs is clearly measurable (the right panel finds it easily). It is simply
               not the narrowness of the training neighbourhood. The same null holds on a second diversity measure
               ({LAION.vendiRho.toFixed(2)}, DINOv3 side), so it is not an artefact of how variety was counted.
             </p>

@@ -2,7 +2,7 @@ import { SceneShell, Reveal, Panel } from '../components/Scene'
 import { CountUp } from '../components/CountUp'
 import { STATS } from '../data/research'
 import { CARDS_HEADLINE, CARDS_TOTAL } from '../data/part4'
-import { REFERENCES, WEIGHTS, AUTHOR } from '../data/references'
+import { REFERENCES, WEIGHTS, AUTHORS, PUB_DATE } from '../data/references'
 
 const STAT_CELLS = [
   { v: STATS.images, label: 'generated images analyzed · a conservative floor' },
@@ -69,10 +69,10 @@ export default function Closing() {
             user has, and it is not the layer the assumption lives on.
           </p>
           <p className="prose-scene mt-4 max-w-2xl">
-            Two things follow. The first is available today: <strong>sample the distribution, not the sample</strong> —
+            Two things follow. The first is available today: <strong>sample the distribution, not the sample</strong>:
             generate many seeds, ask what never varies across them, and treat the first third of denoising as the
             moment the decision is actually made; the Auditor above automates this. The second is not at the interface
-            at all — fine-tuning, retrieval augmentation, dataset curation, post-hoc diversity sampling — cited here,
+            at all (fine-tuning, retrieval augmentation, dataset curation, post-hoc diversity sampling), cited here,
             not tested, deliberately out of scope.
           </p>
         </Reveal>
@@ -158,14 +158,16 @@ export default function Closing() {
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-5xl flex-col gap-3 px-6 py-10 md:flex-row md:items-center md:justify-between">
           <div className="font-mono2 text-[11px] leading-5 text-foreground/40">
-            <span className="text-foreground/70">promptswontsaveyou.dev</span> · an interactive XAI explorable by{' '}
-            <span className="text-foreground/70">{AUTHOR.name}</span>
-            {AUTHOR.affiliation && `, ${AUTHOR.affiliation}`} ·{' '}
-            <a href={`mailto:${AUTHOR.email}`} className="underline decoration-border underline-offset-2">
-              {AUTHOR.email}
-            </a>{' '}
-            · {AUTHOR.date}
+            <span className="text-foreground/70">promptswontsaveyou.dev</span> · an interactive XAI explorable · {PUB_DATE}
             <br />
+            {AUTHORS.map((a) => (
+              <span key={a.name} className="block">
+                <a href={`mailto:${a.email}`} className="text-foreground/70 underline decoration-border underline-offset-2">
+                  {a.name}
+                </a>
+                <span className="text-foreground/35"> · {a.affiliation}</span>
+              </span>
+            ))}
             Stable Diffusion 2.1 · DDIM 30 steps · 768² · DINOv3-7B embeddings · VQA annotator: gemma4.
           </div>
           <div className="font-mono2 text-[11px] text-foreground/30">

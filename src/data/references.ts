@@ -11,15 +11,21 @@
 // listed here — a reference list is not a lab inventory.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const AUTHOR = {
-  // filled 2026-08-06 from review_2026-07-30/AUTHOR_DETAILS_FILL_IN.md. Co-authors
-  // (Alnouri, Mansour, Hinterreiter, Streit — JKU Visual Data Science Lab) are for
-  // the PCS form; the page byline shows the lead author.
-  name: 'Giray Ünlü',
-  affiliation: 'Johannes Kepler University Linz',
-  email: 'girayn5@gmail.com',
-  date: 'August 2026',
-}
+/* the byline, filled 2026-08-06 from review_2026-07-30/AUTHOR_DETAILS_FILL_IN.md.
+   All five authors: Visual Data Science Lab, Institute of Computer Graphics,
+   Johannes Kepler University Linz. */
+export const AUTHORS = [
+  {
+    name: 'Giray Ünlü',
+    affiliation: 'AI Engineering, Visual Data Science Lab, Johannes Kepler University Linz',
+    email: 'girayn5@gmail.com',
+  },
+  { name: 'Amal Alnouri', affiliation: 'Visual Data Science Lab, Johannes Kepler University Linz', email: 'amal.alnouri@jku.at' },
+  { name: 'Ahmed Mansour', affiliation: 'Visual Data Science Lab, Johannes Kepler University Linz', email: 'ahmed.mansour@jku.at' },
+  { name: 'Andreas Hinterreiter', affiliation: 'Visual Data Science Lab, Johannes Kepler University Linz', email: 'andreas.hinterreiter@jku.at' },
+  { name: 'Marc Streit', affiliation: 'Visual Data Science Lab, Johannes Kepler University Linz', email: 'marc.streit@jku.at' },
+]
+export const PUB_DATE = 'August 2026'
 
 export interface Reference {
   id: string

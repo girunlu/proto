@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { THESIS, STATS } from '../data/research'
-import { AUTHOR } from '../data/references'
+import { AUTHORS, PUB_DATE } from '../data/references'
 import { useTheme } from '../hooks/useTheme'
 import { canvasColor } from '../lib/colors'
 
@@ -126,21 +126,25 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.6 }}
         >
-          Your prompt is never the whole input — it is read inside a worldview the model already learned: who a person
+          Your prompt is never the whole input. It is read inside a worldview the model already learned: who a person
           looks like, which culture is the default, what “realistic” means. This explorable makes it visible, and
           measures what overriding it costs.
         </motion.p>
 
-        <motion.p
+        <motion.div
           className="mt-8 font-mono2 text-[11px] leading-5 tracking-wider text-foreground/45"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.75 }}
         >
-          {AUTHOR.name}
-          {AUTHOR.affiliation && <span className="text-foreground/35"> · {AUTHOR.affiliation}</span>}
-          <span className="text-foreground/35"> · {AUTHOR.date}</span>
-        </motion.p>
+          {AUTHORS.map((a) => (
+            <div key={a.name}>
+              {a.name}
+              <span className="text-foreground/35"> · {a.affiliation}</span>
+            </div>
+          ))}
+          <div className="text-foreground/35">{PUB_DATE}</div>
+        </motion.div>
 
         <motion.div
           className="mt-14 max-w-2xl border-l-2 border-amber-300/50 pl-5"
@@ -150,7 +154,7 @@ export default function Hero() {
         >
           <p className="font-display text-xl leading-7 text-foreground/85 italic md:text-2xl">“{THESIS}”</p>
           <p className="mt-3 font-mono2 text-[11px] tracking-wider text-foreground/40 uppercase">
-            6 situations × 9 prompt variants × 50 fixed seeds on seven text-to-image models — 18,900 images; with the
+            6 situations × 9 prompt variants × 50 fixed seeds on seven text-to-image models, 18,900 images; with the
             guidance sweep, counter-specification ladders and empty-prompt runs, {STATS.images.toLocaleString()}+ in
             total
           </p>

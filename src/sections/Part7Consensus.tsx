@@ -133,7 +133,7 @@ export default function Part7Consensus() {
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          Across every (prompt, question) blank any model fills — <strong>{C.n_slots} of them</strong> — how much of
+          Across every (prompt, question) blank any model fills, <strong>{C.n_slots} of them</strong>, how much of
           what a model assumes is its own, and how much is everyone's?
         </p>
       </Reveal>
@@ -141,7 +141,7 @@ export default function Part7Consensus() {
       <Reveal delay={0.05}>
         <div className="mt-6 max-w-2xl">
           <InfoBox title="technical detail · reading the matrix">
-            Rows: headline-tier named assumptions; columns: models; a cell's number is how many of that model's 54 cells fire the assumption above the naming threshold. Blank = outside that model's twenty most frequent — a cutoff, not an absence — and blanks are never imputed. Cross-model agreement is chance-corrected with Gwet's AC1 (an agreement score that discounts matches expected by luck) over the shared questions, against a permutation null.
+            Rows: headline-tier named assumptions; columns: models; a cell's number is how many of that model's 54 cells fire the assumption above the naming threshold. Blank = outside that model's twenty most frequent, a cutoff, not an absence, and blanks are never imputed. Cross-model agreement is chance-corrected with Gwet's AC1 (an agreement score that discounts matches expected by luck) over the shared questions, against a permutation null.
           </InfoBox>
         </div>
       </Reveal>
@@ -288,8 +288,8 @@ export default function Part7Consensus() {
                               }}
                               title={
                                 n === 0
-                                  ? `${short(m.id)}: outside this model's twenty most frequent assumptions — not "never"`
-                                  : `${short(m.id)}: ${n} of ${P.n_cells} prompts${show ? ' — show the images' : ''}`
+                                  ? `${short(m.id)}: outside this model's twenty most frequent assumptions, not "never"`
+                                  : `${short(m.id)}: ${n} of ${P.n_cells} prompts${show ? ' · show the images' : ''}`
                               }
                             >
                               {n || ''}
@@ -303,7 +303,7 @@ export default function Part7Consensus() {
               </table>
             </div>
             <p className="mt-2 font-mono2 text-[10px] leading-4 text-foreground/40">
-              a blank cell means the assumption ranked outside that model's twenty most frequent — not zero, and not missing data
+              a blank cell means the assumption ranked outside that model's twenty most frequent, not zero, and not missing data
             </p>
             {/* the ramp is not linear, so it has to show its own scale */}
             <div className="mt-3 flex items-center gap-3">
