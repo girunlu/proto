@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
+import { SceneShell, Reveal, Panel, TierNote, InfoBox } from '../components/Scene'
 import { ZoomImage, BoxPicker } from '../components/Viz'
 import { rgb, rgba } from '../lib/colors'
 import { ordinal } from '../lib/utils'
@@ -151,9 +151,7 @@ function BatteryList({ sit, code }: { sit: Sit; code: Code | 'default' }) {
         </span>
       </div>
       <p className="mt-1 max-w-2xl font-mono2 text-[10px] leading-4 text-foreground/40">
-        Nobody asked for these. They are what the prompt left open and the model filled in anyway, the same way,
-        nearly every time — those rows carry a dot. The rest genuinely vary from image to image, and are kept in
-        view so you can see the contrast. The order never changes, so the same question is always in the same place.
+        What the prompt left open, the model filled in anyway — the dotted rows, the same way nearly every time.
       </p>
       <div className="mt-4 space-y-1.5">
         {rows.map((r) => (
@@ -203,7 +201,7 @@ function OpenAnswers({ sit, code }: { sit: Sit; code: Code | 'default' }) {
         return (
           <div key={q}>
             <div className="font-mono2 text-[10px] tracking-wider text-foreground/40 uppercase">
-              “{Q_TEXT[q] ?? q}” · asked as a blank line, not a multiple choice
+              “{Q_TEXT[q] ?? q}” · asked as a blank line
             </div>
             <div className="mt-2 space-y-1.5">
               {answers.map((a, i) => (
@@ -267,11 +265,11 @@ function ForcedControl({ sit, code }: { sit: Sit; code: Code | 'default' }) {
         a second instrument · the same images, asked again without “unclear”
       </div>
       <p className="mt-2 max-w-3xl text-[13px] leading-5 text-foreground/60">
-        <strong>{asked}</strong> of the answers above were “unclear”. Asking again with that option deleted is a
-        different measurement, not a better one — taking away the escape hatch can only push agreement up, so these
-        never replace the numbers above. What they test is whether the model was being careful or merely quiet.{' '}
+        <strong>{asked}</strong> answers above were “unclear”; re-asking without that option can only push
+        agreement up, so these never replace the numbers above. What they test is whether the model was being
+        careful or merely quiet:{' '}
         <strong className="text-foreground/80">
-          It refused again {refused} of {asked} times
+          it refused again {refused} of {asked} times
         </strong>
         {refused > 0 && ', often by writing “n-a” — a reply that was never on the list'}.
       </p>
@@ -293,10 +291,10 @@ function ForcedControl({ sit, code }: { sit: Sit; code: Code | 'default' }) {
       </div>
       {FORCED_U12.plain && FORCED_U12.non_western && (
         <p className="mt-3 border-t border-sky-300/20 pt-2.5 text-[12px] leading-5 text-foreground/55">
-          Across the whole study, the continent question is the one worth sitting with. Forced to name one, the
-          default prompt says <strong className="text-foreground/80">Europe or North America</strong> in{' '}
-          {Math.round((FORCED_U12.plain.west_share_of_named ?? 0) * 100)}% of the answers that named a continent
-          at all — while prompts naming a non-Western country land on a non-Western continent{' '}
+          Forced to name a continent, the default prompt says{' '}
+          <strong className="text-foreground/80">Europe or North America</strong> in{' '}
+          {Math.round((FORCED_U12.plain.west_share_of_named ?? 0) * 100)}% of the answers that named one — prompts
+          naming a non-Western country land on a non-Western continent{' '}
           {100 - Math.round((FORCED_U12.non_western.west_share_of_named ?? 0) * 100)}% of the time. The model can
           read the pictures; on the default prompt what it reads is Western.
         </p>
@@ -355,9 +353,8 @@ function AttentionMaps({ sit, code }: { sit: Sit; code: Code | 'default' }) {
           </figure>
         ))}
         <p className="max-w-[220px] text-[12px] leading-5 text-foreground/50">
-          Bright regions are where that single word of the prompt is being attended to while the picture is generated.
-          Step through the seeds: the country word does not land on a flag or a map, it spreads across the clothing,
-          the crowd and the venue. That is the payload.
+          Bright is where that word is attended. The country word lands not on a flag or a map but across the
+          clothing, the crowd and the venue — that is the payload.
         </p>
       </div>
     </div>
@@ -381,17 +378,22 @@ function NamedScene() {
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          Distances establish <em>that</em> the unspecified gets supplied. This establishes <em>with what</em>. Every
-          generated image is shown to a vision-language model that never sees the prompt behind it, and asked the same
-          frozen questionnaire: {BATTERY.universal} questions put to every image — indoors or outdoors, how many
-          people, what are they wearing, what kind of building — plus a handful written for the event itself, so{' '}
-          {BATTERY.perCellMin}–{BATTERY.perCellMax} per prompt and {BATTERY.distinct} distinct questions across the
-          study. When 50 blind answers agree, the model has an assumption. That yields{' '}
-          <strong>{CARDS_HEADLINE} firm assumptions across the 54 prompts ({CARDS_TOTAL} counting the weaker
-          tier)</strong>. Nothing here was picked because it looked interesting: an answer only becomes an
-          assumption by clearing the same agreement floor, applied identically to all {CARDS_CANDIDATES} the
-          detector proposed.
+          Distances establish <em>that</em> the unspecified gets supplied; this establishes <em>with what</em>. A
+          vision-language model that never sees the prompt answers the same frozen questionnaire over every image
+          — {BATTERY.universal} questions for all, {BATTERY.perCellMin}–{BATTERY.perCellMax} per prompt,{' '}
+          {BATTERY.distinct} distinct across the study. When 50 blind answers clear the same agreement floor, that
+          is an assumption:{' '}
+          <strong>{CARDS_HEADLINE} firm ones across the 54 prompts ({CARDS_TOTAL} counting the weaker tier)</strong>,
+          filtered from all {CARDS_CANDIDATES} the detector proposed.
         </p>
+      </Reveal>
+
+      <Reveal delay={0.05}>
+        <div className="mt-6 max-w-2xl">
+          <InfoBox title="technical detail · the blind questionnaire">
+            Annotator: one vision-language model (gemma4), shown each image without ever seeing the prompt, answering a frozen battery — 13 questions in every cell, 17–18 per cell. An answer covering ≥ 80% of a cell's 50 images names an assumption. All seven models were annotated under this identical setup, so cells are comparable across models.
+          </InfoBox>
+        </div>
       </Reveal>
 
       <Reveal delay={0.08}>
@@ -410,10 +412,9 @@ function NamedScene() {
           </div>
           {!isSd21(model) && (
             <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/50">
-              Showing <span className="text-amber-200">{MODEL_NAME[model]}</span>: its own images, its own closed
-              answers and its own free-text answers to the same frozen questionnaire. {CROSS_MODEL_NOTE} The attention
-              maps are the one thing here that exists only for Stable Diffusion 2.1 — they read that model's own
-              cross-attention, so there is nothing to switch.
+              Showing <span className="text-amber-200">{MODEL_NAME[model]}</span>'s own images and answers to the
+              same questionnaire. {CROSS_MODEL_NOTE} The attention maps exist only for Stable Diffusion 2.1 — they
+              read that model's own cross-attention, so there is nothing to switch.
             </p>
           )}
 
@@ -438,16 +439,9 @@ function NamedScene() {
           )}
 
           <div className="mt-8 border-t border-border pt-5">
-            <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
+            <div className="mt-2 font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
               the frozen battery, answered blind over all 50 seeds
             </div>
-            <p className="mt-2 max-w-3xl text-[13px] leading-5 text-foreground/50">
-              One row per question, always in the same order, so the same question stays in the same place when you
-              change the event or the country. The bar is the full spread of answers across the 50 images, widest
-              answer first. A dot marks the questions the model <span className="text-amber-200">settled</span> — same
-              answer in at least {Math.round(SETTLED * 100)} of every 100 images, which is what makes it an assumption
-              rather than a tendency. The unmarked rows genuinely vary, and are kept in view for the contrast.
-            </p>
             <div className="mt-4">
               <BatteryList sit={sit} code={code} />
             </div>
@@ -459,10 +453,9 @@ function NamedScene() {
               and in the annotator's own words
             </div>
             <p className="mt-2 max-w-3xl text-[13px] leading-5 text-foreground/50">
-              Three of the questions have no answer list at all — the clothing, the objects, the setting — so the
-              annotator writes a sentence instead of picking. Those sentences
-              are where the assumption stops being a checkbox and becomes a description. When 50 independent
-              descriptions of 50 different images converge on one phrase, that phrase is the stereotype, written out in full.
+              Three questions have no answer list — clothing, objects, setting — so the annotator writes a
+              sentence. When 50 independent descriptions converge on one phrase, that phrase is the stereotype,
+              written out in full.
             </p>
             <div className="mt-5">
               <OpenAnswers sit={sit} code={code} />
@@ -475,10 +468,10 @@ function NamedScene() {
                 nothing is named here, and that is itself the finding
               </div>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/70">
-                “A {sit}{code === 'default' ? '' : ` in ${C8[code].name}`}” surfaces no firm assumptions. Not because
-                it carries none: the detector clears its agreement bar more easily on an already-collapsed stereotype
-                than on a varied baseline. The default world needs no naming. Look at the images above; the
-                assumptions are plainly there even where no row fires.
+                “A {sit}{code === 'default' ? '' : ` in ${C8[code].name}`}” surfaces no firm assumptions — not
+                because it carries none: the detector clears its agreement bar more easily on an already-collapsed
+                stereotype than on a varied baseline. The assumptions are there in the images above even where no
+                row fires.
               </p>
             </div>
           )}
@@ -493,7 +486,7 @@ function NamedScene() {
           <div className="mt-5 border-t border-border pt-4">
             <TierNote
               tier="evidence"
-              text={`Answers come from one vision-language annotator over 50 seeds per cell, kept only where enough of the 50 agree to be worth reporting. The image strip is real seeds evenly spaced across the cell's typicality order: the honest spread, not a curated best-of.${isSd21(model) ? '' : " For the other six models the strip is spaced across the 24 seeds that have published thumbnails — the 20 least alike plus the 4 most typical — not across all 50."}`}
+              text={`One vision-language annotator over 50 seeds per cell, kept only where enough of the 50 agree; the image strip is real seeds evenly spaced across the cell's typicality order.${isSd21(model) ? '' : ' For the other six models the strip spans the 24 seeds with published thumbnails, not all 50.'}`}
             />
           </div>
         </Panel>
@@ -633,13 +626,18 @@ function BridgeScene() {
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          Two separate instruments have been used so far: a geometric one that measures how far apart two sets of
-          pictures sit, and a linguistic one that names what is in them. Do they agree? Here is the honest way to ask.
-          Take every attribute in the questionnaire and check how its answers are distributed for the default prompt and
-          for the country prompt. Then ask how much of the measured movement between the two you would predict from
-          that change in answers alone. An attribute that answers the same way in both predicts nothing, and should
-          score nothing — which is the whole test.
+          One instrument measures how far apart two sets of pictures sit; the other names what is in them. Do they
+          agree? For each attribute, take its answers under the default prompt and under the country prompt, and ask
+          how much of the measured movement between the two its change in answers alone would predict — an attribute
+          that answers the same way in both should score nothing.
         </p>
+      </Reveal>
+      <Reveal delay={0.05}>
+        <div className="mt-6 max-w-2xl">
+          <InfoBox title="technical detail · how the shares are computed">
+            Per attribute, the answer marginals of the default and country-named cells (50 + 50 images, DINOv3 geometry) are compared, and an attribute's share is the fraction of the between-cell distance its changed answers account for. Shares deliberately do not sum to 1: attributes are not independent, and the decomposition is not an independent measurement of the distance.
+          </InfoBox>
+        </div>
       </Reveal>
       <Reveal delay={0.08}>
         <Panel className="mt-10">
@@ -657,8 +655,7 @@ function BridgeScene() {
             <>
               <div className="mt-6 font-mono2 text-[11px] leading-5 text-foreground/50">
                 the movement being explained: <strong className="text-foreground">{data.distance.toFixed(3)}</strong>{' '}
-                between “a {sit}” and “a {sit} in {C8[code].name}”. Each bar is the share of that movement you would
-                predict from one attribute's answers changing.
+                between “a {sit}” and “a {sit} in {C8[code].name}”
               </div>
 
               <div className="mt-6 font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
@@ -676,11 +673,9 @@ function BridgeScene() {
               </div>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground/60">
                 <strong className="text-foreground/80">A bar here is not a contradiction.</strong> The measure reads
-                the whole answer distribution, not just the winner — so “outdoors” can stay the top answer in both
-                prompts while fifteen of the fifty images change sides underneath it, and that movement is real. These
-                attributes are named assumptions of “a {sit} in {C8[code].name}” that were already true of “a {sit}”:
-                the country word did not introduce them, it re-weighted them. An attribute can be an assumption the
-                model is making and still account for almost none of the distance.
+                the whole answer distribution, not just the winner — the top answer can stay while images change
+                sides underneath it. The country word re-weighted what was already true of “a {sit}” rather than
+                introducing it.
               </p>
               <div className="mt-3 space-y-2.5">
                 {still.map((r, i) => (
@@ -701,10 +696,8 @@ function BridgeScene() {
                   </div>
                   <MinorRow rows={tautMinor} label="circular, and small anyway" cv={C8[code].cv} />
                   <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
-                    Here the two prompts share almost no answers at all, so the answer groups simply <em>are</em> the
-                    two sets of pictures and the share is forced towards 1. It is not surprising that a prompt naming
-                    Nigeria produces pictures a model reads as African. Scored high, evidences nothing, kept visible
-                    rather than quietly dropped.
+                    Here the answer groups simply <em>are</em> the two sets of pictures, so the share is forced
+                    towards 1 — scored high, evidencing nothing.
                   </p>
                 </>
               )}
@@ -713,7 +706,7 @@ function BridgeScene() {
           <div className="mt-8 border-t border-border pt-5">
             <TierNote
               tier="evidence"
-              text={`Pool the default prompt's 50 images and this cell's 50, give every answer its own centre over that pooled set, and predict the movement from the change in answer proportions alone; the bar is that prediction's share of the actual movement. DINOv3 embeddings, ${MODEL_NAME[model]}'s own answers${isSd21(model) ? '' : `, from the cross-model run — ${CROSS_MODEL_NOTE.charAt(0).toLowerCase()}${CROSS_MODEL_NOTE.slice(1)}`}. Shares are per attribute and deliberately do not sum to 1: each attribute splits the same movement its own way, so this is not a pie. It attributes the gap; it is not a second, independent measurement of it.`}
+              text={`Each bar is the share of the default→country movement predicted from one attribute's answer proportions over the pooled 50+50 images — DINOv3 embeddings, ${MODEL_NAME[model]}'s own answers${isSd21(model) ? '' : `, from the cross-model run — ${CROSS_MODEL_NOTE.charAt(0).toLowerCase()}${CROSS_MODEL_NOTE.slice(1)}`}. Shares are per attribute and deliberately do not sum to 1.`}
             />
           </div>
         </Panel>

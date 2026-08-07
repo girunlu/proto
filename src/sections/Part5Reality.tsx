@@ -125,11 +125,9 @@ export default function Part5Reality() {
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          Everything so far compares the model to itself. This part compares it to photographs. We measured{' '}
-          {REAL_PHOTOS_N.toLocaleString()} real pictures of these events from Wikimedia Commons geometrically, and put{' '}
-          {REAL_QUESTIONNAIRE_N.toLocaleString()} of them through the identical blind questionnaire — the full
-          collected set, after an earlier 20-per-cell cap was lifted on 2026-08-02 — so the same questions get
-          answered about the model's world and about the world.
+          Everything so far compares the model to itself. Here the yardstick is{' '}
+          {REAL_PHOTOS_N.toLocaleString()} real photographs from Wikimedia Commons,{' '}
+          {REAL_QUESTIONNAIRE_N.toLocaleString()} of them put through the identical questionnaire.
         </p>
       </Reveal>
 
@@ -182,7 +180,7 @@ export default function Part5Reality() {
                 <a href={photos[showCredit].url} target="_blank" rel="noreferrer" className="underline hover:text-foreground/60">Wikimedia Commons</a>
               </span>
             ) : (
-              <span>real photos: Wikimedia Commons contributors · click one for its credit</span>
+              <span>photographs: Wikimedia Commons contributors</span>
             )}
           </div>
 
@@ -196,9 +194,7 @@ export default function Part5Reality() {
             </div>
             {!isSd21(model) && (
               <p className="mt-2 font-mono2 text-[10px] leading-4 text-amber-200/90">
-                The pictures above follow your model selection; this questionnaire comparison is Stable Diffusion 2.1's
-                only — the blind battery was run against the photographs for SD 2.1, and the cross-model reality tables
-                cover the geometry rather than these per-answer base rates.
+                This comparison is Stable Diffusion 2.1 only, whatever model is selected above.
               </p>
             )}
             <div className="mt-5 overflow-hidden">
@@ -251,17 +247,11 @@ export default function Part5Reality() {
                   const lo = Math.min(...ns), hi = Math.max(...ns)
                   return ns.length === 0 ? 20 : lo === hi ? lo : `${lo}–${hi}`
                 })()}</span>
-                <span className="text-foreground/35">both columns are percentages on the same 0–100 scale</span>
               </div>
             </div>
             {hero && (
               <p className="mt-5 max-w-3xl text-sm leading-6 text-foreground/70">
-                The sharpest disagreement here: asked <em>{Q_TEXT[hero.q] ?? hero.q}</em>, the model answers{' '}
-                <strong className="text-red-300">“{hero.gen}”</strong> on {Math.round(hero.gen_share * 100)}% of its
-                seeds, while {Math.round(hero.real_share * 100)}% of the photographs answer{' '}
-                <strong className="text-emerald-300">“{hero.real}”</strong>. The model did not learn{' '}
-                {DEMONYM[code]} {sit}s. It learned a postcard of
-                them.
+                The model did not learn {DEMONYM[code]} {sit}s. It learned a postcard of them.
               </p>
             )}
           </div>
@@ -269,7 +259,7 @@ export default function Part5Reality() {
           <div className="mt-5 border-t border-border pt-5">
             <TierNote
               tier="evidence"
-              text={`Generated side: 50 seeds per cell. Both sides are read by the same annotator (gemma4) — a comparison scored by two different readers would be measuring the readers. Real side: ${REAL_PHOTOS_N.toLocaleString()} Commons photographs across ${REAL_CELLS_N} cells (about ${REAL_PER_CELL} per cell, collected from ~4,700 candidates then relevance-filtered) carry the geometry — distances and homogeneity. The frozen questionnaire ran on ${REAL_QUESTIONNAIRE_N.toLocaleString()} of them — the full collected set since 2026-08-02, when an earlier 20-per-cell cap was lifted; the larger n did not move any of the 31 per-question tests to significance, which makes the pooled tendency below the honest headline. One caveat we can measure and do not hide: a few Commons categories are dominated by a single prolific photographer, which narrows those cells; it does not flip the direction of any comparison above.`}
+              text={`Generated side: 50 seeds per cell; real side: ${REAL_PHOTOS_N.toLocaleString()} relevance-filtered Commons photographs across ${REAL_CELLS_N} cells (about ${REAL_PER_CELL} per cell, ${REAL_QUESTIONNAIRE_N.toLocaleString()} through the questionnaire), both read by the same annotator (gemma4); a few cells lean on a single prolific photographer.`}
             />
           </div>
         </Panel>
@@ -280,12 +270,6 @@ export default function Part5Reality() {
           <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
             the model is narrower than the world · “a {sit}” · {UI_MODEL_NAME[model]} against photographs
           </div>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
-            Each line is one country. The hollow dot is how alike real photographs of that event are to each other; the
-            filled dot is how alike the model's 50 pictures are. For every country the filled dot sits to the right.
-            Real weddings vary more than generated ones, everywhere. The narrowing belongs to the model, not to the
-            world it is depicting.
-          </p>
           <div className="mt-6">
             <HomogeneityDumbbells sit={sit} />
           </div>

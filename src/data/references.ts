@@ -12,11 +12,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const AUTHOR = {
-  // TODO(giray): full name + affiliation before submitting. The venue is
-  // non-anonymous; Patchscopes lists names only, Transformer Explainer lists
-  // names + institution. Contact is already public in the domain's WHOIS.
-  name: 'Giray',
-  affiliation: '',
+  // filled 2026-08-06 from review_2026-07-30/AUTHOR_DETAILS_FILL_IN.md. Co-authors
+  // (Alnouri, Mansour, Hinterreiter, Streit — JKU Visual Data Science Lab) are for
+  // the PCS form; the page byline shows the lead author.
+  name: 'Giray Ünlü',
+  affiliation: 'Johannes Kepler University Linz',
   email: 'girayn5@gmail.com',
   date: 'August 2026',
 }
@@ -99,15 +99,9 @@ export const REFERENCES: Reference[] = [
     url: 'https://arxiv.org/abs/2210.08402',
     role: "SD 2.1's training set, and the 0.28 CLIP-cosine filter its own §G.2 calls “only a heuristic”",
   },
-  {
-    id: 'hong2024',
-    authors: 'Hong, R. et al.',
-    year: 2024,
-    title: "Who's in and who's out? A case study of multimodal CLIP-filtering in DataComp",
-    venue: 'arXiv:2405.08209',
-    url: 'https://arxiv.org/abs/2405.08209',
-    role: 'non-Western content passes CLIP filtering at systematically lower rates — the mechanism behind the density axis in scene 11',
-  },
+  // hong2024 (DataComp CLIP-filtering case study) — REMOVED 2026-08-06 with the
+  // dismissal of scene 11 (the LAION inheritance analysis): its on-page role was
+  // the density axis only that scene plotted.
 
   // ── the models measured ────────────────────────────────────────────────────
   {
@@ -260,7 +254,7 @@ export const REFERENCES: Reference[] = [
    phase3_analysis for the two rulers — not a from-memory guess at the canonical
    name of each model.
 
-   This used to list three: SD 2.1, the annotator and DINOv3. Part VI is an entire
+   This used to list three: SD 2.1, the annotator and DINOv3. Part V is an entire
    argument about seven models from five developers, and six of them were uncredited
    and unlinked, which is not a citation standard anyone would accept of a figure.
 

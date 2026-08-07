@@ -3,7 +3,7 @@ import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
 import { rgb } from '../lib/colors'
 import { Q_TEXT, Q_FAMILY } from '../data/uiv2'
 import { MODEL_NAME, type ModelId } from '../data/modelContext'
-import { STEER_ROWS, STEER_PER_MODEL, STEER_CELLS, STEER_N_CELLS, LADDER_CELLS, steerTotal, neverMoved, type Bucket } from '../data/remedy'
+import { STEER_ROWS, STEER_PER_MODEL, STEER_N_CELLS, LADDER_CELLS, steerTotal, type Bucket } from '../data/remedy'
 
 /* derived, not typed in: Job 5 added sdxl + hunyuandit on 2026-08-03 and the two
    counts below moved with it. */
@@ -40,29 +40,20 @@ export default function Part6Steer() {
     .filter((r) => r[bucket].n > 0)
     .sort((a, b) => b[bucket].k / b[bucket].n - a[bucket].k / a[bucket].n)
   const total = steerTotal(bucket)
-  const never = neverMoved(bucket)
   const u12 = STEER_ROWS.find((r) => r.q === 'U12')?.[bucket]
-  const held = total.n - total.k
   const oneIn = Math.round(total.n / Math.max(1, total.k))
 
   return (
     <SceneShell
-      number="09"
-      kicker="Part III · the escape attempts · what a clause can move"
+      number="X2"
+      kicker="extras · the escape attempts · what a clause can move"
       title={<>Some things yield to a clause. <em className="font-display italic text-amber-200">Some things never move at all.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          The ladder above walks one prompt at a time. Pool every counter-specified rung instead —{' '}
-          {total.n} side-effect observations across {N_STEER_MODELS} models — and ask a different question, one per
-          attribute: when a clause was added, how often did this attribute's majority answer actually change?
-        </p>
-        <p className="prose-scene mt-4 max-w-2xl rounded-md border border-amber-300/30 bg-amber-300/5 px-4 py-3 text-[13px] leading-6">
-          <strong className="text-amber-200">Read the breadth before the law.</strong> This is{' '}
-          <strong>{total.n}</strong> observations over <strong>{STEER_N_CELLS}</strong> prompts spanning
-          four countries — Germany, Egypt, India and Nigeria — on {N_STEER_MODELS} models. Broad enough to be worth stating as
-          a pattern; still {N_LADDERS} ladders rather than a designed sweep, so read it as the strongest description available
-          and not as a law.
+          The ladder walks one prompt at a time. Pool every counter-specified rung instead —{' '}
+          {total.n} side-effect observations across {N_STEER_MODELS} models — and ask, per attribute: when a clause
+          was added, how often did the answer actually change?
         </p>
       </Reveal>
 
@@ -71,27 +62,10 @@ export default function Part6Steer() {
           <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
             flip rate per attribute · 95% Wilson intervals
           </div>
-          {/* a reader arriving here knows none of this. Two sentences: what a row is, then
-              what is and is not counted. Everything else lives in the note below. */}
           <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/65">
-            One row per thing the model decides. The bar is how often that decision <em>changed</em> when a clause was
-            added to the prompt — <strong>100% means a clause always moved it, 0% means nothing ever did.</strong>
-          </p>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground/60">
-            Every clause was written to change one specific thing, and that thing is{' '}
-            <strong className="text-amber-200">left out of these bars</strong>. What you are seeing is the side
-            effects: the decisions you never asked about, moving anyway. Clauses do usually move their own target —
-            that is them working — but this chart is about everything else they disturb.
-          </p>
-
-          {/* the switcher genuinely does nothing here and a reader will try it: these rows
-              are pooled over every ladder model, because per model per attribute the n
-              collapses to a handful and no row would be readable. The per-model split
-              that DOES exist is the block below. */}
-          <p className="mt-2 max-w-3xl font-mono2 text-[10px] leading-4 text-foreground/35">
-            Pooled over all {N_STEER_MODELS} models with a ladder — this chart does not follow the model switcher.
-            Per attribute per model the counts fall to single figures, which no interval could carry. The per-model
-            comparison is the panel underneath, where the n is large enough to mean something.
+            Every clause was written to change one specific thing, and that target is{' '}
+            <strong className="text-amber-200">left out of these bars</strong>: what you see is the side effects, the
+            decisions nobody asked about. Clauses usually do move their own target — that is them working.
           </p>
 
           <div className="mt-6 space-y-1">
@@ -169,21 +143,14 @@ export default function Part6Steer() {
           <div className="mt-8 grid gap-6 border-t border-border pt-6 md:grid-cols-2">
             <div className="space-y-3 text-sm leading-6 text-foreground/70">
               <p>
-                <strong>The law, as far as it goes:</strong> where the scene happens yields to a clause — building type,
-                venue, indoors or outdoors. What kind of world it is does not. Era, whether people are present, what they
-                are doing, and which continent it looks like sit exactly where they were.
-              </p>
-              <p>
-                Pooled, <strong>{total.k} of {total.n}</strong> observations flipped. About{' '}
-                <strong>one in {oneIn}</strong> — the other {held} stayed put.
+                Pooled, <strong>{total.k} of {total.n}</strong> observations flipped — about{' '}
+                <strong>one in {oneIn}</strong>.
               </p>
               {u12 && (
                 <p className="rounded-md border border-red-400/25 bg-red-400/5 px-3 py-2">
-                  The one to sit with: <strong>which continent the image looks like</strong> moved{' '}
-                  <strong>{u12.k} times out of {u12.n}</strong>. With n that small the honest ceiling is{' '}
-                  {Math.round(u12.hi * 100)}%, not zero. And not one of those was a clause working: no ladder in the
-                  study ever aimed at it, so it is the attribute this whole page is about and nobody has ever written
-                  the sentence that asks for it — the flips it does have are collateral from asking for something else.
+                  The one to sit with: <strong>which continent the image looks like</strong> —{' '}
+                  <strong>{u12.k} of {u12.n}</strong>, and not one was a clause working. No ladder ever aimed at it,
+                  so those flips are collateral from asking for something else.
                 </p>
               )}
             </div>
@@ -217,9 +184,8 @@ export default function Part6Steer() {
                 })}
               </div>
               <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/45">
-                Stable Diffusion 2.1 looks the most steerable of the {N_STEER_MODELS}, and part of that is real — but part of it is
-                that its ladder was written against its own assumption list and reached three clauses on more pairs.
-                Switch to “attributes nobody asked about” to strip out the attributes each clause was aimed at.
+                Part of SD 2.1's lead is that its ladder was written against its own assumption list and reached
+                three clauses on more pairs.
               </p>
             </div>
           </div>
@@ -227,7 +193,7 @@ export default function Part6Steer() {
           <div className="mt-8 border-t border-border pt-6">
             <TierNote
               tier="evidence"
-              text={`${total.n} untargeted attribute observations from every counter-specified rung that records them — ${STEER_N_CELLS} cells (${STEER_CELLS.join(', ')}) across ${N_STEER_MODELS} models, NOT the full ${N_LADDERS} ladders: six of SD 2.1's eight ship an empty switch table. Proportions carry 95% Wilson intervals rather than being printed as "0%", because ${never.length} attributes have zero flips and a zero with n=${Math.min(...never.map((r) => r[bucket].n))}–${Math.max(...never.map((r) => r[bucket].n))} is not the same claim as a zero with n=1000. Two confounds remain: clause depth differs per observation (rungs L1 through L7 are pooled), and each ladder targets a different attribute set, so per-attribute n is unbalanced. A third — that every observation came from two Nigerian cells, which made attribute and cell impossible to separate — was removed on 2026-07-31 when these tables were re-exported from the gemma4 annotations that already covered all eight pairs. A single-clause factorial holding depth at exactly 1 would settle the rest — it was run on 2026-08-02 and is the next scene.`}
+              text={`${total.n} untargeted attribute observations from every counter-specified rung — ${STEER_N_CELLS} cells across ${N_LADDERS} ladders on ${N_STEER_MODELS} models, not a designed sweep; six of SD 2.1's eight ladders ship an empty switch table.`}
             />
           </div>
         </Panel>

@@ -8,7 +8,6 @@
 import { SceneShell, Reveal, Panel } from '../components/Scene'
 import { STATS } from '../data/research'
 import { CARDS_HEADLINE } from '../data/part4'
-import { REAL_PHOTOS_N, REAL_QUESTIONNAIRE_N } from '../data/part5'
 import { MODELS } from '../data/modelData'
 import { Q_TEXT } from '../data/uiv2'
 
@@ -28,28 +27,25 @@ const MOVES: { id: string; part: string; claim: string; how: string }[] = [
     how: `every image shown to a vision-language model that never sees the prompt, ${N_QUESTIONS} frozen questions`,
   },
   {
-    id: 'p6',
-    part: 'III · the escape attempts',
+    id: 'p3',
+    part: 'III · the escape',
     claim: 'You can flip an attribute. You cannot buy the distribution back.',
-    how: 'the guidance slider swept 1 → 15, then the named assumptions counter-specified one clause at a time',
+    how: 'the named assumptions counter-specified one clause at a time, then measuring what returns',
   },
-  // the override (old Part III) — dismissed 2026-08-04. Left out of the roadmap
-  // because its anchor (#p3) no longer exists; the section file is still in src/sections/.
+  // more attempts (the guidance knob, what a clause can move) live in the extras
+  // section at the end of the page (#p6), off the main line of the argument.
   {
     id: 'p2',
     part: 'IV · the mechanism',
     claim: 'That choice is made in the first third of generation.',
     how: 'generation interrupted and the prompt swapped mid-flight',
   },
-  {
-    id: 'p5',
-    part: 'V · an outside reference',
-    claim: 'Real photographs of the same events vary more than the model does, everywhere.',
-    how: `${REAL_PHOTOS_N.toLocaleString()} Wikimedia Commons photographs of the same events measured, ${REAL_QUESTIONNAIRE_N.toLocaleString()} of them through the same questionnaire`,
-  },
+  // V · the outside reference — dismissed 2026-08-06: the reference-photograph set is
+  // not reliable enough to anchor a comparison. The scene is unmounted in Home.tsx
+  // and its anchor (#p5) no longer exists; the section file stays in src/sections/.
   {
     id: 'xa',
-    part: 'VI · is it just this model?',
+    part: 'IV · is it just this model?',
     claim: 'No. The default replicates in every model tested.',
     how: `the identical frozen instrument re-run on ${MODELS.length - 1} more models`,
   },
@@ -60,17 +56,15 @@ export default function Overview() {
     <SceneShell
       number="—"
       kicker="before you start"
-      title={<>One argument, <em className="font-display italic text-amber-200">six moves.</em></>}
+      title={<>One argument, <em className="font-display italic text-amber-200">five moves.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          Everything on this page comes from one frozen experiment. Six everyday situations — a wedding, a funeral, a
-          celebration, a family, a breakfast, a school — were each written nine ways: once plainly, then once for each
-          of eight countries. That is <strong>{STATS.prompts} prompts</strong>, generated{' '}
-          <strong>{STATS.seeds} times each on the same fixed seeds</strong>, in <strong>{MODELS.length} models</strong>,
-          for <strong>{STATS.images.toLocaleString()} images</strong> in total. Nothing was hand-picked: the prompts
-          were fixed before the first image was made and never edited, and every claim below is a statistic over a
-          whole set of seeds rather than an example someone chose.
+          Everything on this page comes from one frozen experiment: six everyday situations — a wedding, a funeral, a
+          celebration, a family, a breakfast, a school — each written nine ways, once plainly and once for each of
+          eight countries. That is <strong>{STATS.prompts} prompts</strong>, generated{' '}
+          <strong>{STATS.seeds} times each on the same fixed seeds</strong>, in <strong>{MODELS.length} models</strong>
+          , for <strong>more than {STATS.images.toLocaleString()} images</strong> in total.
         </p>
       </Reveal>
 
@@ -110,9 +104,7 @@ export default function Overview() {
           <div className="rounded-lg border border-border bg-card/50 p-4">
             <div className="font-mono2 text-[10px] tracking-wider text-foreground/40 uppercase">it is interactive</div>
             <p className="mt-2 text-[13px] leading-5 text-foreground/65">
-              Charts respond to hover, every thumbnail enlarges, and the control at the top of the screen switches
-              which of the {MODELS.length} models you are looking at. Scenes that were only measured on one model say
-              so where they sit.
+              The control at the top of the screen switches which of the {MODELS.length} models you are looking at.
             </p>
           </div>
           <div className="rounded-lg border border-border bg-card/50 p-4">
@@ -120,8 +112,8 @@ export default function Overview() {
               nothing rests on one picture
             </div>
             <p className="mt-2 text-[13px] leading-5 text-foreground/65">
-              Where a single image appears it is there to show you what a statistic is about, never to carry it. Bars
-              carry confidence intervals; the headline gaps survive relabelling the images ten thousand times.
+              A single image shows what a statistic is about, never carries it — the headline gaps survive relabelling
+              the images ten thousand times.
             </p>
           </div>
           <div className="rounded-lg border border-border bg-card/50 p-4">
@@ -129,8 +121,8 @@ export default function Overview() {
               the limits are on the page
             </div>
             <p className="mt-2 text-[13px] leading-5 text-foreground/65">
-              {CARDS_HEADLINE} assumptions are named here, and the places where the instrument is blind to its own
-              subject are marked in the scene where they apply rather than confessed at the end.
+              {CARDS_HEADLINE} assumptions are named here; where the instrument is blind to its own subject, the scene
+              says so in place.
             </p>
           </div>
         </div>

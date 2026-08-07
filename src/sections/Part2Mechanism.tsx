@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
+import { SceneShell, Reveal, Panel, TierNote, InfoBox } from '../components/Scene'
 import { ZoomImage, Picker, BoxPicker, MetricToggle, HowItWorks, useMagnet } from '../components/Viz'
 import { Sd21Only } from '../components/ModelBar'
 import { rgb, rgba } from '../lib/colors'
@@ -124,7 +124,6 @@ function CommitEarlyScene() {
   }
   const { a, b } = parseDirection(direction)
   const fit = lockFit(direction)
-  const fit_failed_note = 'family Egypt → Russia and funeral India → Russia'
   const pt = LOCKUP[direction].curve[stepKey(step)]
   const committed = pt.p_closer_B < 0.5
   const dirOpts = dirsFor(sit).map((d) => {
@@ -134,25 +133,29 @@ function CommitEarlyScene() {
 
   return (
     <SceneShell
-      number="10"
+      number="08"
       kicker="Part IV · the mechanism · finding 9"
       title={<>Which country it depicts is settled in the <em className="font-display italic text-amber-200">first third</em> of generation.</>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          An image is generated in 30 steps, from pure noise to a picture. So we interrupted it. Generation starts on one
-          prompt and, at step k, we quietly swap the prompt for another country's. If the finished image still looks
-          like the first country, the cultural identity had already been decided before we intervened. Pick an event
-          and a direction, then drag the step slider and watch the middle image change.
+          We interrupted a 30-step generation: the prompt starts as one country's, and at step k we quietly swap in
+          another's. If the finished image still looks like the first country, its identity was decided before we
+          intervened.
         </p>
         <p className="mt-4 max-w-2xl font-mono2 text-[11px] leading-5 text-foreground/50">
-          Interrupting generation means re-running it 30 steps at a time with the prompt exchanged mid-flight, so this
-          experiment — and scenes 07 and 08 with it — was run on <strong className="text-foreground/70">Stable
-          Diffusion 2.1 only</strong>, and on <strong className="text-foreground/70">12 seeds</strong> per swap point
-          rather than the 50 the rest of the page uses: 24 directions × 5 step points × 12 seeds is already 1,440
-          interrupted generations. The model switcher above moves the rest of the page; these three scenes stay here.
+          Measured on <strong className="text-foreground/70">12 seeds</strong> per swap point rather than the 50 used
+          elsewhere: 24 directions × 5 step points × 12 seeds is already 1,440 interrupted generations.
         </p>
         <Sd21Only />
+      </Reveal>
+
+      <Reveal delay={0.05}>
+        <div className="mt-6 max-w-2xl">
+          <InfoBox title="technical detail · the mid-generation swap">
+            DDIM trajectories are deterministic per seed: generation starts with prompt A and is re-conditioned to prompt B at one of five swap points in the 30-step schedule, 12 seeds per point, 24 direction pairs. The outcome is which country's centroid the final embedding sits nearer. A logistic fit per direction puts the switchover at step 9.6 of 30 (95% CI 8.4–11.3); two of the 24 fits did not converge and are drawn without a curve.
+          </InfoBox>
+        </div>
       </Reveal>
 
       <Reveal delay={0.06}>
@@ -285,22 +288,9 @@ function CommitEarlyScene() {
           </div>
 
           <p className="mt-6 border-t border-border pt-5 text-sm leading-6 text-foreground/60">
-            {fit ? (
-              <>
-                For {sit} · {C8[a].name} → {C8[b].name} the crossover lands at step{' '}
-                <strong>{fit.step} of 30</strong> (95% CI {fit.ci[0]}–{fit.ci[1]}): the orange curve is that
-                direction's own fitted prediction, the dots are the twelve-seed measurements it was fitted to
-                {fit.type === 'strong' ? '' : ', drawn dashed because this pair separates only weakly to begin with'}.
-              </>
-            ) : (
-              <>
-                This is one of the two directions ({fit_failed_note}) where the logistic fit did not converge, so no
-                curve is drawn — the five measured points stand on their own.
-              </>
-            )}{' '}
-            By the time the picture has any recognisable shape at all, the question of which country it depicts has
-            been answered. Timing is early in all 24 tested directions; what varies between them is the size of the
-            visual gap, not when it closes.
+            {fit && fit.type !== 'strong' && 'The curve is dashed: this pair separates only weakly to begin with. '}
+            Timing is early in all 24 tested directions; what varies between them is the size of the visual gap, not
+            when it closes.
           </p>
         </Panel>
       </Reveal>
@@ -442,7 +432,11 @@ function Scatter({ pts, xLabel, yLabel, rho, n, hover, setHover, accent, focus, 
   )
 }
 
-function LaionScene() {
+/* Scene 11 · not copied from the data (F13) — DISMISSED 2026-08-06. The component
+   stays in the tree as a named export so the file still compiles; it is no longer
+   mounted (see the default export at the bottom). */
+
+export function LaionScene() {
   const { model } = useModel()
   const [hoverA, setHoverA] = useState<number | null>(null)
   const [hoverB, setHoverB] = useState<number | null>(null)
@@ -498,9 +492,8 @@ function LaionScene() {
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          The last innocent explanation: perhaps the model is simply reflecting its training data. If the pictures of
-          Nigerian weddings on the internet all look alike, then a model that produces near-identical Nigerian weddings
-          is being accurate, not stereotyping.
+          The last innocent explanation: perhaps the model simply reflects its training data. If Nigerian weddings
+          online all look alike, a model that produces near-identical ones is being accurate, not stereotyping.
         </p>
       </Reveal>
 
@@ -509,8 +502,8 @@ function LaionScene() {
           <HowItWorks
             steps={[
               { k: 'what we did', v: 'For each of the 54 prompts we searched a 503,000-image slice of LAION, the kind of web-scraped set these models learn from, and pulled the 50 nearest training images.' },
-              { k: 'what we measured', v: "How alike those 50 training neighbours are to each other, and how alike the model's own 50 outputs are to each other. One dot below is one prompt." },
-              { k: 'how to read it', v: 'A number near 1 means the left quantity predicts the upward one. A number near 0 means it tells you nothing. To make that concrete, the second panel plots the country prompts against something that does predict them.' },
+              { k: 'what we measured', v: "How alike those 50 training neighbours are to each other, and how alike the model's own 50 outputs are to each other." },
+              { k: 'the comparison', v: 'The right panel plots the country prompts against something that does predict them.' },
             ]}
           />
         </div>
@@ -548,7 +541,7 @@ function LaionScene() {
               <p className="mt-2 min-h-[32px] font-mono2 text-[10px] leading-4 text-foreground/50">
                 {hoverA !== null
                   ? `${rows[hoverA].label} · training neighbours ${rows[hoverA].training.toFixed(2)} · output ${rows[hoverA].output.toFixed(2)}`
-                  : 'a shapeless cloud: the dashed best-fit line is flat'}
+                  : ' '}
               </p>
             </div>
 
@@ -574,7 +567,7 @@ function LaionScene() {
               <p className="mt-2 min-h-[32px] font-mono2 text-[10px] leading-4 text-foreground/50">
                 {hoverB !== null
                   ? `${rowsB[hoverB].label} · moved ${rowsB[hoverB].moved.toFixed(2)} · output ${rowsB[hoverB].output.toFixed(2)}`
-                  : 'a cloud that climbs: the dashed line rises'}
+                  : ' '}
               </p>
             </div>
           </div>
@@ -598,25 +591,16 @@ function LaionScene() {
               )
             })}
             <span className="font-mono2 text-[9px] text-foreground/30">
-              one dot = one of the 54 prompts · hover a country to isolate it in both panels
+              one dot = one of the 54 prompts · hover to isolate
             </span>
           </div>
 
           <div className="mt-5 border-t border-border pt-5">
             <p className="max-w-3xl text-sm leading-6 text-foreground/70">
-              Switching models moves the dots up and down, not sideways: the LAION neighbourhoods are one retrieval per
-              prompt, a property of the dataset, while the upward axis is whichever model you have selected. Both
-              panels share that upward scale, and it is wide enough to hold Stable Diffusion 2.1 as well, so a cloud
-              that shifts when you switch is telling you something real about that model rather than being redrawn.
-            </p>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/70">
-              Both panels use the same measure of output narrowness on the upward axis; only the sideways axis differs.
-              The left panel has all 54 prompts. The right has {rowsB.length}: a no-country prompt has no distance from
-              the no-country prompt, and leaving those six in at exactly zero would have flattered the very correlation
-              this panel is offered as a control for. Whatever collapses these outputs is clearly measurable, since the right-hand
-              panel finds it easily. It simply is not the narrowness of the training neighbourhood. The same null holds
-              on a second diversity measure ({LAION.vendiRho.toFixed(2)}, computed on the DINOv3 side), so it is not an
-              artefact of how we counted variety.
+              The six no-country prompts drop out of the right panel: a default prompt has no distance from itself.
+              Whatever narrows these outputs is clearly measurable — the right panel finds it easily — it is simply
+              not the narrowness of the training neighbourhood. The same null holds on a second diversity measure
+              ({LAION.vendiRho.toFixed(2)}, DINOv3 side), so it is not an artefact of how variety was counted.
             </p>
             <div className="mt-4">
               <TierNote tier="evidence" text={LAION.caveat} />
@@ -628,13 +612,15 @@ function LaionScene() {
   )
 }
 
-/* ── Part IV ─────────────────────────────────────────────────────────────── */
+/* ── Part III ────────────────────────────────────────────────────────────── */
 
 export default function Part2Mechanism() {
   return (
     <>
       <CommitEarlyScene />
-      <LaionScene />
+      {/* Scene 11 (the LAION inheritance null) is DISMISSED, 2026-08-06. The
+          component stays compiled above as a named export — restore
+          <LaionScene /> here to bring it back. */}
     </>
   )
 }
