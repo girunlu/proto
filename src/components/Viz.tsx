@@ -219,8 +219,8 @@ const RULER_STOPS = [
   { v: 0.0, t: 'the same prompt, twice', d: 'identical wording, different seeds' },
   { v: 0.06, t: '“a wedding” vs “a wedding in the USA”', d: 'the same pictures, essentially' },
   { v: 0.26, t: 'the empty prompt vs any default', d: 'no prompt at all, for scale' },
-  { v: 0.53, t: '“a wedding” vs “a wedding in Nigeria”', d: 'most of the way to another event' },
-  { v: 0.8, t: '“a wedding” vs “a breakfast”', d: 'two unrelated events: the ceiling' },
+  { v: 0.53, t: '“a wedding” vs “a wedding in Nigeria”', d: 'most of the way to another scene' },
+  { v: 0.8, t: '“a wedding” vs “a breakfast”', d: 'two unrelated scenes: the ceiling' },
 ]
 
 /* One row per anchor, so no two labels can ever collide. The little track on

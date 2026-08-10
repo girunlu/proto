@@ -1,25 +1,24 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
-import { ZoomImage, DistanceRuler, KnnNote, BoxPicker, MetricToggle, Setup, useMagnet } from '../components/Viz'
-import branchAData from '../data/branchA.json'
+import { ZoomImage, BoxPicker, MetricToggle, Setup, useMagnet } from '../components/Viz'
 
-/** per-model, per-situation, per-country k-NN separability AUC (review 10 · C-3) */
-const branchAKnn = branchAData.knn as Record<string, Record<string, Record<string, number>>>
-import { Sd21Only } from '../components/ModelBar'
+// const branchAKnn = ... — read only by the removed evidence block (see below)
 import { rgb, rgba } from '../lib/colors'
 import {
-  SITS, COUNTRY8, C8, CV_DEFAULT, decisionsFrom, F3, SOUTH,
-  SILHOUETTE_RANGE,
+  SITS, COUNTRY8, C8, CV_DEFAULT, decisionsFrom,
   type Sit, type Code,
 } from '../data/part1'
-import { HARDENING, key } from '../data/uiv2'
+// HARDENING/key: read only by the parked knnRange helper below
 import { CARDS_HEADLINE, CARDS_CANDIDATES } from '../data/part4'
+import { STATS } from '../data/research'
 import { useModel, modelImg, modelSeeds, modelVqa, seedCount, isSd21, MODEL_NAME, CROSS_MODEL_NOTE, type ModelId } from '../data/modelData'
 /* Tier C: both rulers now exist for all seven models (the CLIP tables were
    already computed, they were simply never exported), so these read straight
    through instead of falling back to DINOv3 for the cross-model six. */
-import { dist, distOrNull, RULER_MAX, umapFor, f3For, type Ruler } from '../data/crossmodel'
+import { distOrNull, RULER_MAX, umapFor, type Ruler } from '../data/crossmodel'
+
+import SeedBySeedScene from './Part1SeedBySeed'
 
 export type { Ruler }
 const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
@@ -37,7 +36,7 @@ const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
    is pinned rather than to nothing. */
 export type Focus = Code | 'default' | null
 
-/* exported only so the dismissed scene 04 (Part1SeedBySeed.tsx) still compiles */
+/* exported for scene 04, which lives in its own file (Part1SeedBySeed.tsx) */
 export function Legend({ withDefault = true, focus, onFocus }: {
   withDefault?: boolean
   focus?: Focus
@@ -130,7 +129,8 @@ function rolledSeeds(m: ModelId, sit: Sit, code: Code | 'default', n: number, ro
   return picks.sort((a, b) => a - b)
 }
 
-function UnsaidScene() {
+/* exported, not local, so the dismissed scene 01 does not read as dead code */
+export function UnsaidScene() {
   const { model } = useModel()
   const [sit, setSit] = useState<Sit>('wedding')
   /* the whole battery for this cell, not the top eight: the scene's claim is about
@@ -167,7 +167,7 @@ function UnsaidScene() {
               <p>
                 <strong>The battery is frozen.</strong> The questions were fixed before the answers were looked at, and
                 the annotator never sees the prompt, it is describing a picture, not grading a caption. 13 questions
-                are asked in every one of the 54 cells; a further few are situation-specific, giving 17–18 per cell.
+                are asked in every one of the 54 cells; a further few are scene-specific, giving 17–18 per cell.
               </p>
               <p>
                 <strong>Why 80%.</strong> A question counts as settled when one answer covers at least 40 of a cell's
@@ -215,7 +215,7 @@ function UnsaidScene() {
               <select
                 value={sit}
                 onChange={(e) => setSit(e.target.value as Sit)}
-                aria-label="event"
+                aria-label="scene"
                 className="mt-2 w-full cursor-pointer rounded-md border border-amber-300/50 bg-amber-300/10 px-2.5 py-1.5 font-mono2 text-[12px] text-amber-200 transition hover:border-amber-300/80 focus:outline-none focus:ring-1 focus:ring-amber-300/60"
               >
                 {SITS.map((s2) => (
@@ -305,7 +305,10 @@ export type GridMode = 'thumbs' | 'numbers'
 
 function CellGrid({ mode, onSelect, ruler, roll, controls }: {
   mode: GridMode
-  onSelect: (s: Sit) => void
+  /* optional since 2026-08-10: the only consumer was scene 01's evidence block,
+     removed with the distance ruler. A grid row is still clickable when a caller
+     wants the event, and inert when none does. */
+  onSelect?: (s: Sit) => void
   ruler: Ruler
   roll: number
   /* the ruler switch and the dice: they sit under the inspector rather than in the
@@ -389,7 +392,7 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
           {SITS.map((sit) => (
             <div key={sit} className="grid grid-cols-[80px_repeat(9,1fr)] gap-1.5">
               <button
-                onClick={() => onSelect(sit)}
+                onClick={() => onSelect?.(sit)}
                 className={`pr-2 text-left font-mono2 text-[11px] transition hover:text-amber-200 ${
                   cross && hover?.sit === sit
                     ? 'text-amber-200'
@@ -563,7 +566,7 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
             {sel.length === 2 && shown[0].d && shown[1].d && (
               <div className="mt-3 rounded-md border border-amber-300/25 bg-amber-300/5 p-2 font-mono2 text-[10px] leading-4 text-foreground/65">
                 {shown[0].d.mean.toFixed(3)} against {shown[1].d.mean.toFixed(3)}, each measured from its own
-                event's default prompt
+                scene's default prompt
                 {shown[0].sit !== shown[1].sit && ', and those are two different default prompts, so read the pair as two separate departures rather than a distance between these two cells'}
                 .
               </div>
@@ -600,50 +603,47 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
    note — moved into the heatmap panel rather than going with it. */
 function NationalityScene() {
   const { model } = useModel()
-  const [situation, setSituation] = useState<Sit>('wedding')
   const [ruler, setRuler] = useState<Ruler>('dinov3')
   const [roll, setRoll] = useState(0)
   /* one board, two encodings of the same measurement */
   const [gridMode, setGridMode] = useState<GridMode>('thumbs')
   const onSd21 = isSd21(model)
-  const weddingUS = dist(model, 'wedding', 'US', ruler).mean
-  const weddingNG = dist(model, 'wedding', 'NG', ruler).mean
-  /* Review 10 · C-3: this printed SD 2.1's AUC range under every model. Per-cell
-     cross-model AUCs run 0.46-1.00 — Flux's floor is below chance — so a sentence
-     claiming "97% of the time" was false for four of the seven. Now reads the
-     selected model's own row. */
-  const aucs = (
-    isSd21(model)
-      ? COUNTRY8.map((c) => HARDENING[key(situation, c.id)]?.knn_auc)
-      : COUNTRY8.map((c) => (branchAKnn[model]?.[situation] as Record<string, number> | undefined)?.[c.id])
-  ).filter((v): v is number => v != null)
+  /* weddingUS / weddingNG fed the old opening sentence, replaced 2026-08-10 by the
+     section text. dist() is still the chart's own source; these two were only the
+     prose's derived copy of it. */
+  /* `aucs` (the selected model's own per-cell k-NN range) fed the removed evidence
+     block. Kept as a comment rather than deleted because review 10 · C-3 exists
+     because of it: the page once printed SD 2.1's AUC range under every model, and
+     per-cell cross-model AUCs run 0.46-1.00, Flux's floor being below chance. Any
+     future sentence about separability must read the selected model's own row.
+       const aucs = (
+         isSd21(model)
+           ? COUNTRY8.map((c) => HARDENING[key(situation, c.id)]?.knn_auc)
+           : COUNTRY8.map((c) => (branchAKnn[model]?.[situation] as Record<string, number> | undefined)?.[c.id])
+       ).filter((v): v is number => v != null)
+  */
   return (
     <SceneShell
       number="02"
-      kicker="Part I · the default · finding 1"
-      title={<>The default has a <em className="font-display italic text-amber-200">nationality.</em></>}
+      kicker="underspecified alignment · the distances"
+      title={<>The same alignment, <em className="font-display italic text-amber-200">measured directly.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          We generate <strong>“a wedding”</strong> and <strong>“a wedding in Nigeria”</strong> 50 times each, and
-          measure how far apart the two sets of pictures sit: <strong>the default prompt and “in the USA” generate
-          almost the same pictures</strong> ({weddingUS.toFixed(2)} apart), while Nigeria sits{' '}
-          {weddingNG.toFixed(2)} away.
-        </p>
-        {/* R6: the page used "Western default" throughout without ever saying what
-            it was operationally. One sentence, at the first place the claim is made. */}
-        <p className="prose-scene mt-4 max-w-2xl text-foreground/55">
-          One definition, used everywhere below. <strong className="text-foreground/75">“Western default”</strong> means
-          the pictures a default prompt generates sit closer to the US and Germany variants than to the India, Nigeria,
-          Indonesia and Egypt ones, in an embedding space trained without any of these labels. It is a claim about
-          relative position in that space, not about culture, and not about what any of these countries looks like.
+          Dimensionality reduction compresses high-dimensional embeddings into two dimensions, resulting in
+          information loss. We therefore examine the geographic alignment directly in the original embedding space
+          using cosine distance. In the following figure, each bar and heatmap cell shows the distance between a
+          country-specific image set and the corresponding geographically underspecified set. The geographic alignment
+          visible in the projection persists in this space, with the unspecified generations remaining systematically
+          closer to the United States, Germany, and Russia. Uncertainty intervals are estimated by bootstrap
+          resampling over seeds.
         </p>
       </Reveal>
       <Reveal delay={0.05}>
         <div className="mt-6 max-w-3xl">
           <Setup
             rows={[
-              { k: 'what we ran', v: 'Six events, each written nine ways: plainly, and once naming each of eight countries. The same 50 fixed seeds in every variant, so nothing differs but the words.' },
+              { k: 'what we ran', v: 'Six scenes, each written nine ways: plainly, and once naming each of eight countries. The same 50 fixed seeds in every variant, so nothing differs but the words.' },
               { k: 'what we measured', v: 'Cosine distance between the default set and each country set in DINOv3-7B space, with CLIP available as a second ruler on the toggle.' },
               { k: 'how we know', v: 'Intervals come from resampling those 50 seeds (bootstrap). Separability is a nearest-neighbour classifier’s accuracy (k-NN AUC), read against a 10,000-shuffle null.' },
               { k: 'the mosaics', v: 'Grids show the four least-alike images in a cell, picked by embedding distance, a grid curated for variety cannot be accused of hiding the collapse.' },
@@ -705,7 +705,6 @@ function NationalityScene() {
           <div className="mt-6">
             <CellGrid
               mode={gridMode}
-              onSelect={setSituation}
               ruler={ruler}
               roll={roll}
               controls={
@@ -732,49 +731,17 @@ function NationalityScene() {
           <div className="mt-5 border-t border-border pt-4">
             <Legend withDefault={false} />
           </div>
-          <div className="mt-6">
-            <DistanceRuler />
-          </div>
-          {/* The evidence block used to live under the per-event bar chart. That chart
-              was removed as a duplicate of this grid, but review 01 · R5.7 declined the
-              same removal once already, because these four disclosures existed nowhere
-              else: the sorting test, its below-chance floor on some models, the
-              permutation result, and the second-ruler replication. They move here
-              rather than go. The event picker stays because the prose is per-event. */}
-          <div className="mt-8 flex flex-wrap items-end justify-between gap-4 border-t border-border pt-6">
-            <div className="font-mono2 text-[10px] tracking-wider text-foreground/40 uppercase">
-              how the gap for one event was tested
-            </div>
-            <BoxPicker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
-          </div>
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
-            {onSd21 ? <KnnNote /> : (
-              <p className="text-sm leading-6 text-foreground/60">
-                The per-cell sorting test is measured on Stable Diffusion 2.1 only. {MODEL_NAME[model]}'s own gaps
-                are permutation-tested too (286 of 288 model × cell combinations clear p &lt; 0.05), so what is
-                missing on this chart is the per-cell figure, not the testing.
-              </p>
-            )}
-            <div className="space-y-3">
-              {(situation === 'school' || situation === 'celebration') && (
-                <p className="text-sm leading-6 text-foreground/60">
-                  {`“A ${situation}” looks diffuse on this grid, not the same as absent${
-                    aucs.length && Math.min(...aucs) < 0.5
-                      ? ', but on its weakest cell the sorting test scores below the 50% a coin would, so read no separation into it'
-                      : ''
-                  }.`}
-                </p>
-              )}
-              <TierNote
-                tier="evidence"
-                text={`For “a ${situation}” on ${MODEL_NAME[model]} the classifier scores ${Math.round(Math.min(...aucs) * 100)}–${Math.round(Math.max(...aucs) * 100)}% across the eight countries${
-                  Math.min(...aucs) < 0.5
-                    ? ': the floor is below the 50% a coin would score, so at least one country is not separable from the default at all'
-                    : ''
-                }; every gap also clears p < 0.0001 in a 10,000-shuffle permutation test, and the ordering survives under a CLIP ruler.`}
-              />
-            </div>
-          </div>
+          {/* REMOVED 2026-08-10 (Giray): the DistanceRuler ("how to read a distance")
+              and the whole "how the gap for one event was tested" block (KnnNote,
+              the diffuse-event caveat and the evidence TierNote). Both are parked in
+              scratchpad/scene01_ruler_and_knn.tsx.
+
+              Note if either comes back: review 01 · R5.7 declined removing the
+              evidence block once before, because four disclosures existed nowhere
+              else on the page — the per-cell sorting test, its below-chance floor on
+              some models, the permutation result, and the CLIP-ruler replication.
+              Three of those now live in this scene's Setup detail tier; the
+              below-chance floor does not, and left with this block. */}
         </Panel>
       </Reveal>
     </SceneShell>
@@ -805,44 +772,6 @@ export interface EmptyPoint { sit: Sit; code: Code | 'default'; d_empty: number;
    magnet nor the eye can separate them. */
 /* ── Scene 5 · the map is real (F4 + F5) ─────────────────────────────────── */
 
-/* The nearest-cluster tally used to sit in scene 04, beside the thumbnail strip.
-   Moved here 2026-08-10 (Giray): it is the same per-seed assignment this map
-   already draws, counted — so the count and the picture of it belong together.
-   Scene 04 keeps the strip and the scatter, which is where "seed by seed" is
-   actually shown. Labelled "default seeds" here because, unlike scene 04, the
-   surrounding plot holds all nine variants and "all N seeds" would be read as
-   the whole cloud. */
-function ClusterTally({ situation }: { situation: Sit }) {
-  const { model } = useModel()
-  const labels = (isSd21(model) ? F3[situation] : f3For(model, situation) ?? F3[situation]) as Code[]
-  const counts = useMemo(() => {
-    const m = new Map<Code, number>()
-    labels.forEach((l) => m.set(l, (m.get(l) ?? 0) + 1))
-    return [...m.entries()].sort((a, b) => b[1] - a[1])
-  }, [labels])
-  const southHere = labels.filter((l) => SOUTH.includes(l)).length
-  return (
-    <div className="rounded-lg border border-border p-3">
-      <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-        the {labels.length} default seeds, by nearest cluster · {situation}
-      </div>
-      <div className="mt-3 space-y-1.5">
-        {counts.map(([code, n]) => (
-          <div key={code} className="flex items-center gap-2">
-            <span className="w-6 font-mono2 text-[10px]" style={{ color: rgb(C8[code].cv) }}>{code}</span>
-            <div className="relative h-3 flex-1 rounded-sm bg-foreground/5">
-              <div className="absolute inset-y-0 left-0 rounded-sm" style={{ width: `${(n / labels.length) * 100}%`, background: rgb('--c-amber') }} />
-            </div>
-            <span className="w-8 text-right font-mono2 text-[10px] text-foreground/50">{n}</span>
-          </div>
-        ))}
-      </div>
-      <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/40">
-        {southHere} of these {labels.length} seeds land nearest a Global-South country (IN/NG/ID/EG)
-      </p>
-    </div>
-  )
-}
 
 function UmapScatter({ situation, focus, ruler, compact = false }: {
   situation: Sit
@@ -857,17 +786,16 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
      variants projected together so the clouds stay comparable inside a plot.
      Coordinates arrive already normalised to 0..1 by the exporter. */
   const data = umapFor(model, situation, ruler)
-  /* B11: the separability number the finding-5 box reports, over this situation's
-     eight country cells. SD 2.1's own hardening table — hence the Sd21Only there. */
-  const knnRange = useMemo(() => {
-    const aucs = COUNTRY8.map((c) => HARDENING[key(situation, c.id)]?.knn_auc).filter((v): v is number => v != null)
-    /* Unreachable while uiv2.ts's import-time validation passes: a partial
-       hardening export throws there at boot instead of this box inventing a
-       range. Throwing here too keeps that contract if the validation is ever
-       removed. */
-    if (!aucs.length) throw new Error(`no hardening rows for ${situation}`)
-    return [Math.min(...aucs), Math.max(...aucs)]
-  }, [situation])
+  /* knnRange fed the removed finding-5 box. Parked rather than deleted: it also
+     carried a contract worth keeping if separability is ever printed here again.
+     It threw on a missing hardening row instead of inventing a range, matching
+     uiv2.ts's import-time validation.
+       const knnRange = useMemo(() => {
+         const aucs = COUNTRY8.map((c) => HARDENING[key(situation, c.id)]?.knn_auc).filter((v): v is number => v != null)
+         if (!aucs.length) throw new Error(`no hardening rows for ${situation}`)
+         return [Math.min(...aucs), Math.max(...aucs)]
+       }, [situation])
+  */
   const W = 640
   const H = 420
   const pad = 26
@@ -1033,28 +961,12 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
             <p className="p-2 font-mono2 text-[11px] text-foreground/35">hover a point to see its image</p>
           )}
         </div>
-        {/* R5.6 / B11: this box used to read "silhouette 0.10–0.27, so the clustering
-            is statistically real". A silhouette of 0.10 is barely above noise and does
-            not support that sentence. The separability evidence is real and already in
-            the project — k-NN AUC — so the box now leads with that and reports the
-            silhouette as the weak number it is. */}
-        <div className="rounded-lg border border-sky-300/25 bg-sky-300/5 p-4">
-          <div className="font-mono2 text-[10px] tracking-widest text-sky-300/80 uppercase">
-            finding 5 · the countries are separable
-          </div>
-          <p className="mt-2 text-sm leading-6 text-foreground/70">
-            Ask a nearest-neighbour test to tell a country image from a default-prompt one and it ranks them correctly{' '}
-            <strong className="text-foreground">{Math.round(knnRange[0] * 100)}–{Math.round(knnRange[1] * 100)}%</strong>{' '}
-            of the time across this situation's cells.
-          </p>
-          <p className="mt-2 text-[13px] leading-5 text-foreground/50">
-            The clusters are looser than they look: silhouette scores run{' '}
-            {SILHOUETTE_RANGE[0].toFixed(2)}–{SILHOUETTE_RANGE[1].toFixed(2)}, barely above noise at the low end. The
-            projection is a view, not the evidence.
-          </p>
-          <Sd21Only />
-        </div>
-        <ClusterTally situation={situation} />
+        {/* REMOVED 2026-08-10 (Giray): the "finding 5 · the countries are separable"
+            box (k-NN range, the silhouette caveat, the SD-2.1-only marker). Parked in
+            scratchpad/scene02_finding5_box.tsx.
+            It carried the one statement that the projection is a view rather than the
+            evidence, and the silhouette range that justified saying so. The Setup
+            detail tier on this scene still makes that point. */}
       </div>
     </div>
   )
@@ -1069,35 +981,36 @@ function MapScene() {
   const [ruler, setRuler] = useState<Ruler>('dinov3')
   return (
     <SceneShell
-      number="03"
-      kicker="Part I · the default · finding 4"
-      title={<>The map is <em className="font-display italic text-amber-200">real.</em></>}
+      number="01"
+      kicker="underspecified alignment · the projection"
+      title={<>An overview of the <em className="font-display italic text-amber-200">embedding spaces.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          Flatten the embedding space to two dimensions and the structure is visible to the naked eye. Non-Western
-          countries are pulled toward <strong>shared attractors</strong> (Nigeria's nearest cluster is India in 4–5
-          of 6 situations), not toward their own faithful depictions.
+          For an initial overview of the embedding spaces, we use UMAP to project the image embeddings into two
+          dimensions, separately for each model and scene. The geographically underspecified generations appear to
+          align more closely with some country-specific generations, particularly those associated with the United
+          States, Germany, and Russia.
         </p>
       </Reveal>
       <Reveal delay={0.05}>
         <div className="mt-6 max-w-3xl">
           <Setup
             rows={[
-              { k: 'what we drew', v: 'One UMAP fit per model and event, over all nine variants’ embeddings at once, with coordinates normalised to [0,1]. The rings are each country’s centroid in the projection.' },
+              { k: 'what we drew', v: 'One UMAP fit per model and scene, over all nine variants’ embeddings at once, with coordinates normalised to [0,1]. The rings are each country’s centroid in the projection.' },
               { k: 'how we know', v: 'The separability figure is nearest-neighbour accuracy computed in the full embedding space, not on this two-dimensional picture.' },
               { k: 'the limit', v: 'Silhouette scores run only 0.10–0.27, barely above noise at the low end. The map is a view of the evidence, not the evidence.' },
             ]}
           detail={<>
               <p>
-                <strong>One fit per model and event.</strong> All nine variants' embeddings are projected together so
+                <strong>One fit per model and scene.</strong> All nine variants' embeddings are projected together so
                 the clouds inside a single plot are comparable; coordinates are normalised to [0,1] by the exporter.
                 Fits are <em>not</em> comparable between plots, UMAP axes carry no units and no meaning.
               </p>
               <p>
                 <strong>Why the map is not the evidence.</strong> Silhouette scores over these clusters run 0.10–0.27,
                 which at the low end is barely above noise. The claim that the countries separate rests on k-NN AUC in
-                the full space, where it is 0.96–0.99 even for the events whose centroid distances look weak. UMAP is
+                the full space, where it is 0.96–0.99 even for the scenes whose centroid distances look weak. UMAP is
                 a picture of a structure measured elsewhere.
               </p>
           </>}
@@ -1108,7 +1021,7 @@ function MapScene() {
         <Panel className="mt-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-UMAP of real {ruler === 'dinov3' ? 'DINOv3' : 'CLIP'} embeddings · {board ? 'all six events' : situation} · rings = true centroids
+UMAP of real {ruler === 'dinov3' ? 'DINOv3' : 'CLIP'} embeddings · {board ? 'all six scenes' : situation} · rings = true centroids
             </div>
             <div className="flex flex-wrap items-end gap-3">
             <MetricToggle value={ruler} onChange={setRuler} showLabel={false} />
@@ -1116,7 +1029,7 @@ UMAP of real {ruler === 'dinov3' ? 'DINOv3' : 'CLIP'} embeddings · {board ? 'al
               onClick={() => setBoard(!board)}
               className={`rounded-md border px-2.5 py-1 font-mono2 text-[11px] transition ${board ? 'border-amber-300/60 bg-amber-300/10 text-amber-200' : 'border-border text-foreground/50 hover:border-foreground/40 hover:text-foreground/80'}`}
             >
-              {board ? '← back to one event' : 'see all six at once →'}
+              {board ? '← back to one scene' : 'see all six at once →'}
             </button>
             </div>
           </div>
@@ -1134,7 +1047,7 @@ UMAP of real {ruler === 'dinov3' ? 'DINOv3' : 'CLIP'} embeddings · {board ? 'al
           ) : (
             <>
               <div className="mt-4">
-                <BoxPicker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
+                <BoxPicker label="scene" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
               </div>
               <div className="mt-6">
                 <UmapScatter situation={situation} focus={focus} ruler={ruler} />
@@ -1145,7 +1058,7 @@ UMAP of real {ruler === 'dinov3' ? 'DINOv3' : 'CLIP'} embeddings · {board ? 'al
             <Legend focus={focus} onFocus={setFocus} />
             <TierNote
               tier="evidence"
-              text="30 sampled images per prompt; every pairwise country gap carries a bootstrap confidence interval, and clustering scores are reported across all six events."
+              text={`All ${STATS.seeds} images per prompt go into the fit; every pairwise country gap carries a bootstrap confidence interval, and clustering scores are reported across all six scenes.`}
             />
           </div>
         </Panel>
@@ -1154,20 +1067,51 @@ UMAP of real {ruler === 'dinov3' ? 'DINOv3' : 'CLIP'} embeddings · {board ? 'al
   )
 }
 
+/* The section's heading and opening paragraph. It sits above the first scene
+   rather than inside one, because it frames all three: the projection, the
+   distances, and the per-image check. */
+function SectionLead() {
+  return (
+    <div className="mx-auto mt-20 w-full max-w-6xl px-6">
+      <Reveal>
+        <h2 className="font-display max-w-4xl text-4xl leading-tight font-light md:text-5xl">
+          The Geographic Alignment of Geographically Underspecified Generations
+        </h2>
+      </Reveal>
+      <Reveal delay={0.05}>
+        <p className="prose-scene mt-6 max-w-2xl">
+          Previous work using crowdsourced human annotation has found that images generated from prompts that do not
+          specify geographic location tend to resemble representations associated with the United States more closely
+          than those associated with other countries [3]. We visually examine such a geographic alignment by exploring
+          the embedding spaces of images generated from the geographically underspecified prompts “a &lt;scene&gt;”,
+          and their corresponding country-specific variants “a &lt;scene&gt; in &lt;country&gt;”. We obtain the visual
+          embeddings from two image encoders: DINOv3 ViT-7B/16 and CLIP ViT-L/14.
+        </p>
+      </Reveal>
+    </div>
+  )
+}
+
 /* ── Part I ──────────────────────────────────────────────────────────────── */
 
-/* Scene 04, "Not an average, seed by seed" (finding 3), is DISMISSED 2026-08-10 —
-   unmounted, not deleted, same treatment as Part III / Part V / 16·a / 16·d. It now
-   lives in `Part1SeedBySeed.tsx`, which nothing imports; that file's header says what
-   to restore. Its nearest-cluster tally was moved into scene 03 the same day and stays
-   there either way.
-   import SeedBySeedScene from './Part1SeedBySeed' */
+/* Scene 04, "Not an average, seed by seed", was dismissed on 2026-08-10 and restored
+   the same day for its 4x4 grid of real seeds. It stays in its own file; its
+   nearest-cluster tally lives with it, beside the strip. */
 export default function Part1Default() {
   return (
     <>
-      <UnsaidScene />
-      <NationalityScene />
+      {/* Scene 01, "the unsaid", is DISMISSED 2026-08-10 (Giray), ahead of the
+          rewrite into intro / underspecified alignment / alignment source. The
+          UnsaidScene component above is intact and unreferenced; restore this line
+          to bring it back. Part I now opens on the nationality scene. */}
+      {/* <UnsaidScene /> */}
+      {/* Order set 2026-08-10 by the section text: the UMAP projection first as the
+          overview, then the same alignment measured directly in the embedding space,
+          then the per-image check that it is not an artefact of averaging. */}
+      <SectionLead />
       <MapScene />
+      <NationalityScene />
+      <SeedBySeedScene />
     </>
   )
 }

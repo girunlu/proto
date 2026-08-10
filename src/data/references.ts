@@ -33,224 +33,46 @@ export interface Reference {
   year: number
   title: string
   venue: string
-  url: string
+  /* optional: a reference with no link renders as plain text rather than a dead
+     or invented one */
+  url?: string
   /** why it is here — rendered as the trailing clause, so the list argues rather than lists */
-  role: string
+  role?: string
 }
 
 export const REFERENCES: Reference[] = [
-  // ── what the page positions against ────────────────────────────────────────
+  /* Replaced 2026-08-10 with the four Giray supplied, in the order the prose cites
+     them: [1,2] in the introduction, [3] in underspecified alignment, [4] in
+     semantic assumptions. No `url` is given on any of them: the source list carried
+     none, and guessing an arXiv id or a DOI is the kind of plausible-looking error
+     that is very hard to catch later. Add them and the list will link itself. */
   {
-    id: 'naik2023',
-    authors: 'Naik, R. & Nushi, B.',
-    year: 2023,
-    title: 'Social Biases through the Text-to-Image Generation Lens',
-    venue: 'AIES 2023, 786–808',
-    url: 'https://arxiv.org/abs/2304.06034',
-    role: 'the method this page extends: everyday-situation prompts × country qualifiers, measured as embedding distance from the default prompt',
-  },
-  {
-    id: 'bianchi2023',
-    authors: 'Bianchi, F. et al.',
-    year: 2023,
-    title: 'Easily Accessible Text-to-Image Generation Amplifies Demographic Stereotypes at Large Scale',
-    venue: 'FAccT 2023',
-    url: 'https://arxiv.org/abs/2211.03759',
-    role: 'establishes that the defaults exist and amplify; this page asks when in generation they commit and what they cost to override',
-  },
-  {
-    id: 'luccioni2023',
-    authors: 'Luccioni, S. et al.',
-    year: 2023,
-    title: 'Stable Bias: Analyzing Societal Representations in Diffusion Models',
-    venue: 'NeurIPS 2023 Datasets & Benchmarks',
-    url: 'https://arxiv.org/abs/2303.11408',
-    role: 'the demographic axis, at scale, the axis this page deliberately does not work on',
-  },
-  {
-    id: 'chinchure2023',
+    id: 'chinchure2024',
     authors: 'Chinchure, A. et al.',
-    year: 2023,
+    year: 2024,
     title: 'TIBET: Identifying and Evaluating Biases in Text-to-Image Generative Models',
-    venue: 'arXiv:2312.01261',
-    url: 'https://arxiv.org/abs/2312.01261',
-    role: 'closest prior art for naming assumptions: LLM-proposed bias axes evaluated by VQA, at the endpoint only',
+    venue: 'European Conference on Computer Vision. Cham: Springer Nature Switzerland',
   },
   {
-    id: 'dinca2024',
-    authors: "D'Incà, M. et al.",
-    year: 2024,
-    title: 'OpenBias: Open-set Bias Detection in Text-to-Image Generative Models',
-    venue: 'CVPR 2024',
-    url: 'https://arxiv.org/abs/2404.07990',
-    role: 'open-set bias detection, also endpoint-only, the depth profile (lock-in step, steerability, homogeneity) is what this page adds',
-  },
-  {
-    id: 'alnouri2026',
-    authors: 'Alnouri, F. et al.',
-    year: 2026,
-    title: 'Visual Fingerprints for LLM Generation Comparison',
-    venue: 'arXiv:2605.06054',
-    url: 'https://arxiv.org/abs/2605.06054',
-    role: 'the distribution-over-choices frequency matrix that the attribute tables in Part II are modelled on',
-  },
-
-  // ── the mechanism: training data ───────────────────────────────────────────
-  {
-    id: 'schuhmann2022',
-    authors: 'Schuhmann, C. et al.',
-    year: 2022,
-    title: 'LAION-5B: An open large-scale dataset for training next generation image-text models',
-    venue: 'NeurIPS 2022 Datasets & Benchmarks',
-    url: 'https://arxiv.org/abs/2210.08402',
-    role: "SD 2.1's training set, and the 0.28 CLIP-cosine filter its own §G.2 calls “only a heuristic”",
-  },
-  // hong2024 (DataComp CLIP-filtering case study) — REMOVED 2026-08-06 with the
-  // dismissal of scene 11 (the LAION inheritance analysis): its on-page role was
-  // the density axis only that scene plotted.
-
-  // ── the models measured ────────────────────────────────────────────────────
-  {
-    id: 'rombach2022',
-    authors: 'Rombach, R. et al.',
-    year: 2022,
-    title: 'High-Resolution Image Synthesis with Latent Diffusion Models',
-    venue: 'CVPR 2022',
-    url: 'https://arxiv.org/abs/2112.10752',
-    role: 'the architecture behind Stable Diffusion 2.1, the primary model here',
-  },
-  {
-    id: 'song2021',
-    authors: 'Song, J., Meng, C. & Ermon, S.',
-    year: 2021,
-    title: 'Denoising Diffusion Implicit Models',
-    venue: 'ICLR 2021',
-    url: 'https://arxiv.org/abs/2010.02502',
-    role: 'the deterministic sampler: same seed, identical trajectory, without which the prompt-swap experiments in Part IV mean nothing',
-  },
-  {
-    id: 'radford2021',
-    authors: 'Radford, A. et al.',
-    year: 2021,
-    title: 'Learning Transferable Visual Models From Natural Language Supervision',
-    venue: 'ICML 2021',
-    url: 'https://arxiv.org/abs/2103.00020',
-    role: 'CLIP, both the text encoder being conditioned on and one of the two rulers offered in the metric switch',
-  },
-  {
-    id: 'cherti2023',
-    authors: 'Cherti, M. et al.',
-    year: 2023,
-    title: 'Reproducible scaling laws for contrastive language-image learning',
-    venue: 'CVPR 2023',
-    url: 'https://arxiv.org/abs/2212.07143',
-    role: "OpenCLIP ViT-H/14, which is the encoder SD 2.1 actually ships with",
-  },
-
-  // ── the instruments ────────────────────────────────────────────────────────
-  {
-    id: 'simeoni2025',
-    authors: 'Siméoni, O. et al.',
+    id: 'eschner2025',
+    authors: 'Eschner, J. et al.',
     year: 2025,
-    title: 'DINOv3',
-    venue: 'arXiv:2508.10104',
-    url: 'https://arxiv.org/abs/2508.10104',
-    role: 'the canonical embedding for every distance and homogeneity number on this page: self-supervised, so it shares no text-alignment confound with the model being measured (though LVD-1689M is still curated web data)',
+    title: 'Interactive Discovery and Exploration of Visual Bias in Generative Text-to-Image Models',
+    venue: 'Computer Graphics Forum, Vol. 44, No. 3',
   },
   {
-    id: 'friedman2023',
-    authors: 'Friedman, D. & Dieng, A. B.',
+    id: 'basu2023',
+    authors: 'Basu, A., Babu, R. V. & Pruthi, D.',
     year: 2023,
-    title: 'The Vendi Score: A Diversity Evaluation Metric for Machine Learning',
-    venue: 'TMLR 2023',
-    url: 'https://arxiv.org/abs/2210.02410',
-    role: 'the "how many genuinely different pictures" count used wherever variety is reported',
+    title: 'Inspecting the Geographical Representativeness of Images from Text-to-Image Models',
+    venue: '2023 IEEE/CVF International Conference on Computer Vision (ICCV). IEEE',
   },
   {
-    id: 'ghosh2024',
-    authors: 'Ghosh, S. et al.',
-    year: 2024,
-    title:
-      "“I don't see myself represented here at all”: User Experiences of Stable Diffusion Outputs Containing Representational Harms across Gender Identities and Nationalities",
-    venue: 'arXiv:2408.01594',
-    url: 'https://arxiv.org/abs/2408.01594',
-    role: 'the pairwise intra-set similarity method behind the stereotyping-inversion result, and the user study linking homogeneity to perceived harm',
-  },
-  {
-    id: 'mcinnes2018',
-    authors: 'McInnes, L., Healy, J. & Melville, J.',
-    year: 2018,
-    title: 'UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction',
-    venue: 'arXiv:1802.03426',
-    url: 'https://arxiv.org/abs/1802.03426',
-    role: 'the projection in scenes 05 and 17, a view, never evidence: every claim is made on the distances, not the picture',
-  },
-  {
-    id: 'mantel1967',
-    authors: 'Mantel, N.',
-    year: 1967,
-    title: 'The Detection of Disease Clustering and a Generalized Regression Approach',
-    venue: 'Cancer Research 27(2), 209–220',
-    url: 'https://aacrjournals.org/cancerres/article/27/2_Part_1/209/476508',
-    role: 'the permutation test behind scene 09: whether the text matrix and the image matrix agree beyond chance',
-  },
-  {
-    id: 'gwet2008',
-    authors: 'Gwet, K. L.',
-    year: 2008,
-    title: 'Computing inter-rater reliability and its variance in the presence of high agreement',
-    venue: 'British Journal of Mathematical and Statistical Psychology 61(1), 29–48',
-    url: 'https://doi.org/10.1348/000711006X126600',
-    role: "AC1, the agreement statistic the questionnaire is gated on, chosen over Cohen's κ precisely because these answers are high-agreement and κ paradoxes there",
-  },
-
-  // ── when the assumption commits ────────────────────────────────────────────
-  {
-    id: 'hertz2023',
-    authors: 'Hertz, A. et al.',
-    year: 2023,
-    title: 'Prompt-to-Prompt Image Editing with Cross Attention Control',
-    venue: 'ICLR 2023',
-    url: 'https://arxiv.org/abs/2208.01626',
-    role: 'the mid-generation conditioning swap that Part IV turns into the lock-in curve',
-  },
-  {
-    id: 'wang2023',
-    authors: 'Wang, B. & Vastola, J. J.',
-    year: 2023,
-    title: 'Diffusion Models Generate Images Like Painters: an Analytical Theory of Outline First, Details Later',
-    venue: 'arXiv:2303.02490',
-    url: 'https://arxiv.org/abs/2303.02490',
-    role: 'why early lock-in is expected rather than surprising: high-variance scene features commit in the first 10–20% of steps',
-  },
-  {
-    id: 'bradley2024',
-    authors: 'Bradley, A. & Nakkiran, P.',
-    year: 2024,
-    title: 'Classifier-Free Guidance is a Predictor-Corrector',
-    venue: 'arXiv:2408.09000',
-    url: 'https://arxiv.org/abs/2408.09000',
-    role: 'why the empty prompt at standard guidance, not guidance 0, is the correct picture of the prior',
-  },
-  {
-    id: 'tang2023',
-    authors: 'Tang, R. et al.',
-    year: 2023,
-    title: 'What the DAAM: Interpreting Stable Diffusion Using Cross Attention',
-    venue: 'ACL 2023',
-    url: 'https://arxiv.org/abs/2210.04885',
-    role: 'the per-token pixel attribution used to ask which pixels the country word actually controlled',
-  },
-
-  // ── the venue's own prior art ──────────────────────────────────────────────
-  {
-    id: 'humer2023',
-    authors: 'Humer, C. et al.',
-    year: 2023,
-    title: 'AMUMO: Analyzing Multi-Modal Models',
-    venue: 'VISxAI 2023',
-    url: 'https://christina.humer.dev/Amumo/',
-    role: 'the four-quadrant similarity-matrix template scene 09 builds on, here with a designed cultural gradient as ground truth rather than emergent clusters',
+    id: 'franchi2025',
+    authors: 'Franchi, G. et al.',
+    year: 2025,
+    title: 'Towards Understanding and Quantifying Uncertainty for Text-to-Image Generation',
+    venue: '2025 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR). IEEE',
   },
 ]
 
@@ -271,7 +93,9 @@ export const WEIGHTS: { group: string; models: { label: string; url: string }[] 
   {
     group: 'image generators',
     models: [
-      { label: 'Stable Diffusion 2.1', url: 'https://huggingface.co/stabilityai/stable-diffusion-2-1' },
+      /* the official stabilityai repo became gated mid-project; these are the
+         verified-identical v2-1_768-ema-pruned files actually used */
+      { label: 'Stable Diffusion 2.1', url: 'https://huggingface.co/sd2-community/stable-diffusion-2-1' },
       { label: 'SDXL 1.0', url: 'https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0' },
       { label: 'Stable Diffusion 3.5 Large', url: 'https://huggingface.co/stabilityai/stable-diffusion-3.5-large' },
       { label: 'FLUX.1 [dev]', url: 'https://huggingface.co/black-forest-labs/FLUX.1-dev' },

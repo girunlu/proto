@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { THESIS, STATS } from '../data/research'
 import { AUTHORS, PUB_DATE } from '../data/references'
+import { MODELS } from '../data/modelData'
 import { useTheme } from '../hooks/useTheme'
 import { canvasColor } from '../lib/colors'
 
@@ -99,10 +100,46 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
         >
-          What do text-to-image models
-          <br />
-          <span className="italic text-amber-200">assume before you say anything?</span>
+          Exploring the Geographic Assumptions in Text-to-Image Models with{' '}
+          <span className="italic text-amber-200">Underspecified Prompts</span>
         </motion.h1>
+
+        {/* Authors / Affiliations, 2026-08-10 (Giray). Two columns in the idiom the
+            page already uses for label/value pairs. Every author shares one
+            affiliation, so it is carried by a single asterisk rather than repeated
+            five times; AUTHORS in data/references.ts holds the per-author strings if
+            they ever diverge. */}
+        <motion.div
+          className="mt-10 max-w-3xl"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.28 }}
+        >
+          <div className="grid gap-x-10 gap-y-3 border-t border-border pt-5 sm:grid-cols-2">
+            <div>
+              <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">authors</div>
+              <ul className="mt-2.5 space-y-1 text-[15px] leading-6 text-foreground/85">
+                {AUTHORS.map((a) => (
+                  <li key={a.name}>
+                    <a
+                      href={`mailto:${a.email}`}
+                      className="underline decoration-border underline-offset-2 hover:decoration-amber-200"
+                    >
+                      {a.name}
+                    </a>
+                    <sup className="ml-0.5 text-amber-200/80">*</sup>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">affiliations</div>
+              <p className="mt-2.5 text-[15px] leading-6 text-foreground/70">
+                <sup className="text-amber-200/80">*</sup> Johannes Kepler University Linz
+              </p>
+            </div>
+          </div>
+        </motion.div>
 
         <motion.div
           className="mt-12 flex flex-col gap-3 font-mono2 text-sm md:text-base"
@@ -126,24 +163,26 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.6 }}
         >
-          Your prompt is never the whole input. It is read inside a worldview the model already learned: who a person
-          looks like, which culture is the default, what “realistic” means. This explorable makes it visible, and
-          measures what overriding it costs.
+          {/* Rewritten 2026-08-10 to promise what the page now delivers. The old
+              version advertised “what ‘realistic’ means” (the reference-photograph
+              anchor) and “what overriding it costs” (the counter-specification
+              ladders); both of those sections are dismissed. */}
+          Your prompt is never the whole input. It is read inside a worldview the model already learned: which country
+          a scene defaults to, who is in it, what is on the table. This explorable measures that worldview across seven
+          text-to-image models, and asks where in generation it gets decided.
         </motion.p>
 
+        {/* The second byline that used to sit here (all five authors again, with
+            their full affiliation strings) is REMOVED 2026-08-10: the block above
+            already credits them, and the footer credits them a third time with
+            contact links. Only the date it also carried survives. */}
         <motion.div
-          className="mt-8 font-mono2 text-[11px] leading-5 tracking-wider text-foreground/45"
+          className="mt-8 font-mono2 text-[11px] leading-5 tracking-wider text-foreground/35"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.75 }}
         >
-          {AUTHORS.map((a) => (
-            <div key={a.name}>
-              {a.name}
-              <span className="text-foreground/35"> · {a.affiliation}</span>
-            </div>
-          ))}
-          <div className="text-foreground/35">{PUB_DATE}</div>
+          {PUB_DATE}
         </motion.div>
 
         <motion.div
@@ -154,9 +193,11 @@ export default function Hero() {
         >
           <p className="font-display text-xl leading-7 text-foreground/85 italic md:text-2xl">“{THESIS}”</p>
           <p className="mt-3 font-mono2 text-[11px] tracking-wider text-foreground/40 uppercase">
-            6 situations × 9 prompt variants × 50 fixed seeds on seven text-to-image models, 18,900 images; with the
-            guidance sweep and counter-specification ladders, {STATS.images.toLocaleString()}+ in
-            total
+            {/* 18,900 was typed here. It is 54 × 50 × 7 and is now read from the data
+                layer, per the project rule that no figure in the prose is hand-entered. */}
+            6 scenes × 9 prompt variants × {STATS.seeds} fixed seeds on {MODELS.length} text-to-image models,{' '}
+            {(STATS.prompts * STATS.seeds * MODELS.length).toLocaleString()} images; with the guidance sweep and the
+            mid-generation interventions, {STATS.images.toLocaleString()}+ in total
           </p>
         </motion.div>
       </div>

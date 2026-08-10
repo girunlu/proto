@@ -5,7 +5,11 @@ import { ZoomImage, BoxPicker, Setup } from '../components/Viz'
 import { rgb, rgba } from '../lib/colors'
 import { ordinal } from '../lib/utils'
 import { C8, COUNTRY8, SITS, CV_DEFAULT, cell, seedImg, type Sit, type Code } from '../data/part1'
-import { cardsFor, CARDS_TOTAL, CARDS_HEADLINE, CARDS_CANDIDATES, BLIND_SPOT } from '../data/part4'
+/* CARDS_CANDIDATES is no longer imported: it equals CARDS_TOTAL (708 of 708 clear
+   the consistency floor, since the two-annotator agreement gate that used to reject
+   some of them is gone), so the sentence "…from 708 the detector proposed" was
+   comparing a number with itself. */
+import { cardsFor, CARDS_TOTAL, CARDS_HEADLINE } from '../data/part4'
 import {
   VQA, DAAM_INDEX, daamImg, key, Q_TEXT, BATTERY, tidyOpen, FORCED_CELLS, FORCED_U12,
   type Answer, type ForcedQ,
@@ -71,19 +75,15 @@ const SETTLED = 0.8
 /* how many open-answer clusters get their own bar before the tail is folded */
 const OPEN_SHOWN = 4
 
-function QuestionRow({ q, answers, total, cv, settled }: { q: string; answers: Answer[]; total: number; cv: string; settled?: boolean }) {
+function QuestionRow({ q, answers, total, cv }: { q: string; answers: Answer[]; total: number; cv: string }) {
   const top = answers[0]
   const share = top.n / total
   return (
     <div className="flex items-center gap-3">
-      {/* the settled/unsettled state is a mark on the row, not a change of position:
-          rows are in a fixed order so the same question is always in the same place
-          when you switch event or country. */}
-      <span
-        className={`h-1.5 w-1.5 shrink-0 rounded-full ${settled ? '' : 'opacity-0'}`}
-        style={settled ? { background: rgb(cv) } : undefined}
-        aria-hidden
-      />
+      {/* The settled-state dot that sat here was removed 2026-08-10 (Giray). Rows
+          stay in a fixed order so the same question is always in the same place when
+          you switch event or country; settled is now carried by the bar's colour
+          alone (the country hue when settled, the default hue when not). */}
       <span className="w-44 shrink-0 truncate text-right font-mono2 text-[10px] text-foreground/50" title={Q_TEXT[q] ?? q}>
         {Q_TEXT[q] ?? q}
       </span>
@@ -151,11 +151,11 @@ function BatteryList({ sit, code }: { sit: Sit; code: Code | 'default' }) {
         </span>
       </div>
       <p className="mt-1 max-w-2xl font-mono2 text-[10px] leading-4 text-foreground/40">
-        What the prompt left open, the model filled in anyway: the dotted rows, the same way nearly every time.
+        What the prompt left open, the model filled in anyway, the same way nearly every time.
       </p>
       <div className="mt-4 space-y-1.5">
         {rows.map((r) => (
-          <QuestionRow key={r.q} {...r} cv={r.share >= SETTLED ? cv : CV_DEFAULT} settled={r.share >= SETTLED} />
+          <QuestionRow key={r.q} {...r} cv={r.share >= SETTLED ? cv : CV_DEFAULT} />
         ))}
         {rows.length === 0 && (
           <p className="font-mono2 text-[11px] text-foreground/40">No answers recorded for this prompt.</p>
@@ -372,19 +372,25 @@ function NamedScene() {
 
   return (
     <SceneShell
-      number="04"
-      kicker="Part II · the assumptions, named · findings 14–15"
+      number="06"
+      kicker="semantic assumptions · the named concepts"
       title={<>Named, not implied, <em className="font-display italic text-amber-200">with the distribution they describe.</em></>}
     >
       <Reveal>
+        {/* aligned to the backend: the annotator is the QAT w4a16 build of
+            Gemma-4-E4B-it, and the example question is quoted as the battery
+            actually asks it ("Is food visible?", W4). */}
         <p className="prose-scene max-w-2xl">
-          Distances establish <em>that</em> the unspecified gets supplied; this establishes <em>with what</em>. A
-          vision-language model that never sees the prompt answers the same frozen questionnaire over every image
-          ({BATTERY.universal} questions for all, {BATTERY.perCellMin}–{BATTERY.perCellMax} per prompt,{' '}
-          {BATTERY.distinct} distinct across the study). When 50 blind answers clear the same consistency floor, that
-          is an assumption:{' '}
-          <strong>{CARDS_HEADLINE} firm ones across the 54 prompts ({CARDS_TOTAL} counting the weaker tier)</strong>,
-          filtered from all {CARDS_CANDIDATES} the detector proposed.
+          For this experiment, we use Gemma-4-E4B-it (QAT, w4a16) as a visual annotator. For each prompt, the
+          annotator is shown each generated image and answers a fixed set of questions, each addressing one semantic
+          concept, for example, “Is food visible?” where food is the semantic concept. Then we aggregate the answers
+          across the prompt images.
+        </p>
+        <p className="prose-scene mt-4 max-w-2xl text-foreground/55">
+          {BATTERY.universal} questions are asked of every prompt and {BATTERY.perCellMin}–{BATTERY.perCellMax} of any
+          one, {BATTERY.distinct} distinct across the study. Where 50 answers converge, that is a named assumption:{' '}
+          <strong className="text-foreground/75">{CARDS_HEADLINE} firm ones, {CARDS_TOTAL} counting the weaker
+          tier</strong>.
         </p>
       </Reveal>
 
@@ -425,7 +431,7 @@ function NamedScene() {
           {/* two rows of boxes rather than two dropdowns: the whole 6 × 9 grid of
               prompts is visible, and moving along one row is a single click */}
           <div className="flex flex-col gap-2.5">
-            <BoxPicker label="event" value={sit} onChange={setSit} options={SIT_OPTS} size="sm" />
+            <BoxPicker label="scene" value={sit} onChange={setSit} options={SIT_OPTS} size="sm" />
             <BoxPicker label="country" value={code} onChange={setCode} options={CODE_OPTS} size="sm" />
             {isSd21(model) && (
               <label className="flex cursor-pointer items-center gap-2 self-end pb-1.5 font-mono2 text-[10px] text-foreground/50">
@@ -464,7 +470,7 @@ function NamedScene() {
 
           <div className="mt-8 border-t border-border pt-5">
             <div className="mt-2 font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-              the frozen battery, answered blind over all 50 seeds
+              the predefined semantic concept questioned over 50 seeds
             </div>
             <div className="mt-4">
               <BatteryList sit={sit} code={code} />
@@ -500,19 +506,12 @@ function NamedScene() {
             </div>
           )}
 
-          <div className="mt-6 rounded-lg border border-red-400/25 bg-red-400/5 p-4">
-            <div className="font-mono2 text-[10px] tracking-widest text-red-300/80 uppercase">
-              the caveat that rides on every count on this page
-            </div>
-            <p className="mt-2 font-mono2 text-[11px] leading-5 text-foreground/60">{BLIND_SPOT}</p>
-          </div>
-
-          <div className="mt-5 border-t border-border pt-4">
-            <TierNote
-              tier="evidence"
-              text={`One vision-language annotator over 50 seeds per cell, kept only where enough of the 50 agree; the image strip is real seeds evenly spaced across the cell's typicality order.${isSd21(model) ? '' : ' For the other six models the strip spans the 24 seeds with published thumbnails, not all 50.'}`}
-            />
-          </div>
+          {/* REMOVED 2026-08-10 (Giray): the red "caveat that rides on every count on
+              this page" box (BLIND_SPOT) and the evidence TierNote under it.
+              BLIND_SPOT is still exported from data/part4.ts, so restoring is one
+              line. The cross-model strip caveat the TierNote carried, that the other
+              six span 24 published thumbnails rather than all 50, now appears only in
+              this scene's Setup rows. */}
         </Panel>
       </Reveal>
     </SceneShell>
@@ -530,38 +529,10 @@ function NamedScene() {
    text weight as everything else. The point is saving vertical space, NOT demoting
    them — a 10px muted line reads as hiding something, which is the opposite of what
    this page does with small numbers. */
-const MINOR = 0.1
-
-function MinorRow({ rows, label, cv }: { rows: ShiftRow[]; label: string; cv: string }) {
-  if (!rows.length) return null
-  return (
-    <div className="mt-3">
-      <div className="font-mono2 text-[10px] leading-4 text-foreground/50">
-        <span className="text-foreground/70">{rows.length} under {Math.round(MINOR * 100)}%</span> · {label}
-      </div>
-      <div className="mt-2 flex flex-wrap gap-1.5">
-        {rows.map((r) => (
-          <span
-            key={r.q}
-            className="inline-flex items-baseline gap-1.5 rounded-md border px-2 py-1 font-mono2 text-[11px]"
-            style={{ borderColor: rgba(cv, 0.3), background: rgba(cv, 0.06) }}
-          >
-            <span className="text-foreground/50">{Q_TEXT[r.q] ?? r.q}</span>
-            {/* the answer itself, not just the question — a bag of attribute NAMES
-                tells you what was measured, never what the model actually decided */}
-            {r.plain === r.value ? (
-              <span className="text-foreground/90">{r.value}</span>
-            ) : (
-              <span className="text-foreground/90">
-                <span className="text-foreground/40 line-through">{r.plain}</span> → {r.value}
-              </span>
-            )}
-          </span>
-        ))}
-      </div>
-    </div>
-  )
-}
+/* MinorRow and its MINOR = 0.1 threshold collapsed the small shares into a
+   one-line summary. Removed 2026-08-10 with the switch to showing every attribute
+   as a bar; the component is in scratchpad/part4_MinorRow.tsx if a cell ever grows
+   long enough to need folding again. */
 
 function ShiftBar({ r, i, maxShare, cv, muted }: {
   r: ShiftRow
@@ -632,28 +603,44 @@ function BridgeScene() {
   /* the tautological rows are separated out rather than hidden: when a country prompt
      moves apparent continent from Europe to Africa, that attribute's answer groups ARE
      the two prompts, so its share is forced toward 1 and it evidences nothing */
+  /* Every row gets a bar, 2026-08-10 (Giray). A 0.1 threshold used to fold the
+     small shares into a one-line summary, which meant the reader saw a filtered
+     chart and had to take the filtering on trust. A cell carries 14-16 attributes,
+     so there was never a length problem to solve; showing all of them lets the
+     shape of the whole decomposition be read, small bars included. The three
+     groups stay, including the circular one. */
   const real = rows.filter((r) => !r.sep)
-  const tautological = rows.filter((r) => r.sep)
-  const moved = real.filter((r) => r.plain !== r.value && r.share >= MINOR)
-  const movedMinor = real.filter((r) => r.plain !== r.value && r.share < MINOR)
-  const still = real.filter((r) => r.plain === r.value && r.share >= MINOR)
-  const stillMinor = real.filter((r) => r.plain === r.value && r.share < MINOR)
-  const taut = tautological.filter((r) => r.share >= MINOR)
-  const tautMinor = tautological.filter((r) => r.share < MINOR)
+  const taut = rows.filter((r) => r.sep)
+  const moved = real.filter((r) => r.plain !== r.value)
+  const still = real.filter((r) => r.plain === r.value)
   const maxShare = Math.max(1, ...rows.map((r) => r.share))
 
   return (
     <SceneShell
-      number="05"
-      kicker="Part II · the assumptions, named · finding 16"
-      title={<>The assumptions that <em className="font-display italic text-amber-200">change</em> are the distance.</>}
+      number="07"
+      kicker="semantic assumptions · what carries the distance"
+      title={<>Which concepts <em className="font-display italic text-amber-200">carry the distance.</em></>}
     >
+      {/* One sentence of the source text is corrected here. It read: "If a concept
+          receives similar answers in both sets of generations, it contributes little
+          to explaining their embedding distance." That is the exact misconception
+          this chart was rebuilt to remove. `share` reads the whole answer
+          DISTRIBUTION, not the majority label: 3,597 of 5,080 rows have an identical
+          top answer in both prompts, and 1,106 of those still carry a share of 0.10
+          or more, one as high as 0.70, because the split underneath the winner moved.
+          "Similar answers" therefore has to mean a similar distribution. */}
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          One instrument measures how far apart two sets of pictures sit; the other names what is in them. Do they
-          agree? For each attribute, take its answers under the default prompt and under the country prompt, and ask
-          how much of the measured movement between the two its change in answers alone would predict: an attribute
-          that answers the same way in both should score nothing.
+          We can now connect the semantic concepts to the geometric alignment observed in the embedding space. For
+          each country-specific prompt, we compare the distribution of answers for every concept with those obtained
+          under the corresponding geographically underspecified prompt. If a concept's answers are distributed
+          similarly in both sets of generations, it contributes little to explaining their embedding distance. In
+          contrast, concepts whose answer distributions change substantially between the two prompts account for a
+          larger share of the observed difference.
+        </p>
+        <p className="prose-scene mt-4 max-w-2xl text-foreground/55">
+          This is a claim about the distribution, not about the majority answer. A concept can keep the same most
+          common answer in both prompts and still carry a large share, because the split underneath that answer moved.
         </p>
       </Reveal>
       <Reveal delay={0.05}>
@@ -669,7 +656,7 @@ function BridgeScene() {
                 <strong>The decomposition is between-cell.</strong> For a default/country pair it asks how much of the
                 measured DINOv3 distance is accounted for by each attribute whose answers changed. It replaced an
                 earlier η² formulation on 2026-07-30, which was reporting variance explained within cells and could not
-                answer the question the scene asks.
+                answer the question this figure asks.
               </p>
               <p>
                 <strong>Tautological rows are shown, not hidden.</strong> Some attributes shift because the prompt
@@ -683,7 +670,7 @@ function BridgeScene() {
       <Reveal delay={0.08}>
         <Panel className="mt-10">
           <div className="flex flex-wrap items-end gap-4">
-            <BoxPicker label="event" value={sit} onChange={setSit} options={SIT_OPTS} size="sm" />
+            <BoxPicker label="scene" value={sit} onChange={setSit} options={SIT_OPTS} size="sm" />
             <BoxPicker label="country" value={code} onChange={setCode} options={CODE_OPTS.slice(1) as { value: Code; label: string; cv: string }[]} size="sm" />
           </div>
           {!data && (
@@ -695,22 +682,21 @@ function BridgeScene() {
           {data && (
             <>
               <div className="mt-6 font-mono2 text-[11px] leading-5 text-foreground/50">
-                the movement being explained: <strong className="text-foreground">{data.distance.toFixed(3)}</strong>{' '}
+                the explained distance: <strong className="text-foreground">{data.distance.toFixed(3)}</strong>{' '}
                 between “a {sit}” and “a {sit} in {C8[code].name}”
               </div>
 
               <div className="mt-6 font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-                attributes whose answer changed · {moved.length + movedMinor.length} of {real.length}
+                attributes whose answer changed · {moved.length} of {real.length}
               </div>
               <div className="mt-3 space-y-2.5">
                 {moved.map((r, i) => (
                   <ShiftBar key={r.q} r={r} i={i} maxShare={maxShare} cv={C8[code].cv} />
                 ))}
               </div>
-              <MinorRow rows={movedMinor} label="changed, but barely carry the movement" cv={C8[code].cv} />
 
               <div className="mt-7 font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-                attributes whose answer did not change · {still.length + stillMinor.length} of {real.length}
+                attributes whose answer did not change · {still.length} of {real.length}
               </div>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground/60">
                 <strong className="text-foreground/80">A bar here is not a contradiction.</strong> The measure reads
@@ -723,19 +709,17 @@ function BridgeScene() {
                   <ShiftBar key={r.q} r={r} i={i} maxShare={maxShare} cv={C8[code].cv} muted />
                 ))}
               </div>
-              <MinorRow rows={stillMinor} label="same answer, and the split barely moved either" cv={C8[code].cv} />
 
-              {tautological.length > 0 && (
+              {taut.length > 0 && (
                 <>
                   <div className="mt-7 font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-                    true but circular · {tautological.length}
+                    true but circular · {taut.length}
                   </div>
                   <div className="mt-3 space-y-2.5">
                     {taut.map((r, i) => (
                       <ShiftBar key={r.q} r={r} i={i} maxShare={maxShare} cv={C8[code].cv} muted />
                     ))}
                   </div>
-                  <MinorRow rows={tautMinor} label="circular, and small anyway" cv={C8[code].cv} />
                   <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
                     Here the answer groups simply <em>are</em> the two sets of pictures, so the share is forced
                     towards 1, scored high, evidencing nothing.
@@ -762,11 +746,35 @@ function BridgeScene() {
    not already do in place. The claim itself survives in the Closing methods panel
    ("nothing rests on one measuring stick"). */
 
+/* The section's heading and opening paragraph, above both scenes. */
+function SectionLead() {
+  return (
+    <div className="mx-auto mt-20 w-full max-w-6xl px-6">
+      <Reveal>
+        <h2 className="font-display max-w-4xl text-4xl leading-tight font-light md:text-5xl">
+          The Semantic Assumptions
+        </h2>
+      </Reveal>
+      <Reveal delay={0.05}>
+        <p className="prose-scene mt-6 max-w-2xl">
+          So far, distances in the embedding space have described the geometric alignment between the generated
+          images. We next examine semantic concepts in the images, such as clothing, objects, and other scene-specific
+          attributes, that are more directly interpretable in relation to what a user may care about [4]. For each
+          prompt, we test which semantic concepts from a predefined set recur consistently across generations. For
+          example, when generating “a breakfast in Japan”, the model may frequently assume “rice” among the dishes. We
+          can further use these concepts to characterize how the generated images differ semantically across prompts.
+        </p>
+      </Reveal>
+    </div>
+  )
+}
+
 /* ── Part II ─────────────────────────────────────────────────────────────── */
 
 export default function Part4Assumptions() {
   return (
     <>
+      <SectionLead />
       <NamedScene />
       <BridgeScene />
     </>

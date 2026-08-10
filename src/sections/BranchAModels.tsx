@@ -148,7 +148,7 @@ export function ModelStrip() {
               <span className="w-32 shrink-0" />
               <div className="flex flex-1 justify-between font-mono2 text-[10px] text-foreground/30">
                 <span>0 · its own default</span>
-                <span>{RULER_MAX[ruler].dist} ≈ a different event entirely</span>
+                <span>{RULER_MAX[ruler].dist} ≈ a different scene entirely</span>
               </div>
               <span className="w-14 shrink-0" />
             </div>
@@ -229,7 +229,7 @@ function ReplicationWall() {
 /* A·3, the images half: for each event and country we take the single least
    typical seed each of the seven models produced, put them side by side, and
    list the assumptions that fire in all of them anyway. */
-function SharedWorldview() {
+export function SharedWorldview() {
   const [sit, setSit] = useState('wedding')
   const [code, setCode] = useState('NG')
   const cellKey = `${sit}_${code}`
@@ -240,7 +240,7 @@ function SharedWorldview() {
     <Panel className="mb-6">
       <div className="flex flex-col gap-2.5">
         <BoxPicker
-          label="event"
+          label="scene"
           value={sit}
           onChange={setSit}
           options={SITS.map((s) => ({ value: s, label: `a ${s}` }))}
@@ -354,7 +354,7 @@ function StrongerClaims() {
         how far the claim generalises
       </div>
       <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
-        Stronger versions of the claim, tested across all {models.length} models × {SITS.length} events.
+        Stronger versions of the claim, tested across all {models.length} models × {SITS.length} scenes.
         Only the first holds without exception, and it is the one this page states.
       </p>
       <div className="mt-5 space-y-2">
@@ -386,14 +386,14 @@ function StrongerClaims() {
       </div>
       <p className="mt-4 max-w-3xl text-sm leading-6 text-foreground/60">
         Where the USA is not the single closest country, the closest is almost always Germany or Russia, and the
-        exceptions concentrate on “a celebration”, the event with the most diffuse default of the six. The pull is
+        exceptions concentrate on “a celebration”, the scene with the most diffuse default of the six. The pull is
         Western, but a gradient across several Western countries, not a bullseye on one.
       </p>
     </Panel>
   )
 }
 
-function PersistenceChart() {
+export function PersistenceChart() {
   const hist = branchA.persistence.histogram as Record<string, number>
   const max = Math.max(...Object.values(hist))
   return (
@@ -436,7 +436,7 @@ function PersistenceChart() {
         <div className="space-y-5 self-center">
           <div className="flex items-baseline gap-3">
             <span className="font-mono2 text-4xl text-emerald-300">
-              <CountUp to={217} duration={1.6} />
+              <CountUp to={branchA.persistence.ecosystem} duration={1.6} />
             </span>
             <p className="prose-scene !text-sm">
               persist in <strong>all six</strong>: assumptions of the shared training{' '}
@@ -445,7 +445,7 @@ function PersistenceChart() {
           </div>
           <div className="flex items-baseline gap-3">
             <span className="font-mono2 text-4xl text-red-300">
-              <CountUp to={141} duration={1.6} />
+              <CountUp to={branchA.persistence.sd21_only} duration={1.6} />
             </span>
             <p className="prose-scene !text-sm">
               appear in <strong>none</strong> of the others, genuinely SD-2.1-specific quirks. 19.9%.
@@ -491,8 +491,8 @@ export default function BranchAModels() {
             Is “…in Nigeria” farther from each model's own default than “…in the USA”? Not{' '}
             <em>usually</em>. <strong>Always.</strong> The Western default is not a property of one
             checkpoint; it is a property of how these systems are made. And the furthest country from the default is
-            never the US or Germany: in <strong>{FURTHEST.south} of {FURTHEST.cells}</strong> model × event cells it
-            is India, Nigeria or Egypt, whichever model, whichever event.
+            never the US or Germany: in <strong>{FURTHEST.south} of {FURTHEST.cells}</strong> model × scene cells it
+            is India, Nigeria or Egypt, whichever model, whichever scene.
           </p>
         </Reveal>
         <Reveal delay={0.05}>
@@ -548,52 +548,19 @@ export default function BranchAModels() {
         </Reveal>
       </SceneShell>
 
-      <SceneShell
-        number="X2"
-        kicker="extras · across models · whose assumptions are they? · SD 2.1's own, checked elsewhere"
-        title={
-          <>
-            A third of the worldview is <span className="text-emerald-300">inherited</span>.
-          </>
-        }
-        id="xa3"
-      >
-        <Reveal delay={0.1}>
-          <p className="prose-scene mb-8 max-w-2xl">
-            If an assumption fires everywhere, it does not belong to SD 2.1. It belongs to the{' '}
-            <strong>ecosystem</strong>: the shared data, the shared filtering, the shared way these
-            models are taught what the world looks like.
-          </p>
-        </Reveal>
-        <Reveal delay={0.05}>
-          <div className="mt-6 max-w-3xl">
-            <Setup
-              rows={[
-                { k: 'what we compared', v: `SD 2.1’s own ${branchA.persistence.total} named assumptions, looked for again in the other six models’ blind-questionnaire answers.` },
-                { k: 'what we found', v: `${branchA.persistence.ecosystem} of the ${branchA.persistence.total} persist in at least one other model; ${branchA.persistence.sd21_only} are SD 2.1’s alone.` },
-                { k: 'one instrument', v: 'The same annotator, questions and threshold read every model, so a card meaning something different in one column than another is not a way this comparison can fail.' },
-              ]}
-            detail={<>
-                <p>
-                  <strong>One instrument, which this study did not always have.</strong> An earlier version scored
-                  SD 2.1 with two annotators and the cross-models with one, so a persistence count confounded “this
-                  assumption is absent there” with “our detector was less sensitive there”, and the page had to print
-                  two different SD 2.1 totals. gemma4 became the sole annotator on 2026-07-31 and that asymmetry is
-                  gone: every column here is the same detector at the same threshold.
-                </p>
-                <p>
-                  <strong>Reading the split.</strong> 217 of 708 appearing in at least one other model is a floor, not a
-                  ceiling: an assumption can be present in another model and simply fall below its naming threshold.
-                  “SD 2.1-only” therefore means “not named elsewhere by this instrument”, which is a weaker statement
-                  than “absent elsewhere”.
-                </p>
-            </>}
-          />
-          </div>
-        </Reveal>
-        <SharedWorldview />
-        <PersistenceChart />
-      </SceneShell>
+      {/* X2, "whose assumptions are they?" (the 708 / 217 / 141 persistence scene),
+          is DISMISSED 2026-08-10 (Giray). Unmounted, not deleted: SharedWorldview
+          and PersistenceChart stay compiled above, branchA.json still carries the
+          persistence block, and the JSX is in
+          scratchpad/branchA_X2_persistence.tsx.
+
+          Worth knowing if it is ever restored: the 217 was re-derived on 2026-08-10
+          and reproduces exactly, but 48 of it is U09 ("is it daytime?", answered
+          "day" in all 54 cells by all 7 models) and 49 more assert a bare "no".
+          Drop those and 217 becomes 120. Heritability correlates with how few
+          answers a question admits (r = -0.42 across 37 questions), and no chance
+          baseline exists for the binary questions. The scene's framing would need
+          that stated. */}
     </>
   )
 }

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import Hero from '../sections/Hero'
-import Overview from '../sections/Overview'
+import Introduction from '../sections/Introduction'
 import Part1Default from '../sections/Part1Default'
-import Part2Mechanism from '../sections/Part2Mechanism'
+import { CommitEarlyScene, TextEncoderScene } from '../sections/Part2Mechanism'
 // The override (old Part III) is DISMISSED, 2026-08-06 — it spent a day mounted in the
 // extras section for review and came back out: the stereotyping-inversion scene and the
 // specifically-cultural control are out of the flow. Unmounted, not deleted.
@@ -24,10 +24,11 @@ import Part4Assumptions from '../sections/Part4Assumptions'
 // predict-before-reveal) and remedy.json's `debt` block is untouched; restore this
 // import and the <Part6Debt /> below to bring the whole scene back.
 // import Part6Debt from '../sections/Part6Debt'
-import Part6Escape, { CfgScene } from '../sections/Part6Escape'
-import Part6Steer from '../sections/Part6Steer'
+import { CfgScene } from '../sections/Part6Escape'
+// import Part6Steer from '../sections/Part6Steer'  // dismissed 2026-08-10
 import BranchAModels from '../sections/BranchAModels'
-import Part7Consensus from '../sections/Part7Consensus'
+// import Part7Consensus from '../sections/Part7Consensus'  // dismissed 2026-08-10
+import Conclusion from '../sections/Conclusion'
 import Closing from '../sections/Closing'
 import { NavRail } from '../components/NavRail'
 import { ModelBar } from '../components/ModelBar'
@@ -46,6 +47,26 @@ function PartDivider({ label, sub, violet }: { label: string; sub: string; viole
   )
 }
 
+function AlignmentSourceLead() {
+  return (
+    <div className="mx-auto mt-20 w-full max-w-6xl px-6">
+      <h2 className="font-display max-w-4xl text-4xl leading-tight font-light md:text-5xl">
+        The Source of the Geographic Alignment
+      </h2>
+    </div>
+  )
+}
+
+function StabilizationLead() {
+  return (
+    <div className="mx-auto mt-20 w-full max-w-6xl px-6">
+      <h2 className="font-display max-w-4xl text-4xl leading-tight font-light md:text-5xl">
+        When Country-Specific Assumptions Stabilize
+      </h2>
+    </div>
+  )
+}
+
 export default function Home() {
   /* the technique scenes (override + escape attempts) stay out of the main flow and
      out of the initial page weight — mounted only on request */
@@ -56,52 +77,60 @@ export default function Home() {
       <ModelBar />
       <NavRail />
       <Hero />
-      <div id="start">
-        <Overview />
+      <div id="intro">
+        <Introduction />
       </div>
-      <PartDivider label="Part I · the default" sub="the default prompt already has a nationality · real seeds, real geometry" />
+      {/* ── the new section structure, 2026-08-10 (Giray) ────────────────────
+          introduction · underspecified alignment · alignment source · semantic
+          assumptions · assumption stabilization · conclusion · references ·
+          acknowledgements, with the extras kept.
+
+          Anchors keep their historical ids so nothing that links here breaks.
+
+          Scene numbers were resequenced 01–08 in page order on 2026-08-10: they had
+          drifted out of order and 03 was used twice. The "finding N" kickers went at
+          the same time — they referenced an internal ledger the reader has no access
+          to, and after the restructure they ran 12, 11, 14–15, 16, 9 down the page.
+          If a scene is ever moved again, renumber the whole run rather than patching
+          one. */}
+      <PartDivider label="underspecified alignment" sub="what the model supplies when the country is left unsaid, and how far that sits from naming one" />
       <div id="p1">
         <Part1Default />
       </div>
-      <PartDivider label="Part II · the assumptions, named" sub="every named assumption paired with the real 50-seed distribution it summarizes" />
+      <PartDivider label="alignment source" sub="do the assumptions arrive with the sentence, or get added on the way to the image?" />
+      <div id="p2">
+        <AlignmentSourceLead />
+        <TextEncoderScene />
+        {/* the guidance sweep belongs to this section, not to stabilization: it tests
+            a second explanation for where the alignment comes from (2026-08-10). */}
+        <CfgScene />
+      </div>
+      <PartDivider label="semantic assumptions" sub="the concepts the model fills in, named one question at a time" />
       <div id="p4">
         <Part4Assumptions />
       </div>
-      <PartDivider label="Part III · the mechanism" sub="how deep does the assumption sit? settled in the first third of denoising" />
-      <div id="p2">
-        <Part2Mechanism />
-      </div>
-      {/* Reordered 2026-08-10 (Giray): the mechanism now precedes the escape — you
-          need to know when the choice is made before it means anything that a clause
-          cannot undo it. The guidance knob came out of the extras and opens the part:
-          it is the cheapest thing a user would reach for, so it gets refused first,
-          and the prompting follows. Anchors keep their old ids (#p2/#p3) so existing
-          links and the Overview jump list do not break. */}
-      <PartDivider label="Part IV · the escape" sub="turning the dial, then counter-specifying the named assumptions one clause at a time · measured" />
+      <PartDivider label="assumption stabilization" sub="switching the country partway through denoising, to find when the choice is already fixed" />
       <div id="p3">
-        <CfgScene />
-        <Part6Escape />
+        <StabilizationLead />
+        <CommitEarlyScene />
       </div>
-      {/* Part V · an outside reference — DISMISSED 2026-08-06 (unreliable reference set).
-          Restore the import above and this block to bring it back:
-      <PartDivider label="Part V · an outside reference" sub="real photographs of the same events, gathered as neutrally as we could · a comparison, not a ground truth" />
-      <div id="p5">
-        <Part5Reality />
+      <div id="conc">
+        <Conclusion />
       </div>
-      */}
-      {/* The cross-model part (was Part V) moved into the extras wholesale on
-          2026-08-10 (Giray), ahead of what was already there — so the steering
-          scene is now the last thing on the page before the closing. It keeps its
-          #xa anchor, which resolves once the extras are open. */}
-      <PartDivider label="extras · across models" sub="how far the cultural assumptions agree from one model to the next, and what the attempts to undo them actually report" />
+      <PartDivider label="extras · across models" sub="the identical frozen instrument, re-run in full on six more models" />
       <div id="p6">
+
         {showExtras ? (
           <>
             <div id="xa">
               <BranchAModels />
-              <Part7Consensus />
+              {/* X3, the shared prior, is DISMISSED 2026-08-10 (Giray).
+                  Unmounted, not deleted: Part7Consensus.tsx is intact. */}
+              {/* <Part7Consensus /> */}
             </div>
-            <Part6Steer />
+            {/* X3, "what a clause can move", is DISMISSED 2026-08-10 (Giray).
+                Unmounted, not deleted: Part6Steer.tsx is intact. */}
+            {/* <Part6Steer /> */}
             <div className="mx-auto max-w-6xl px-6 pt-12 text-center">
               <button
                 onClick={() => {
@@ -123,7 +152,7 @@ export default function Home() {
               show the extras
             </button>
             <p className="mt-3 font-mono2 text-[10px] tracking-wider text-foreground/35">
-              cross-model agreement on the named assumptions, and the reverting attempts, reported
+              is the Western default a property of this one model?
             </p>
           </div>
         )}

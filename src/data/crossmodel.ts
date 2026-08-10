@@ -31,8 +31,14 @@ interface CrossModel {
     intraset: Record<string, Record<string, Compact>>
   }>>
   lockfits: Record<string, { type: string; slope: number; step: number; ci: [number, number] }>
+  /* `img` is the CLIP image matrix the analysis shipped; `img_dinov3` was rebuilt
+     2026-08-10 from the surviving per-image DINOv3 embeddings, so the image side can
+     carry the same ruler toggle as every other chart. There is no `txt_dinov3`:
+     DINOv3 is vision-only and has no text tower, so the text side stays each model's
+     own encoder whichever image ruler is selected. */
   matrices: Record<string, Record<string, {
-    countries: string[]; txt: number[][]; img: number[][]; r: number | null; p: number | null
+    countries: string[]; txt: number[][]; img: number[][]; img_dinov3?: number[][]
+    r: number | null; p: number | null
   }>>
   cards: Record<string, Record<string, Record<string, { q: string; v: string; cons: number; tier: string }[]>>>
   shift: Record<string, Record<string, Record<string, { distance: number; rows: ShiftRow[] }>>>

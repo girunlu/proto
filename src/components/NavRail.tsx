@@ -2,18 +2,18 @@ import { useEffect, useRef, useState } from 'react'
 import { pickActive } from '../lib/utils'
 
 const STOPS = [
-  { id: 'start', label: '· what this is' },
-  { id: 'p1', label: 'I · the default' },
-  { id: 'p4', label: 'II · assumptions' },
-  // ids are historical, the order is not: the mechanism (#p2) moved ahead of the
-  // escape (#p3) on 2026-08-10. Anchors kept stable so old links still land.
-  { id: 'p2', label: 'III · the mechanism' },
-  { id: 'p3', label: 'IV · the escape' },
-  /* No stop for #xa (across models): it moved inside the extras on 2026-08-10 and
-     that section is mounted only once opened, so a dot for it would point at
-     nothing most of the time. #p6 is the way in. */
+  /* the 2026-08-10 section structure. Anchors keep their historical ids so links
+     that already exist still land; the order and the labels are the new ones.
+     Acknowledgements has an #ack anchor but no stop: nine dots crowd the rail, and
+     it is one paragraph below the references stop. */
+  { id: 'intro', label: '· introduction' },
+  { id: 'p1', label: 'underspecified alignment' },
+  { id: 'p2', label: 'alignment source' },
+  { id: 'p4', label: 'semantic assumptions' },
+  { id: 'p3', label: 'assumption stabilization' },
+  { id: 'conc', label: '∴ · conclusion' },
   { id: 'p6', label: '+ · extras' },
-  { id: 'closing', label: '∴ · closing' },
+  { id: 'closing', label: '§ · references' },
 ]
 
 export function NavRail() {

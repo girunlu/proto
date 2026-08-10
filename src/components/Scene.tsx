@@ -15,25 +15,45 @@ export function Reveal({ children, delay = 0, className }: { children: ReactNode
   )
 }
 
+/* The page's type scale, top to bottom. Adding the section leads on 2026-08-10 put
+   a 3xl/4xl heading directly above the 4xl/5xl scene titles it governed, so the
+   headline was a step smaller than its own subheads. The scale is now strictly
+   descending and nothing else should be inserted into it without moving a level:
+
+     hero title            5xl / 7xl
+     section heading       4xl / 5xl   ← the leads, and `lead` scenes below
+     scene title           3xl / 4xl
+     in-scene subhead      2xl / 3xl
+
+   `lead` marks a scene that IS a section — introduction, conclusion, references,
+   acknowledgements have no separate lead above them, so they carry section size. */
 export function SceneShell({
   number,
   kicker,
   title,
   children,
   id,
+  lead = false,
 }: {
   number: string
   kicker: string
   title: ReactNode
   children: ReactNode
   id?: string
+  lead?: boolean
 }) {
   return (
     <section id={id} className="relative mx-auto w-full max-w-6xl px-6 py-24 md:py-32">
       <Reveal>
         <div className="scene-number">{number}</div>
         <div className="mt-2 font-mono2 text-xs tracking-[0.2em] uppercase text-foreground/40">{kicker}</div>
-        <h2 className="font-display mt-4 max-w-3xl text-4xl leading-[1.08] font-light md:text-5xl">{title}</h2>
+        <h2
+          className={`font-display mt-4 max-w-3xl leading-[1.08] font-light ${
+            lead ? 'text-4xl md:text-5xl' : 'text-3xl md:text-4xl'
+          }`}
+        >
+          {title}
+        </h2>
       </Reveal>
       <div className="mt-10">{children}</div>
     </section>

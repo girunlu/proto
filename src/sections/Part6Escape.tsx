@@ -141,15 +141,23 @@ export function CfgScene() {
   const shown = [1, 4, 12, 15]
   return (
     <SceneShell
-      number="08"
-      kicker="Part IV · the escape · finding 11"
-      title={<>The knob that <em className="font-display italic text-amber-200">doesn't help.</em></>}
+      number="05"
+      kicker="alignment source · guidance strength"
+      title={<>Stronger conditioning does not <em className="font-display italic text-amber-200">remove it.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          Every image tool has a guidance slider: turn it up and the model is pushed harder to obey the words you
-          typed. If the cultural gap were a matter of the model half-listening, pushing harder would close it. It does
-          not.
+          A natural follow-up possibility is that the observed geographic alignment arises because the model does not
+          respond strongly enough to the geographic information in the prompt. We test this with Stable Diffusion 2.1
+          using the guidance strength, which controls the strength of text conditioning during generation. If weak
+          conditioning were responsible for the alignment, increasing guidance should substantially change its
+          pattern.
+        </p>
+        <p className="prose-scene mt-4 max-w-2xl">
+          We regenerate the images across all the experimental prompts with different guidance values, using the same
+          seeds at each value. At every guidance value, we measure the distance between the geographically unspecified
+          image set and each corresponding country-specific set. Increasing guidance changes the generations, but does
+          not remove the observed geographic alignment.
         </p>
         <Sd21Only />
       </Reveal>
@@ -182,7 +190,7 @@ export function CfgScene() {
       </Reveal>
       <Reveal delay={0.08}>
         <Panel className="mt-10">
-          <BoxPicker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
+          <BoxPicker label="scene" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
 
           <div className="mt-6">
             <div className="flex flex-wrap items-baseline justify-between gap-3">
@@ -193,7 +201,7 @@ export function CfgScene() {
                 onClick={() => { setPinned(null); setHoverC(null) }}
                 className={`rounded border px-2 py-0.5 font-mono2 text-[10px] transition ${pinned === null ? 'border-amber-300/50 text-amber-200' : 'border-border text-foreground/45 hover:text-foreground'}`}
               >
-                show all countries equally
+                unpin all
               </button>
             </div>
             <div className="mx-auto max-w-2xl">
@@ -229,7 +237,7 @@ export function CfgScene() {
 
           <div className="mt-8 border-t border-border pt-5">
             <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-              “a {situation} in {C8[code].name}” · the same request, asked more and more forcefully
+              “a {situation} in {C8[code].name}” · the same request, with stronger guidance
             </div>
             <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {shown.map((v) => (
@@ -467,7 +475,7 @@ export default function Part6Escape() {
 
   return (
     <SceneShell
-      number="09"
+      number="10"
       kicker="Part IV · the escape · findings 20–21"
       title={<>Counter-specification: the obvious remedy, <em className="font-display italic text-amber-200">measured.</em></>}
     >
@@ -534,7 +542,7 @@ export default function Part6Escape() {
           {/* boxes, like every other selector on the page since the Tier-B pass */}
           <div className="flex flex-col gap-2.5">
             <BoxPicker
-              label="event"
+              label="scene"
               value={activeEvent}
               onChange={(v) => { setEvent(v); setRungId('L0') }}
               options={eventOpts}

@@ -31,7 +31,7 @@ function LockupCurve({ direction, activeStep, onPick }: {
 }) {
   const W = 620
   const H = 210
-  const padL = 46
+  const padL = 62
   const padB = 34
   const padT = 14
   const x = (step: number) => padL + ((step - 1) / 29) * (W - padL - 18)
@@ -73,6 +73,20 @@ function LockupCurve({ direction, activeStep, onPick }: {
           {Math.round(v * 100)}%
         </text>
       ))}
+      {/* the y axis carried bare percentages and never said of what. p_closer_B is
+          the share of the swap's seeds whose finished image lands nearer the prompt
+          we swapped IN than the one we started from. */}
+      <text
+        x={14}
+        y={padT + (H - padT - padB) / 2}
+        textAnchor="middle"
+        fontSize="9"
+        fill="hsl(var(--svg-fg))"
+        fontFamily={MONO}
+        transform={`rotate(-90 14 ${padT + (H - padT - padB) / 2})`}
+      >
+        seeds nearer the new prompt
+      </text>
       {[1, 10, 20, 30].map((v) => (
         <text key={v} x={x(v)} y={H - 15} textAnchor="middle" fontSize="9" fill="hsl(var(--svg-fg))" fontFamily={MONO}>
           {v}
@@ -111,7 +125,7 @@ function LockupCurve({ direction, activeStep, onPick }: {
   )
 }
 
-function CommitEarlyScene() {
+export function CommitEarlyScene() {
   const [sit, setSit] = useState<Sit>('wedding')
   const dirsFor = (s: Sit) => DIRECTIONS.filter((d) => parseDirection(d).sit === s)
   const [direction, setDirection] = useState(HERO_DIRECTION)
@@ -133,15 +147,22 @@ function CommitEarlyScene() {
 
   return (
     <SceneShell
-      number="06"
-      kicker="Part III · the mechanism · finding 9"
-      title={<>Which country it depicts is settled in the <em className="font-display italic text-amber-200">first third</em> of generation.</>}
+      number="08"
+      kicker="assumption stabilization · the swap"
+      title={<>Fixed in the <em className="font-display italic text-amber-200">first third of denoising.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          We interrupted a 30-step generation: the prompt starts as one country's, and at step k we quietly swap in
-          another's. If the finished image still looks like the first country, its identity was decided before we
-          intervened.
+          To test when country-specific geographic assumptions stabilize during generation, we intervene in Stable
+          Diffusion 2.1's 30-step denoising process by switching the country named in the prompt partway through
+          generation. Each image begins with a prompt specifying country A and, at one of five intervention points, is
+          re-conditioned on the same scene with country B. We repeat this using 12 seeds per intervention point.
+        </p>
+        <p className="prose-scene mt-4 max-w-2xl">
+          For each completed image, we compare its embedding with the reference centroids of countries A and B and
+          record which one it is closer to. We fit a logistic curve across the intervention points to estimate the
+          denoising step at which the final image shifts from being more strongly aligned with country B to being more
+          strongly aligned with country A.
         </p>
         <Sd21Only />
       </Reveal>
@@ -183,7 +204,7 @@ function CommitEarlyScene() {
       <Reveal delay={0.06}>
         <Panel className="mt-10">
           <div className="flex flex-col gap-2.5">
-            <BoxPicker label="event" value={sit} onChange={setSituation} options={SIT_OPTS} size="sm" />
+            <BoxPicker label="scene" value={sit} onChange={setSituation} options={SIT_OPTS} size="sm" />
             <BoxPicker label="swap direction" value={direction} onChange={setDirection} options={dirOpts} size="sm" />
             <Picker
               label="seed"
@@ -194,6 +215,10 @@ function CommitEarlyScene() {
             />
           </div>
 
+          <p className="mt-6 max-w-3xl text-sm leading-6 text-foreground/60">
+            As you explore the intervened generations, note which visual details change when we switch from country A
+            to country B. These changes provide a qualitative view of the country-specific assumptions.
+          </p>
           {/* the transition: A's own image, the swapped result, B's own image */}
           <div className="mt-6 grid items-center gap-3 sm:grid-cols-[1fr_auto_1.3fr_auto_1fr]">
             <figure className="text-center">
@@ -291,13 +316,19 @@ function CommitEarlyScene() {
               </div>
               <div className="mt-5">
                 <div className="font-mono2 text-[10px] tracking-wider text-foreground/40 uppercase">
-                  measured over 12 seeds: how often the swap actually wins
+                  how often the swap actually wins
                 </div>
                 <LockupCurve direction={direction} activeStep={step} onPick={setStep} />
               </div>
             </div>
             <div className="self-start rounded-lg border border-border bg-background/60 p-4 text-center">
-              <div className="font-mono2 text-[10px] tracking-wider text-foreground/40 uppercase">swapped at step {step}</div>
+              {/* the step is what the reader is actually manipulating, and it read as
+                  a caption. It now carries the same weight as the percentage below. */}
+              <div className="font-mono2 text-[10px] tracking-wider text-foreground/40 uppercase">
+                swapped at step{' '}
+                <span className="text-[15px] font-medium text-amber-200">{step}</span>
+                <span className="text-foreground/30"> of 30</span>
+              </div>
               <div className={`font-mono2 mt-1 text-4xl ${committed ? 'text-red-300' : 'text-emerald-300'}`}>{Math.round(pt.p_closer_B * 100)}%</div>
               <div className="mt-1 font-mono2 text-[11px] leading-4 text-foreground/50">
                 of the 12 seeds end up closer to “{C8[b].name}” than to “{C8[a].name}”
@@ -309,11 +340,15 @@ function CommitEarlyScene() {
             </div>
           </div>
 
-          <p className="mt-6 border-t border-border pt-5 text-sm leading-6 text-foreground/60">
-            {fit && fit.type !== 'strong' && 'The curve is dashed: this pair separates only weakly to begin with. '}
-            Timing is early in all 24 tested directions; what varies between them is the size of the visual gap, not
-            when it closes.
-          </p>
+          {/* "Timing is early in all 24 tested directions..." removed 2026-08-10
+              (Giray). What remains is the dashed-curve caveat, which only applies to
+              some pairs, so the whole paragraph is now conditional rather than a
+              standing footer with a conditional prefix. */}
+          {fit && fit.type !== 'strong' && (
+            <p className="mt-6 border-t border-border pt-5 text-sm leading-6 text-foreground/60">
+              The curve is dashed: this pair separates only weakly to begin with.
+            </p>
+          )}
         </Panel>
       </Reveal>
     </SceneShell>
@@ -332,14 +367,12 @@ function CommitEarlyScene() {
 /* Each grid is scaled to its OWN range. Sharing one scale let the image grid's
    larger spread wash the text grid out to near-blank, which is precisely the
    comparison the reader is being asked to make. */
-function BigMatrix({ m, kind, title, sub }: {
-  m: NonNullable<ReturnType<typeof matrix>>
-  kind: 'txt' | 'img'
+function BigMatrix({ mat, labels, title, sub }: {
+  mat: number[][]
+  labels: string[]
   title: string
   sub: string
 }) {
-  const mat = kind === 'txt' ? m.txt : m.img
-  const labels = m.countries
   const [hover, setHover] = useState<{ i: number; j: number } | null>(null)
   /* One grade for both grids (2026-08-10, Giray). Both encode the same job —
      magnitude — so both take the page's sequential hue, the same amber ramp
@@ -347,10 +380,13 @@ function BigMatrix({ m, kind, title, sub }: {
      measurements when the whole point is one measurement taken twice. */
   const cv = '--c-amber'
 
-  const dists = mat.flatMap((row, i) => row.map((v, j) => (i === j ? null : 1 - v))).filter((v): v is number => v !== null)
-  const lo = Math.min(...dists)
-  const hi = Math.max(...dists)
-  const norm = (d: number) => (hi === lo ? 0.5 : (d - lo) / (hi - lo))
+  /* Shaded on similarity, not distance: the ramp reads left-to-right as low to
+     high similarity, so darker means the pair sits closer together. The underlying
+     matrix is already a similarity, so this also drops a conversion. */
+  const sims = mat.flatMap((row, i) => row.map((v, j) => (i === j ? null : v))).filter((v): v is number => v !== null)
+  const lo = Math.min(...sims)
+  const hi = Math.max(...sims)
+  const norm = (v: number) => (hi === lo ? 0.5 : (v - lo) / (hi - lo))
 
   return (
     <div>
@@ -369,43 +405,43 @@ function BigMatrix({ m, kind, title, sub }: {
               {rl === 'default' ? 'plain' : rl}
             </div>
             {mat[i].map((sim, j) => {
-              const d = 1 - sim
-              const t = i === j ? 0 : norm(d)
+              const t = i === j ? 0 : norm(sim)
               const on = hover?.i === i && hover?.j === j
               return (
                 <div
                   key={`${rl}-${j}`}
                   onMouseEnter={() => setHover({ i, j })}
                   onMouseLeave={() => setHover(null)}
-                  className={`flex h-8 items-center justify-center rounded-sm font-mono2 text-[9px] transition ${on ? 'ring-1 ring-foreground/60' : ''}`}
-                  style={{
-                    background: i === j ? 'hsl(var(--grid))' : rgba(cv, 0.1 + 0.85 * t),
-                    color: t > 0.55 ? '#0b0b10' : 'hsl(var(--foreground) / 0.7)',
-                  }}
-                >
-                  {i === j ? '' : d.toFixed(2)}
-                </div>
+                  /* no number in the cell: this scene asks the reader to compare the
+                     two grids' shape, and a printed value is an invitation to compare
+                     their magnitudes instead, which across two embedding spaces is
+                     the one comparison that means nothing */
+                  className={`h-8 rounded-sm transition ${on ? 'ring-1 ring-foreground/60' : ''}`}
+                  style={{ background: i === j ? 'hsl(var(--grid))' : rgba(cv, 0.1 + 0.85 * t) }}
+                />
               )
             })}
           </Fragment>
         ))}
       </div>
-      {/* this grid's own scale, printed with its own end points */}
+      {/* the ramp is named, not numbered. Endpoints in figures were the last thing
+          on this chart still asserting a magnitude, and the two grids' numbers are
+          not on the same ruler. Direction is all a reader needs to follow a pattern. */}
       <div className="mt-3 flex items-center gap-2">
-        <span className="font-mono2 text-[9px] text-foreground/45">{lo.toFixed(2)}</span>
+        <span className="font-mono2 text-[9px] whitespace-nowrap text-foreground/55">low similarity</span>
         <span
           className="h-2.5 flex-1 rounded-sm"
           style={{ background: `linear-gradient(90deg, ${rgba(cv, 0.1)}, ${rgba(cv, 0.95)})` }}
         />
-        <span className="font-mono2 text-[9px] text-foreground/45">{hi.toFixed(2)}</span>
+        <span className="font-mono2 text-[9px] whitespace-nowrap text-foreground/55">high similarity</span>
       </div>
       {/* Both grids now share one ramp, so nothing but this line tells the reader
           the two scales are different. It carried a /35 opacity when the colour
           split did that job; at /55 it is actually legible. */}
       <p className="mt-1 font-mono2 text-[9px] leading-4 text-foreground/55">
-        nearest and furthest pair in <em>this</em> grid. The two grids measure in different spaces, so each is shaded
-        over its own range and the same shade means different numbers on either side. Read the <em>pattern</em>, never
-        the colour.
+        Each grid is shaded across its own range, from its lowest similarity to its highest. The two measure in
+        different spaces, so the same shade means a different amount on either side. Compare the <em>arrangement</em>
+        across the two, never the shades themselves.
       </p>
       {/* The hover readout ("Nigeria vs the plain prompt: 0.251 apart") is off,
           2026-08-10 (Giray) — this scene only. Every cell already prints its own
@@ -417,28 +453,50 @@ function BigMatrix({ m, kind, title, sub }: {
   )
 }
 
-function TextEncoderScene() {
+export function TextEncoderScene() {
   const { model } = useModel()
   const [sit, setSit] = useState<Sit>('wedding')
   /* Tier C: all seven models are here now. The text side is each model's own
      encoder stack — the 2026-07-27 fix, since only SDXL is CLIP-family — and the
      image side is that model's own 50-image sets. */
   const m = matrix(model, sit)
+  /* the image side can be read with either encoder; the sentence side cannot */
+  const [imgRuler, setImgRuler] = useState<Ruler>('dinov3')
+  const imgMat = (imgRuler === 'dinov3' ? m?.img_dinov3 : m?.img) ?? m?.img
   /* the per-event Mantel rows were computed here for the panel removed on
      2026-08-10; matrix() still carries r and p per (model, event) if it returns */
   if (!m) return null
   return (
     <SceneShell
-      number="07"
-      kicker="Part III · the mechanism · finding 12"
-      title={<>The assumption is added <em className="font-display italic text-amber-200">while drawing</em>, not read off the prompt.</>}
+      number="04"
+      kicker="alignment source · the text encoder"
+      title={<>Not inherited from the <em className="font-display italic text-amber-200">text encoder.</em></>}
     >
+      {/* Section text 2026-08-10 (Giray), aligned to the backend in one place: the
+          source text said the image side came from DINOv3 ViT-7B/16. It does not.
+          export_tier_c.build_matrices() reads img_img_collapsed from the CLIP block
+          of clip_matrix/{sit}.json ("image side from that model's CLIP image
+          embeddings"); DINOv3 is present in those files but only as an Img×Img view,
+          never in the Mantel pair. Corrected to CLIP here. */}
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          One more innocent explanation to rule out. Before any picture is drawn, the sentence you typed is turned into
-          numbers by a separate component, the text encoder. Perhaps that component already puts “a wedding” and “a
-          wedding in the USA” next to each other, and the image half is simply following orders. If so, the shape of
-          the two geometries should match.
+          Each prompt is first represented by the model's text encoder, so the geographic alignments observed in the
+          visual space might reflect corresponding alignments already present in the textual space. For example,
+          perhaps the text encoder already puts “a wedding” and “a wedding in the USA” next to each other, and the
+          image decoder is simply reflecting this alignment.
+        </p>
+        <p className="prose-scene mt-4 max-w-2xl">
+          To test this, for each scene we compare the experimental prompts in two spaces: the prompt embeddings from
+          the model's text encoder, and the visual embeddings of the 50 images generated from each prompt obtained by{' '}
+          {imgRuler === 'dinov3' ? 'DINOv3 ViT-7B/16' : 'CLIP ViT-L/14'}. In each space, we construct a matrix describing which prompt variants are closer to or
+          farther from one another. If the structure observed in the generated images were directly inherited from the
+          text encoder, the two matrices should show a similar pattern. The following figure shows that this
+          correspondence is weak, suggesting that the geographic alignment observed in the images emerges during image
+          generation.
+        </p>
+        <p className="prose-scene mt-4 max-w-2xl">
+          Since the text and image representations belong to different embedding spaces, we compare only their
+          relative structure rather than the magnitude of their distances.
         </p>
       </Reveal>
 
@@ -446,7 +504,7 @@ function TextEncoderScene() {
         <div className="mt-8 max-w-3xl">
           <Setup
             rows={[
-              { k: 'what we compared', v: 'For one event, all nine prompts measured twice over: once as sentences in the model’s own text encoder, once as the 50-image sets those sentences actually produce.' },
+              { k: 'what we compared', v: 'For one scene, all nine prompts measured twice over: once as sentences in the model’s own text encoder, once as the 50-image sets those sentences actually produce.' },
               { k: 'what would settle it', v: 'If the picture geometry were inherited from the sentence geometry, the two grids would have the same shape, the same pairs near, the same pairs far.' },
               { k: 'how we know', v: 'A Mantel test compares two distance grids and returns r, from 0 (no shared shape) to 1 (identical). Its p-value comes from reshuffling the labels 10,000 times.' },
               { k: 'the limit', v: 'The two grids measure in different spaces, so only their shape can be compared, never their magnitudes.' },
@@ -464,7 +522,7 @@ function TextEncoderScene() {
               </p>
               <p>
                 <strong>The result is a null, and that is the finding.</strong> Across the six other models' native
-                encoders only a small minority of event × model combinations show any significant relationship. If the
+                encoders only a small minority of scene × model combinations show any significant relationship. If the
                 separation were inherited from the prompt geometry, this is where it would show, and it does not.
               </p>
           </>}
@@ -478,16 +536,27 @@ function TextEncoderScene() {
             <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
               the same nine prompts, measured two ways
             </div>
-            <BoxPicker label="event" value={sit} onChange={setSit} options={SIT_OPTS} size="sm" />
+            <div className="flex flex-wrap items-end gap-3">
+              {/* the image ruler only. DINOv3 has no text tower, so the sentence
+                  side is each model's own encoder either way, and the toggle is
+                  labelled to say so rather than implying it switches both. */}
+              <MetricToggle value={imgRuler} onChange={setImgRuler} showLabel={false} />
+              <BoxPicker label="scene" value={sit} onChange={setSit} options={SIT_OPTS} size="sm" />
+            </div>
           </div>
           <div className="mt-6 grid gap-8 lg:grid-cols-2">
             <BigMatrix
-              m={m}
-              kind="txt"
+              mat={m.txt}
+              labels={m.countries}
               title="as sentences · before any image exists"
               sub={`how far apart the nine prompts are, read by ${MODEL_NAME[model]}'s own text encoder`}
             />
-            <BigMatrix m={m} kind="img" title="as pictures · once they are drawn" sub="how far apart the nine 50-image sets are" />
+            <BigMatrix
+              mat={imgMat}
+              labels={m.countries}
+              title="as pictures · once they are drawn"
+              sub={`how far apart the nine 50-image sets are, read by ${imgRuler === 'dinov3' ? 'DINOv3 ViT-7B/16' : 'CLIP ViT-L/14'}`}
+            />
           </div>
           {/* No prose under the grids, 2026-08-10 (Giray). Do not write a sentence
               here comparing the two grids' magnitudes — that is what used to be

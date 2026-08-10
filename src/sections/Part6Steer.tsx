@@ -46,7 +46,7 @@ export default function Part6Steer() {
 
   return (
     <SceneShell
-      number="X4"
+      number="X3"
       kicker="extras · what a clause can move"
       title={<>Some things yield to a clause. <em className="font-display italic text-amber-200">Some things never move at all.</em></>}
     >

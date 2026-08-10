@@ -224,4 +224,7 @@ export const STATS = {
   prompts: 54,
 }
 
-export const THESIS = 'The default is Western; naming a country replaces it with one rehearsed scene; and that scene is settled in the first third of generation.'
+/* "one rehearsed scene" until 2026-08-10, when the page settled on "scene" meaning
+   the wedding/funeral/school axis. Reworded to "picture" so the sentence does not
+   collide with the six scenes it sits above. */
+export const THESIS = 'The default is Western; naming a country replaces it with one rehearsed picture; and that picture is settled in the first third of generation.'

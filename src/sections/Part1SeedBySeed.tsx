@@ -1,19 +1,20 @@
-/* Scene 04 · "Not an average, seed by seed" (finding 3) — DISMISSED 2026-08-10 (Giray).
-   Unmounted, not deleted: same treatment as Part III, Part V, 16·a and 16·d (see
-   pages/Home.tsx). Nothing imports this file; it is kept intact so the scene can be
-   brought back by restoring the import and the <SeedBySeedScene /> in Part1Default's
-   default export.
+/* Scene 04 · "Not an average, seed by seed" (finding 3).
 
-   Note if you do restore it: the nearest-cluster tally that used to sit beside the
-   thumbnail strip was moved into scene 03 (the map) on 2026-08-10 and is NOT in here
-   any more — scene 03's ClusterTally is now the only copy. Re-mounting this file will
-   not duplicate it. */
+   Dismissed 2026-08-10 and RESTORED the same day (Giray), for the 4x4 grid of real
+   seeds: it is the only place on the page where a reader sees the distribution as
+   individual pictures rather than as a statistic about them.
+
+   It lives in its own file rather than back inside Part1Default because that is
+   where it was parked; nothing about it needs to move. Note the nearest-cluster
+   tally that used to sit beside the strip now lives in scene 03 (the map) as
+   ClusterTally and is deliberately NOT duplicated here, so this scene is the strip
+   and the scatter. */
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { SceneShell, Reveal, Panel, InfoBox } from '../components/Scene'
-import { ZoomImage, BoxPicker, useMagnet } from '../components/Viz'
+import { SceneShell, Reveal, Panel } from '../components/Scene'
+import { ZoomImage, BoxPicker, Setup, useMagnet } from '../components/Viz'
 import { rgb } from '../lib/colors'
 import { SITS, COUNTRY8, C8, CV_DEFAULT, F3, SOUTH, type Sit, type Code } from '../data/part1'
-import { useModel, modelImg, isSd21, MODEL_NAME } from '../data/modelData'
+import { useModel, modelImg, isSd21 } from '../data/modelData'
 import { umapFor, f3For, publishedSeeds } from '../data/crossmodel'
 import { Legend } from './Part1Default'
 
@@ -187,6 +188,45 @@ function SeedScatter({ situation, labels }: { situation: Sit; labels: Code[] }) 
   )
 }
 
+/* The nearest-cluster tally used to sit in scene 04, beside the thumbnail strip.
+   Moved here 2026-08-10 (Giray): it is the same per-seed assignment this map
+   already draws, counted — so the count and the picture of it belong together.
+   Scene 04 keeps the strip and the scatter, which is where "seed by seed" is
+   actually shown. Labelled "default seeds" here because, unlike scene 04, the
+   surrounding plot holds all nine variants and "all N seeds" would be read as
+   the whole cloud. */
+function ClusterTally({ situation }: { situation: Sit }) {
+  const { model } = useModel()
+  const labels = (isSd21(model) ? F3[situation] : f3For(model, situation) ?? F3[situation]) as Code[]
+  const counts = useMemo(() => {
+    const m = new Map<Code, number>()
+    labels.forEach((l) => m.set(l, (m.get(l) ?? 0) + 1))
+    return [...m.entries()].sort((a, b) => b[1] - a[1])
+  }, [labels])
+  const southHere = labels.filter((l) => SOUTH.includes(l)).length
+  return (
+    <div className="rounded-lg border border-border p-3">
+      <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
+        the {labels.length} default seeds, by nearest cluster · {situation}
+      </div>
+      <div className="mt-3 space-y-1.5">
+        {counts.map(([code, n]) => (
+          <div key={code} className="flex items-center gap-2">
+            <span className="w-6 font-mono2 text-[10px]" style={{ color: rgb(C8[code].cv) }}>{code}</span>
+            <div className="relative h-3 flex-1 rounded-sm bg-foreground/5">
+              <div className="absolute inset-y-0 left-0 rounded-sm" style={{ width: `${(n / labels.length) * 100}%`, background: rgb('--c-amber') }} />
+            </div>
+            <span className="w-8 text-right font-mono2 text-[10px] text-foreground/50">{n}</span>
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/40">
+        {southHere} of these {labels.length} seeds land nearest a Global-South country (IN/NG/ID/EG)
+      </p>
+    </div>
+  )
+}
+
 function SeedBySeedScene() {
   const { model } = useModel()
   const [situation, setSituation] = useState<Sit>('wedding')
@@ -196,15 +236,17 @@ function SeedBySeedScene() {
      seven, so the switcher shows the exception instead of hiding it. Thumbnails
      exist for SD 2.1's full 50 only, hence the colour-strip fallback below. */
   const labels = (isSd21(model) ? F3[situation] : f3For(model, situation) ?? F3[situation]) as Code[]
-  const allLabels = useMemo(
-    () => (isSd21(model) ? SITS.map((s) => F3[s]) : SITS.map((s) => f3For(model, s) ?? F3[s])),
-    [model]
-  )
-  const southTotal = allLabels.flat().filter((l) => SOUTH.includes(l as Code)).length
-  const seedTotal = allLabels.flat().length
+  /* allLabels / southTotal / seedTotal / nonWestLoose fed the old opening paragraph,
+     which the
+     section text replaced on 2026-08-10. They are the strict and loose non-Western
+     cuts (5.3% vs 35% on SD 2.1) — if a share is ever quoted here again, quote both,
+     because the number depends entirely on where the line is drawn (review 10 · C-2).
+       const southTotal = allLabels.flat().filter((l) => SOUTH.includes(l as Code)).length
+       const seedTotal = allLabels.flat().length
   /* the looser cut: everything that is not the US or Germany. Stated alongside the
-     strict one so the choice of boundary is visible rather than assumed. */
-  const nonWestLoose = allLabels.flat().filter((l) => l !== 'US' && l !== 'DE').length
+     strict one so the choice of boundary is visible rather than assumed. *\/
+       const nonWestLoose = allLabels.flat().filter((l) => l !== 'US' && l !== 'DE').length
+  */
   /* Sixteen seeds to show as pictures, evenly spaced across the ones this model has
      a thumbnail for. SD 2.1 ships all 50 and is absent from the manifest, so it
      spreads over the whole run; the cross-models spread over their published 24.
@@ -221,46 +263,64 @@ function SeedBySeedScene() {
 
   return (
     <SceneShell
-      number="04"
-      kicker="Part I · the default · finding 3"
-      title={<>Not an average, <em className="font-display italic text-amber-200">seed by seed.</em></>}
+      number="03"
+      kicker="underspecified alignment · image by image"
+      title={<>Not an average, <em className="font-display italic text-amber-200">image by image.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          A mean could hide a mixture: half the default seeds Western, half not, cancelling out. So each default seed
-          is labeled by the country cluster it lies nearest: of {MODEL_NAME[model]}'s {seedTotal} default seeds,{' '}
-          <strong>{southTotal} ({(100 * southTotal / seedTotal).toFixed(1)}%) land nearest India, Nigeria, Indonesia
-          or Egypt</strong>.
+          The distance shown above summarizes all 50 generations with a single value, which can hide what happens for
+          individual images. For example, a set generated from a geographically underspecified prompt may be close to
+          the United States on average because almost all its 50 images are somewhat close to the United States, or
+          some are very close to the United States while others are close to different countries.
         </p>
-        {/* Review 10 · C-2 and R6: this statistic depends entirely on where "non-Western"
-            is cut, and the page used the strict cut without saying so. Recompute with Japan
-            and Russia as non-Western and SD 2.1 goes from 5.3% to 35%. Both are now stated. */}
-        <p className="prose-scene mt-4 max-w-2xl text-[13px] leading-6 text-foreground/55">
-          <strong className="text-foreground/75">That percentage depends on where the line is drawn.</strong> Above,
-          “non-Western” means the four Global-South countries only; Russia and Japan sit between the two groups in
-          this study's own geometry. Count everything that is not the US or Germany instead and the share becomes{' '}
-          <strong className="text-foreground/75">{((100 * nonWestLoose) / seedTotal).toFixed(1)}%</strong>.
+        <p className="prose-scene mt-4 max-w-2xl">
+          In the following figure, we therefore examine each geographically underspecified generation separately and
+          ask which country-specific set it is closest to. For each geographically underspecified generation, we
+          identify the nearest geographic reference by comparing its embedding with the centroid of each of the eight
+          country-specific sets using cosine distance. Each image is assigned to the country with the smallest
+          distance. The figure below shows 16 of these images per scene, spaced evenly across the run rather than sampled at
+          random, together with a bar chart counting all 50 generations by their nearest country.
         </p>
-        {/* The "honest exception" callout is REMOVED 2026-08-06. It fired whenever a
-            model's Global-South share cleared 15% and announced that the
-            seed-composition claim "does not hold uniformly across models" — which
-            framed a different dominant country as a violation. It is not one. This
-            scene's claim is that the tendency is a property of individual seeds
-            rather than an artifact of averaging, and that holds whichever country
-            dominates; the tally beside the strip is where the reader sees which one
-            does. The direction result the callout carried was the only statement of
-            it on the page, so it moves into the prose below rather than being lost. */}
-        <p className="prose-scene mt-4 max-w-2xl text-[13px] leading-6 text-foreground/55">
-          Which country dominates differs by model; the direction does not: Nigeria sits farther from a model's own
-          default prompt than the USA in{' '}
-          <strong className="text-foreground/75">42 of 42 model × situation cells</strong>.
+        <p className="prose-scene mt-4 max-w-2xl">
+          This individual-image analysis shows that most geographically unspecified generations are closer to the
+          United States and Germany than to India, Nigeria, Indonesia, or Egypt. Therefore, the geographic alignment
+          observed in the averaged distances is also present across individual generations rather than being driven
+          only by averaging, which is further aligned with UMAP projection.
         </p>
       </Reveal>
       <Reveal delay={0.05}>
-        <div className="mt-6 max-w-2xl">
-          <InfoBox title="technical detail · why seed by seed">
-            Per-seed label: the argmin over the eight country centroids of cosine distance in embedding space, applied to each default-prompt embedding (50 seeds for SD 2.1; cross-models publish 24 thumbnails). The tally is the histogram of those labels; the scatter reuses scene 03's UMAP fit. Flux is the one real exception (28.3% of its default seeds land nearest a Global-South cluster against SD 2.1's 5.3%), shown rather than hidden.
-          </InfoBox>
+        <div className="mt-6 max-w-3xl">
+          <Setup
+            rows={[
+              { k: 'what we ran', v: 'Nothing new. This is the same 50 default-prompt images per scene that the two figures above measure, read one seed at a time instead of as a mean.' },
+              { k: 'what we measured', v: 'Each default seed is labelled with whichever of the eight country centroids its embedding sits nearest to, so a single image gets a country rather than a distance.' },
+              { k: 'what you are seeing', v: 'Sixteen real seeds, evenly spaced across the ones this model publishes, with the colour bar under each thumbnail showing its label. A sample of the run, not a pick of it.' },
+            ]}
+            detail={<>
+              <p>
+                <strong>The label.</strong> Per seed, the argmin over the eight country centroids of cosine distance
+                in DINOv3 space, applied to that seed's own default-prompt embedding. The centroids are the same ones
+                the map draws, and the scatter here reuses the map's own UMAP fit, so the two cannot disagree.
+              </p>
+              <p>
+                <strong>Why a mean was not enough.</strong> An average over 50 images can hide a mixture: half Western,
+                half not, cancelling to something moderate. Labelling seed by seed is what distinguishes “the model
+                leans Western” from “the model is Western on nearly every draw”, and only the second is what the data
+                shows.
+              </p>
+              <p>
+                <strong>Flux is the real exception, and it is shown.</strong> 28.3% of its default seeds land nearest a
+                Global-South cluster against SD 2.1's 5.3%. Switch the model bar to Flux and the strip changes with it,
+                rather than the scene quietly staying on the model that suits the claim.
+              </p>
+              <p>
+                <strong>What it does not settle.</strong> “Nearest centroid” forces a choice: every seed is assigned to
+                some country even when it sits nowhere near any of them. The tally counts assignments, not
+                resemblances, and a diffuse cell will still produce a confident-looking histogram.
+              </p>
+            </>}
+          />
         </div>
       </Reveal>
       <Reveal delay={0.08}>
@@ -269,7 +329,7 @@ function SeedBySeedScene() {
             <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
               all {labels.length} default seeds of “a {situation}” · dot colour = nearest country cluster
             </div>
-            <BoxPicker label="event" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
+            <BoxPicker label="scene" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
           </div>
           <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,28rem)_1fr]">
             <div>
@@ -289,9 +349,9 @@ function SeedBySeedScene() {
                   </span>
                 ))}
               </div>
-              <p className="mt-2 font-mono2 text-[10px] leading-4 text-foreground/45">
-                evenly spaced across the seeds with a published thumbnail: a sample of the run, not a pick of it.
-              </p>
+              <div className="mt-5">
+                <ClusterTally situation={situation} />
+              </div>
             </div>
             <div>
               <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">

@@ -84,7 +84,7 @@ export function ModelBar() {
               </button>
             ))}
             <p className="px-3 pt-2 pb-1 font-mono2 text-[9px] leading-4 text-foreground/35">
-              All seven ran the same 54 prompts. Charts that can switch follow this; scenes measured only on
+              All seven ran the same 54 prompts. Charts that can switch follow this; figures measured only on
               Stable Diffusion 2.1 say so where they sit.
             </p>
           </div>

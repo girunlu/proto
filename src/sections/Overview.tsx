@@ -5,7 +5,7 @@
 // seven moves you can jump into. Everything here is derived from the data layer —
 // no separately typed counts that could drift from the scenes below.
 // ─────────────────────────────────────────────────────────────────────────────
-import { SceneShell, Reveal, Panel } from '../components/Scene'
+import { SceneShell, Reveal } from '../components/Scene'
 import { Setup } from '../components/Viz'
 import { STATS } from '../data/research'
 import { CARDS_HEADLINE } from '../data/part4'
@@ -109,36 +109,13 @@ export default function Overview() {
         </div>
       </Reveal>
 
-      <Reveal delay={0.06}>
-        <Panel className="mt-10">
-          <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-            how the argument runs · jump in anywhere
-          </div>
-          <ol className="mt-5">
-            {MOVES.map((m, i) => (
-              <li key={m.id}>
-                <a
-                  href={`#${m.id}`}
-                  className="group flex flex-col gap-1 border-t border-border py-3.5 transition first:border-t-0 hover:bg-foreground/[0.03] sm:flex-row sm:items-baseline sm:gap-5"
-                >
-                  <span className="font-mono2 w-44 shrink-0 text-[11px] tracking-wider text-amber-200/70 uppercase">
-                    {m.part}
-                  </span>
-                  <span className="flex-1">
-                    <span className="block text-[15px] leading-6 text-foreground/85 group-hover:text-foreground">
-                      {m.claim}
-                    </span>
-                    <span className="mt-0.5 block font-mono2 text-[10px] leading-4 text-foreground/45">{m.how}</span>
-                  </span>
-                  <span className="font-mono2 shrink-0 text-[11px] text-foreground/25 transition group-hover:text-amber-200">
-                    {String(i + 1).padStart(2, '0')} →
-                  </span>
-                </a>
-              </li>
-            ))}
-          </ol>
-        </Panel>
-      </Reveal>
+      {/* The "how the argument runs · jump in anywhere" list is DISMISSED
+          2026-08-10 (Giray): the part structure it indexes is being replaced
+          (intro / underspecified alignment / alignment source / semantic
+          assumptions / assumption stabilization / conclusion), so an index of the
+          old one would only go stale. Unmounted, not deleted, the block is in
+          scratchpad/overview_jumplist.tsx and MOVES still drives the title's
+          count. */}
 
       <Reveal delay={0.1}>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
