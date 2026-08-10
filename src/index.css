@@ -57,19 +57,40 @@
        never hue-adjacent either.
 
        Selected against src/index.css's own surfaces, not a generic one, and
-       validated as a set (OKLab ΔE ×100, all 28 pairs, protan/deutan/tritan):
-       worst CVD pair 8.6 dark / 7.7 light, worst normal-vision pair 17.7 / 20.0.
-       Every slot sits in the mode's lightness band and clears 3:1 on the surface.
+       validated as a set (OKLab ΔE ×100, all 28 pairs, protan/deutan/tritan).
+
+       Re-stepped 2026-08-10, brief: make the countries as distinct as possible.
+       The eight HUES are unchanged — they were already the constraint doing the
+       work — but every slot's lightness and chroma was re-searched against its
+       own surface, seeded from the previous step so nothing moved further than
+       it had to. That closed the set's last warning:
+
+                        worst CVD   tritan   normal-vision
+           light        7.7 WARN     8.7        20.0          before
+                        9.6 PASS     9.6        18.1          after
+           dark         8.6          7.9        17.7          before
+                        8.9          9.8        18.2          after
+
+       Light's rust-vs-green pair was the weak point at 7.7 (the 6-8 floor band,
+       legal only with secondary encoding); it is now 9.6. Light's normal-vision
+       floor is the one number that fell, 20.0 -> 18.1, still well clear of 15.
+
+       A ColorBrewer "Paired" set was tried first and rejected on measurement:
+       it is four light/dark pairs of ONE hue each (11, 7 and 19 degrees apart),
+       so three slots fell outside the lightness band and its orange pair was
+       delta-E 14.2 to NORMAL vision. Pairing encodes "these two are related",
+       the opposite of what eight independent countries need.
+
        Do not hand-edit one of these — a single nudge is what re-opens a collision
        somewhere else in the set. Re-run the whole set through the validator. */
-    --c-us: 57 71 250;    /* blue    */
-    --c-de: 252 49 140;   /* pink    */
-    --c-ru: 14 118 70;    /* green   */
-    --c-id: 156 115 252;  /* violet  */
-    --c-jp: 191 57 13;    /* rust    */
-    --c-eg: 24 154 193;   /* teal    */
-    --c-in: 176 20 181;   /* magenta */
-    --c-ng: 163 139 21;   /* gold    */
+    --c-us: 59 75 255;    /* blue    */
+    --c-de: 252 32 137;   /* pink    */
+    --c-ru: 28 111 68;    /* green   */
+    --c-id: 158 120 250;  /* violet  */
+    --c-jp: 184 48 0;     /* rust    */
+    --c-eg: 46 152 187;   /* teal    */
+    --c-in: 158 51 161;   /* magenta */
+    --c-ng: 172 145 0;    /* gold    */
 
     color-scheme: dark;
   }
@@ -114,14 +135,14 @@
     /* same eight hues, re-stepped for the light surface — not an automatic
        darkening of the dark set. NG is the one slot where both bands admit the
        same step, so it is deliberately identical. */
-    --c-us: 49 45 246;
-    --c-de: 252 73 147;
-    --c-ru: 11 105 62;
-    --c-id: 151 105 251;
-    --c-jp: 173 50 10;
-    --c-eg: 23 148 185;
-    --c-in: 142 13 145;
-    --c-ng: 163 139 21;
+    --c-us: 44 2 236;
+    --c-de: 255 74 149;
+    --c-ru: 39 122 78;
+    --c-id: 153 106 255;
+    --c-jp: 200 53 0;
+    --c-eg: 20 156 196;
+    --c-in: 124 41 126;
+    --c-ng: 169 143 1;
 
     color-scheme: light;
   }

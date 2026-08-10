@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
-import { ZoomImage, BoxPicker, useMagnet } from '../components/Viz'
+import { ZoomImage, BoxPicker, Setup, useMagnet } from '../components/Viz'
 import { rgb, rgba } from '../lib/colors'
 import { C8, COUNTRY8, SITS, cell, seedImg, type Sit, type Code } from '../data/part1'
 import { CFG, CFG_VALUES } from '../data/part2'
@@ -141,8 +141,8 @@ export function CfgScene() {
   const shown = [1, 4, 12, 15]
   return (
     <SceneShell
-      number="X1"
-      kicker="extras · the escape attempts · finding 11"
+      number="08"
+      kicker="Part IV · the escape · finding 11"
       title={<>The knob that <em className="font-display italic text-amber-200">doesn't help.</em></>}
     >
       <Reveal>
@@ -152,6 +152,33 @@ export function CfgScene() {
           not.
         </p>
         <Sd21Only />
+      </Reveal>
+      <Reveal delay={0.05}>
+        <div className="mt-6 max-w-3xl">
+          <Setup
+            rows={[
+              { k: 'what we ran', v: `The same 54 prompts re-generated at every guidance value in ${CFG_VALUES.join(', ')}, seed for seed, everything else held fixed. 7.5 is the standard setting this page uses everywhere else.` },
+              { k: 'what we measured', v: 'At each guidance value, the DINOv3 distance from the default set to each country-named set: the gap the slider is supposed to close.' },
+              { k: 'the limit', v: 'Guidance is an SD 2.1 mechanism here. Flux distils guidance away entirely, so this sweep is not repeatable on it and the model switcher does not apply.' },
+            ]}
+          detail={<>
+              <p>
+                <strong>What guidance does.</strong> Classifier-free guidance interpolates between the conditional and
+                unconditional predictions at every step; raising it pushes harder toward the prompt. If the cultural
+                gap were the model under-weighting your words, more guidance would shrink it.
+              </p>
+              <p>
+                <strong>The sweep.</strong> The full 54-prompt grid was regenerated at each guidance value with seeds
+                held fixed, so a point on this chart differs from its neighbour in one parameter only.
+              </p>
+              <p>
+                <strong>Why the sweep starts at 1 and not 0.</strong> Zero guidance does not mean “no prompt
+                influence”, it runs only the unconditional pass, which is a different experiment rather than the
+                bottom of this one (Bradley &amp; Nakkiran 2024).
+              </p>
+          </>}
+        />
+        </div>
       </Reveal>
       <Reveal delay={0.08}>
         <Panel className="mt-10">
@@ -440,8 +467,8 @@ export default function Part6Escape() {
 
   return (
     <SceneShell
-      number="07"
-      kicker="Part III · the escape · findings 20–21"
+      number="09"
+      kicker="Part IV · the escape · findings 20–21"
       title={<>Counter-specification: the obvious remedy, <em className="font-display italic text-amber-200">measured.</em></>}
     >
       <Reveal>
@@ -454,6 +481,38 @@ export default function Part6Escape() {
           <em className="text-amber-200">Prompting is additive in an entangled concept space: you can add constraints,
           you can never subtract a prior.</em>
         </p>
+      </Reveal>
+
+      <Reveal delay={0.05}>
+        <div className="mt-6 max-w-3xl">
+          <Setup
+            rows={[
+              { k: 'what we ran', v: 'Counter-specification ladders: one clause per named assumption, added in order of how consistent that assumption was, on top of the country-named prompt. 50 seeds at every rung.' },
+              { k: 'the baseline', v: 'Each ladder is read against its own L0, the country prompt with no clauses, never against the plain prompt, so a rung is compared with the thing it was actually built from.' },
+              { k: 'what we measured', v: 'How many assumptions the rung still names, and how much variety the set has (intra-set similarity), at every step of the climb.' },
+              { k: 'the catch', v: 'The denominator moves. Load counts only the battery questions the prompt did not already specify, so every clause you add shrinks the pool being counted over. Charts here use the rate, or cap every ladder at a shared depth, a raw count would read a deep ladder as an escape.' },
+            ]}
+          detail={<>
+              <p>
+                <strong>Load, precisely.</strong> A rung's named-assumption load counts the battery questions still
+                clearing the 0.8 consistency bar <em>among those the prompt did not itself specify</em>. Every clause
+                you add specifies one more, so the eligible pool shrinks as you climb, on the eight-clause ladder it
+                falls 18 → 9.
+              </p>
+              <p>
+                <strong>Which is why a raw count lies.</strong> Read raw, the deepest rung looks like a full escape
+                back to the bare prompt (load 6 at both ends). Read as a rate over the eligible pool it is the
+                opposite: 0.333 plain against 0.667 at the deepest rung. Charts here either use the rate or cap every
+                ladder at a shared depth.
+              </p>
+              <p>
+                <strong>Guards.</strong> Two checks in <code>audit_page.py</code> assert that every rung carries its
+                pool and that the count falls while the rate rises. The first exists because this panel's failure mode
+                is silent disappearance, it renders only when the pool is present, so no value check would catch it.
+              </p>
+          </>}
+        />
+        </div>
       </Reveal>
 
       <Reveal delay={0.08}>

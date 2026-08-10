@@ -65,7 +65,7 @@ export const REFERENCES: Reference[] = [
     title: 'Stable Bias: Analyzing Societal Representations in Diffusion Models',
     venue: 'NeurIPS 2023 Datasets & Benchmarks',
     url: 'https://arxiv.org/abs/2303.11408',
-    role: 'the demographic axis, at scale — the axis this page deliberately does not work on',
+    role: 'the demographic axis, at scale, the axis this page deliberately does not work on',
   },
   {
     id: 'chinchure2023',
@@ -83,7 +83,7 @@ export const REFERENCES: Reference[] = [
     title: 'OpenBias: Open-set Bias Detection in Text-to-Image Generative Models',
     venue: 'CVPR 2024',
     url: 'https://arxiv.org/abs/2404.07990',
-    role: 'open-set bias detection, also endpoint-only — the depth profile (lock-in step, steerability, homogeneity) is what this page adds',
+    role: 'open-set bias detection, also endpoint-only, the depth profile (lock-in step, steerability, homogeneity) is what this page adds',
   },
   {
     id: 'alnouri2026',
@@ -126,7 +126,7 @@ export const REFERENCES: Reference[] = [
     title: 'Denoising Diffusion Implicit Models',
     venue: 'ICLR 2021',
     url: 'https://arxiv.org/abs/2010.02502',
-    role: 'the deterministic sampler: same seed, identical trajectory — without which the prompt-swap experiments in Part IV mean nothing',
+    role: 'the deterministic sampler: same seed, identical trajectory, without which the prompt-swap experiments in Part IV mean nothing',
   },
   {
     id: 'radford2021',
@@ -135,7 +135,7 @@ export const REFERENCES: Reference[] = [
     title: 'Learning Transferable Visual Models From Natural Language Supervision',
     venue: 'ICML 2021',
     url: 'https://arxiv.org/abs/2103.00020',
-    role: 'CLIP — both the text encoder being conditioned on and one of the two rulers offered in the metric switch',
+    role: 'CLIP, both the text encoder being conditioned on and one of the two rulers offered in the metric switch',
   },
   {
     id: 'cherti2023',
@@ -183,7 +183,7 @@ export const REFERENCES: Reference[] = [
     title: 'UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction',
     venue: 'arXiv:1802.03426',
     url: 'https://arxiv.org/abs/1802.03426',
-    role: 'the projection in scenes 05 and 17 — a view, never evidence: every claim is made on the distances, not the picture',
+    role: 'the projection in scenes 05 and 17, a view, never evidence: every claim is made on the distances, not the picture',
   },
   {
     id: 'mantel1967',
@@ -201,7 +201,7 @@ export const REFERENCES: Reference[] = [
     title: 'Computing inter-rater reliability and its variance in the presence of high agreement',
     venue: 'British Journal of Mathematical and Statistical Psychology 61(1), 29–48',
     url: 'https://doi.org/10.1348/000711006X126600',
-    role: "AC1 — the agreement statistic the questionnaire is gated on, chosen over Cohen's κ precisely because these answers are high-agreement and κ paradoxes there",
+    role: "AC1, the agreement statistic the questionnaire is gated on, chosen over Cohen's κ precisely because these answers are high-agreement and κ paradoxes there",
   },
 
   // ── when the assumption commits ────────────────────────────────────────────
@@ -230,7 +230,7 @@ export const REFERENCES: Reference[] = [
     title: 'Classifier-Free Guidance is a Predictor-Corrector',
     venue: 'arXiv:2408.09000',
     url: 'https://arxiv.org/abs/2408.09000',
-    role: 'why the empty prompt at standard guidance — not guidance 0 — is the correct picture of the prior',
+    role: 'why the empty prompt at standard guidance, not guidance 0, is the correct picture of the prior',
   },
   {
     id: 'tang2023',
@@ -281,7 +281,7 @@ export const WEIGHTS: { group: string; models: { label: string; url: string }[] 
     ],
   },
   {
-    group: 'the annotator — one model reads every image on this page',
+    group: 'the annotator, one model reads every image on this page',
     models: [{ label: 'Gemma-4-E4B-it', url: 'https://huggingface.co/google/gemma-4-E4B-it-qat-w4a16-ct' }],
   },
   {

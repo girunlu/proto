@@ -324,6 +324,58 @@ export function HowItWorks({ steps }: { steps: { k: string; v: string }[] }) {
   )
 }
 
+/* ── the experimental setup, stated in the open ──────────────────────────────
+
+   The technical InfoBoxes said most of this already, but folded shut: a reader
+   who wanted to know what was actually run had to go looking, and what they
+   found was one paragraph rather than a setup they could reproduce. This is the
+   same material as rows, always visible, sitting between a scene's opening
+   prose and its chart.
+
+   Three or four rows, each a readable sentence — the rule that keeps it from
+   becoming a methods table nobody reads. The frozen grid (54 prompts × 50 fixed
+   seeds) is stated once in the Overview and never restated here; every scene's
+   rows carry only what that scene adds to it. */
+export function Setup({ rows, detail }: {
+  rows: { k: string; v: ReactNode }[]
+  /* The tier below the rows: model versions, thresholds, the statistic's actual
+     name, the script that produced it, and the known gotcha. Folding it away was
+     wrong the first time round — a reader who wants to reproduce this should not
+     have to leave the page — but so was replacing it with rows alone, which lost
+     depth. Rows answer "what did they do"; this answers "how, exactly". */
+  detail?: ReactNode
+}) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="rounded-lg border border-border bg-background/40">
+      <div className="border-b border-border px-4 py-2 font-mono2 text-[10px] tracking-widest text-amber-200/70 uppercase">
+        the experiment
+      </div>
+      <dl className="divide-y divide-border">
+        {rows.map((r) => (
+          <div key={r.k} className="grid gap-0.5 px-4 py-2.5 sm:grid-cols-[9rem_1fr] sm:gap-4">
+            <dt className="font-mono2 text-[10px] leading-6 tracking-wider text-foreground/45 uppercase">{r.k}</dt>
+            <dd className="text-[13px] leading-6 text-foreground/70">{r.v}</dd>
+          </div>
+        ))}
+      </dl>
+      {detail && (
+        <div className="border-t border-border">
+          <button
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            className="flex w-full items-center justify-between px-4 py-2 font-mono2 text-[10px] tracking-wider text-foreground/45 uppercase transition hover:text-foreground/80"
+          >
+            technical detail · instruments, thresholds, and what it does not settle
+            <span className="text-foreground/30">{open ? '−' : '+'}</span>
+          </button>
+          {open && <div className="space-y-2.5 px-4 pb-3.5 text-[12.5px] leading-6 text-foreground/60">{detail}</div>}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /* ── a share-of-50 meter, used wherever a VQA answer distribution is shown ───── */
 
 export function ShareBar({

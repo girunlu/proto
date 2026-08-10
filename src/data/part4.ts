@@ -50,10 +50,10 @@ Object.values(ATTR).forEach((variants) =>
     })
   )
 )
-export const CARDS_CANDIDATES = _candidates // 708 — everything the detector proposed
-export const CARDS_TOTAL = _reported // 708 — all of them clear the consistency floor
-export const CARDS_HEADLINE = _headline // 448 — the firm tier (consistency ≥ 0.8)
-export const CARDS_EXCLUDED = _candidates - _reported // 0 — the agreement gate needed two annotators
+export const CARDS_CANDIDATES = _candidates // 708, everything the detector proposed
+export const CARDS_TOTAL = _reported // 708, all of them clear the consistency floor
+export const CARDS_HEADLINE = _headline // 448, the firm tier (consistency ≥ 0.8)
+export const CARDS_EXCLUDED = _candidates - _reported // 0, the agreement gate needed two annotators
 export const VERIFICATION = { batch: 0.952, perItem: 0.991 } // promoted_spotcheck.json via handbook
 
 // extra question labels beyond part3's U-codes (Appendix A of the handbook)

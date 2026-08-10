@@ -57,7 +57,7 @@ function CellMosaics({ situation, code }: { situation: Sit; code: Code }) {
               ))}
             </div>
             <p className="mt-2 font-mono2 text-[9px] leading-4 text-foreground/45">
-              the {MOSAIC_N} <em>least</em> alike pictures of the 50, chosen by the embeddings rather than by us —
+              the {MOSAIC_N} <em>least</em> alike pictures of the 50, chosen by the embeddings rather than by us, 
               picked most-different-first, so this is the most varied face this set has
             </p>
           </div>
@@ -374,7 +374,7 @@ function SpecificityScene() {
           <p className="mt-5 max-w-3xl text-sm leading-6 text-foreground/60">
             The hollow dots are the neutral qualifiers, and they sit on or beside the line: adding “a large”, “in the
             rain” or “in 1985” leaves the variety roughly where it was, every one of them inside{' '}
-            {signed(CTRL_NEXT.d)} — with one exception, <em>{CTRL_WORST.prompt}</em> at {signed(CTRL_WORST.d)}, which
+            {signed(CTRL_NEXT.d)}, with one exception, <em>{CTRL_WORST.prompt}</em> at {signed(CTRL_WORST.d)}, which
             narrows the set further than the country name does in {CTRL_WORST_BEATS} of the eight rows. The filled dot
             is the country qualifier, and in seven of the eight rows it has moved clearly right. Same length, same
             grammar, same model.
@@ -428,7 +428,7 @@ function SpecificityScene() {
           <div className="mt-6 border-t border-border pt-5">
             <TierNote
               tier="evidence"
-              text="Matched neutral qualifiers (“a large …”, “… in the rain”, “… in 1985”) on the same events, same 50-seed protocol, same measurement. The variety collapse is culture-specific; the extra assumption load that any qualifier brings is not — that load is the ladder scene below (X4)."
+              text="Matched neutral qualifiers (“a large …”, “… in the rain”, “… in 1985”) on the same events, same 50-seed protocol, same measurement. The variety collapse is culture-specific; the extra assumption load that any qualifier brings is not, that load is the ladder scene below (X4)."
             />
           </div>
         </Panel>

@@ -107,7 +107,7 @@ function Predict() {
   return (
     <div className="mx-auto mt-8 max-w-2xl rounded-xl border border-border bg-card/60 p-5">
       <p className="text-sm leading-6 text-foreground/75">
-        Before you scroll — <strong>you type “a wedding in Nigeria”.</strong> How many things do you think the
+        Before you scroll, <strong>you type “a wedding in Nigeria”.</strong> How many things do you think the
         model decides on your behalf that you never mentioned?
       </p>
       <div className="mt-3 flex flex-wrap gap-1.5">
@@ -131,7 +131,7 @@ function Predict() {
           ) : (
             <>You said <strong>{GUESSES.find((g) => g.v === guess)?.label}</strong>. The median across all 378
             model-and-prompt pairs is <strong className="text-amber-200">{truth}</strong>
-            {['1-2', '3-5'].includes(guess) ? ' — more than you expected, which is the usual direction.' : '.'}</>
+            {['1-2', '3-5'].includes(guess) ? ', more than you expected, which is the usual direction.' : '.'}</>
           )}{' '}
           The deepest counter-specification ladder anyone has ever run is {DEEPEST_LADDER}.
         </p>
@@ -159,7 +159,7 @@ export default function Part6Debt() {
       <Reveal>
         <p className="prose-scene max-w-2xl">
           Every prompt on this page settles a list of things nobody asked about. Counting them gives a floor on the
-          number of clauses it would take to take them back — one clause per decision, at minimum, and usually more,
+          number of clauses it would take to take them back, one clause per decision, at minimum, and usually more,
           because the clauses interact. That count is available for every prompt, on every model, which makes it the one
           part of the remedy argument that runs at the full width of the study rather than on ten ladders.
         </p>
@@ -183,7 +183,7 @@ export default function Part6Debt() {
           {/* the chart was unlabelled beyond its axis: readers could not tell what a
               dot, a row, or the green line stood for without reverse-engineering it. */}
           <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
-            One row per model, one dot per prompt — {MODELS.length} rows of 54. A dot sits at the number of things
+            One row per model, one dot per prompt, {MODELS.length} rows of 54. A dot sits at the number of things
             that model decided for that prompt without being asked, so <strong>further right means a bigger bill</strong>.
             The green line is that model's median; the dashed amber line is {DEEPEST_LADDER} clauses, the deepest
             counter-specification anyone has actually run. Almost every dot sits to the right of it. Ringed dots are the
@@ -200,7 +200,7 @@ export default function Part6Debt() {
               <div className="relative min-w-0 flex-1 font-mono2 text-[9px] text-foreground/35">
                 <span className="absolute left-0">0</span>
                 <span className="absolute" style={{ left: `${(DEEPEST_LADDER / 18) * 100}%`, transform: 'translateX(-50%)' }}>
-                  <span className="text-amber-200/70">{DEEPEST_LADDER} — deepest ladder ever run</span>
+                  <span className="text-amber-200/70">{DEEPEST_LADDER}, deepest ladder ever run</span>
                 </span>
                 <span className="absolute right-0">18</span>
               </div>
@@ -240,7 +240,7 @@ export default function Part6Debt() {
               </div>
               <p className="mt-4 text-sm leading-6 text-foreground/70">
                 Every ladder on this page stops at {DEEPEST_LADDER} clauses. Drag the slider: the median only falls below{' '}
-                {DEEPEST_LADDER} when you demand that an attribute be settled on <em>every single seed</em> — and even
+                {DEEPEST_LADDER} when you demand that an attribute be settled on <em>every single seed</em>, and even
                 then the bill is not zero. The bound is not an artifact of where the gate sits.
               </p>
             </div>
@@ -267,7 +267,7 @@ export default function Part6Debt() {
                 </>
               ) : (
                 <p className="mt-3 text-sm leading-6 text-foreground/55">
-                  Each dot is one prompt. The list of what that prompt decided appears here — for whichever model is
+                  Each dot is one prompt. The list of what that prompt decided appears here, for whichever model is
                   selected in the bar at the top, so you can hover the same prompt and switch models to watch the bill
                   change.
                 </p>
@@ -294,7 +294,7 @@ export default function Part6Debt() {
                   .filter((_, i, arr) => i === 0 || i === arr.length - 1)
                   .map(([m, v]) => `${MODEL_NAME[m as ModelId]?.replace('Stable Diffusion', 'SD')} at ${v.median}`)
                   .join(' up to ')}
-                . A cheaper model to specify is not a less opinionated one — it is often just one the detector reads less
+                . A cheaper model to specify is not a less opinionated one, it is often just one the detector reads less
                 confidently.
               </p>
             </div>

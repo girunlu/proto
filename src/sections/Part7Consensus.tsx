@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { SceneShell, Reveal, Panel, TierNote, InfoBox } from '../components/Scene'
+import { Setup } from '../components/Viz'
+import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
 
 import { rgb, rgba } from '../lib/colors'
 import { Q_TEXT } from '../data/uiv2'
@@ -126,8 +127,8 @@ export default function Part7Consensus() {
 
   return (
     <SceneShell
-      number="11"
-      kicker="Part V · is it just this model? · the shared prior"
+      number="X3"
+      kicker="extras · across models · is it just this model? · the shared prior"
       title={<>They do not merely lean the same way. They fill the same blanks with <em className="font-display italic text-emerald-300">the same words.</em></>}
       id="xa4"
     >
@@ -139,10 +140,32 @@ export default function Part7Consensus() {
       </Reveal>
 
       <Reveal delay={0.05}>
-        <div className="mt-6 max-w-2xl">
-          <InfoBox title="technical detail · reading the matrix">
-            Rows: headline-tier named assumptions; columns: models; a cell's number is how many of that model's 54 cells fire the assumption above the naming threshold. Blank = outside that model's twenty most frequent, a cutoff, not an absence, and blanks are never imputed. Cross-model agreement is chance-corrected with Gwet's AC1 (an agreement score that discounts matches expected by luck) over the shared questions, against a permutation null.
-          </InfoBox>
+        <div className="mt-6 max-w-3xl">
+          <Setup
+            rows={[
+              { k: 'how to read it', v: 'Rows are headline-tier named assumptions, columns are models. A cell’s number is how many of that model’s 54 cells fire the assumption above the naming threshold.' },
+              { k: 'what blank means', v: 'Outside that model’s twenty most frequent, a cutoff, not an absence. Blanks are never imputed.' },
+              { k: 'how we know', v: 'Cross-model agreement is chance-corrected with Gwet’s AC1, an agreement score that discounts matches expected by luck, over the shared questions, read against a permutation null.' },
+            ]}
+          detail={<>
+              <p>
+                <strong>This agreement is between models, not between annotators.</strong> There is only one annotator
+                on this page, gemma4 reads every image for every model, so nothing here measures whether two readers
+                concur. What is being scored is whether two <em>image models</em> answer the same question the same
+                way, which is a claim about the models and is exactly the question this scene asks.
+              </p>
+              <p>
+                <strong>Gwet's AC1, not κ.</strong> AC1 is chance-corrected but, unlike Cohen's κ, does not collapse
+                when a category is near-universal. That mattered: under κ the assumptions shared by every model scored
+                worst, the opposite of what the statistic should say. Significance comes from a permutation null.
+              </p>
+              <p>
+                <strong>The cutoff is a cutoff.</strong> A blank cell means the assumption fell outside that model's
+                twenty most frequent, not that the model never produced it. Blanks are never imputed to zero, and no
+                row total treats them as absences.
+              </p>
+          </>}
+        />
         </div>
       </Reveal>
 

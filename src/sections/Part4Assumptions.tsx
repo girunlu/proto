@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { SceneShell, Reveal, Panel, TierNote, InfoBox } from '../components/Scene'
-import { ZoomImage, BoxPicker } from '../components/Viz'
+import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
+import { ZoomImage, BoxPicker, Setup } from '../components/Viz'
 import { rgb, rgba } from '../lib/colors'
 import { ordinal } from '../lib/utils'
 import { C8, COUNTRY8, SITS, CV_DEFAULT, cell, seedImg, type Sit, type Code } from '../data/part1'
@@ -265,8 +265,8 @@ function ForcedControl({ sit, code }: { sit: Sit; code: Code | 'default' }) {
         a second instrument · the same images, asked again without “unclear”
       </div>
       <p className="mt-2 max-w-3xl text-[13px] leading-5 text-foreground/60">
-        <strong>{asked}</strong> answers above were “unclear”; re-asking without that option can only push
-        agreement up, so these never replace the numbers above. What they test is whether the model was being
+        <strong>{asked}</strong> answers above were “unclear”; re-asking without that option can only push the
+        consistency numbers up, so these never replace the numbers above. What they test is whether the model was being
         careful or merely quiet:{' '}
         <strong className="text-foreground/80">
           it refused again {refused} of {asked} times
@@ -372,7 +372,7 @@ function NamedScene() {
 
   return (
     <SceneShell
-      number="05"
+      number="04"
       kicker="Part II · the assumptions, named · findings 14–15"
       title={<>Named, not implied, <em className="font-display italic text-amber-200">with the distribution they describe.</em></>}
     >
@@ -381,7 +381,7 @@ function NamedScene() {
           Distances establish <em>that</em> the unspecified gets supplied; this establishes <em>with what</em>. A
           vision-language model that never sees the prompt answers the same frozen questionnaire over every image
           ({BATTERY.universal} questions for all, {BATTERY.perCellMin}–{BATTERY.perCellMax} per prompt,{' '}
-          {BATTERY.distinct} distinct across the study). When 50 blind answers clear the same agreement floor, that
+          {BATTERY.distinct} distinct across the study). When 50 blind answers clear the same consistency floor, that
           is an assumption:{' '}
           <strong>{CARDS_HEADLINE} firm ones across the 54 prompts ({CARDS_TOTAL} counting the weaker tier)</strong>,
           filtered from all {CARDS_CANDIDATES} the detector proposed.
@@ -389,10 +389,34 @@ function NamedScene() {
       </Reveal>
 
       <Reveal delay={0.05}>
-        <div className="mt-6 max-w-2xl">
-          <InfoBox title="technical detail · the blind questionnaire">
-            Annotator: one vision-language model (gemma4), shown each image without ever seeing the prompt, answering a frozen battery: 13 questions in every cell, 17–18 per cell. An answer covering ≥ 80% of a cell's 50 images names an assumption. All seven models were annotated under this identical setup, so cells are comparable across models.
-          </InfoBox>
+        <div className="mt-6 max-w-3xl">
+          <Setup
+            rows={[
+              { k: 'who answered', v: 'One vision-language model (gemma4), shown each image without ever seeing the prompt that made it, answering a frozen battery, 13 questions in every cell, 17–18 per cell.' },
+              { k: 'what counts', v: 'An answer covering at least 80% of a cell’s 50 images names an assumption.' },
+              { k: 'why comparable', v: 'All seven models were annotated under this identical setup, so a card in one model means the same thing as a card in another.' },
+            ]}
+          detail={<>
+              <p>
+                <strong>Tiers.</strong> The gate is consistency across the cell's own 50 seeds: an answer covering
+                ≥80% names a headline-tier assumption, ≥60% a secondary one. Both tiers are exported; the page reports
+                the headline count and the total, never a filtered middle.
+              </p>
+              <p>
+                <strong>There is no inter-annotator agreement statistic here, and there should not be.</strong> An
+                earlier version of this study ran two annotators and gated assumptions on how well they agreed. Since
+                2026-07-31 gemma4 is the sole annotator, so “do the two readers agree?” is not a question this
+                instrument can ask. What replaces it is a consistency threshold over 50 independent images and a
+                direct audit of whether the annotator is actually looking, same questions, same cells, one clause
+                changed in the prompt, and the answers have to move.
+              </p>
+              <p>
+                <strong>What it does not settle.</strong> A named assumption is the annotator's reading of the image,
+                not ground truth about the world. The instrument is also blind in places, near-default cells produce
+                very few named assumptions, which is a property of the detector as much as of the model.
+              </p>
+          </>}
+        />
         </div>
       </Reveal>
 
@@ -620,7 +644,7 @@ function BridgeScene() {
 
   return (
     <SceneShell
-      number="06"
+      number="05"
       kicker="Part II · the assumptions, named · finding 16"
       title={<>The assumptions that <em className="font-display italic text-amber-200">change</em> are the distance.</>}
     >
@@ -633,10 +657,27 @@ function BridgeScene() {
         </p>
       </Reveal>
       <Reveal delay={0.05}>
-        <div className="mt-6 max-w-2xl">
-          <InfoBox title="technical detail · how the shares are computed">
-            Per attribute, the answer marginals of the default and country-named cells (50 + 50 images, DINOv3 geometry) are compared, and an attribute's share is the fraction of the between-cell distance its changed answers account for. Shares deliberately do not sum to 1: attributes are not independent, and the decomposition is not an independent measurement of the distance.
-          </InfoBox>
+        <div className="mt-6 max-w-3xl">
+          <Setup
+            rows={[
+              { k: 'what we compared', v: 'The answer marginals of the default cell against a country-named cell, 50 images each, alongside the DINOv3 distance between those same two cells.' },
+              { k: 'what a share is', v: 'The fraction of the between-cell distance that an attribute’s changed answers account for.' },
+              { k: 'the limit', v: 'Shares deliberately do not sum to 1. Attributes are not independent of one another, and this decomposition is not a second, independent measurement of the distance.' },
+            ]}
+          detail={<>
+              <p>
+                <strong>The decomposition is between-cell.</strong> For a default/country pair it asks how much of the
+                measured DINOv3 distance is accounted for by each attribute whose answers changed. It replaced an
+                earlier η² formulation on 2026-07-30, which was reporting variance explained within cells and could not
+                answer the question the scene asks.
+              </p>
+              <p>
+                <strong>Tautological rows are shown, not hidden.</strong> Some attributes shift because the prompt
+                named them, the country qualifier entails them. Those rows stay on the chart and are labelled, since
+                silently dropping them would make the remaining attributes look more explanatory than they are.
+              </p>
+          </>}
+        />
         </div>
       </Reveal>
       <Reveal delay={0.08}>

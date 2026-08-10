@@ -83,7 +83,7 @@ export default function Part6Clinic() {
       <Reveal>
         <p className="prose-scene max-w-2xl">
           Everything so far has been us running the experiment. This is the same instrument pointed at
-          whichever prompt you choose — all {7 * 54} model-and-prompt combinations, not just the {N_LADDERS} that
+          whichever prompt you choose, all {7 * 54} model-and-prompt combinations, not just the {N_LADDERS} that
           have a measured ladder. Tick the decisions you would try to overrule and watch the prompt you would
           have to write.
         </p>
@@ -250,7 +250,7 @@ export default function Part6Clinic() {
                 </>
               )}
               {neverMoved > 0 && (
-                <> — and {neverMoved} of its {rows.length} decisions would still be there afterwards</>
+                <>, and {neverMoved} of its {rows.length} decisions would still be there afterwards</>
               )}
               . Prompting is not refuted here. It is <em>priced</em>.
             </p>
@@ -274,7 +274,7 @@ export default function Part6Clinic() {
                   would read as "nothing moved" when it means "nothing was recorded". */}
               {measured.flipped.length + measured.held.length === 0 ? (
                 <p className="mt-4 rounded-md border border-foreground/20 px-3 py-2 text-sm leading-6 text-foreground/65">
-                  This ladder was run and its assumption count was measured — but the per-attribute answer table was
+                  This ladder was run and its assumption count was measured, but the per-attribute answer table was
                   never exported for this pair, so we cannot show you <em>which</em> answers moved. Only{' '}
                   {cellList(STEER_CELLS)} have that. What we can say is below.
                 </p>
@@ -309,8 +309,8 @@ export default function Part6Clinic() {
                 assumption count {measured.load[0]} → {measured.load[1]} · variety{' '}
                 {measured.intraset[0]?.toFixed(2)} → {measured.intraset[1]?.toFixed(2)}{' '}
                 {(measured.intraset[1] ?? 0) >= (measured.intraset[0] ?? 0)
-                  ? '— the set did not widen'
-                  : '— the set did loosen slightly'}
+                  ? ', the set did not widen'
+                  : ', the set did loosen slightly'}
               </p>
             </div>
           ) : (
@@ -327,7 +327,7 @@ export default function Part6Clinic() {
                   projected
                 </span>
                 <span className="font-mono2 text-[10px] text-foreground/50">
-                  no ladder was run on this prompt — this is what the two measured cells say about attributes{' '}
+                  no ladder was run on this prompt, this is what the two measured cells say about attributes{' '}
                   <em>like</em> these
                 </span>
               </div>
@@ -352,17 +352,17 @@ export default function Part6Clinic() {
                 This is a prediction from attribute class, not a measurement of this prompt.
               </p>
               <p className="mt-2 rounded border border-foreground/20 px-2.5 py-2 font-mono2 text-[10px] leading-4 text-foreground/55">
-                <strong className="text-foreground/75">The leap this rests on has now been tested — partly.</strong>{' '}
+                <strong className="text-foreground/75">The leap this rests on has now been tested, partly.</strong>{' '}
                 A projection like this is only sound if steerability belongs to the <em>attribute</em> rather than to
                 the <em>cell</em>, and until 2026-08-02 nothing here could tell the two apart: the pooled table came
-                from {STEER_N_CELLS} prompts ({cellList(STEER_CELLS)}). A separate run settles it —{' '}
-                {FACTORIAL.n_conditions} single-clause conditions across {FACTORIAL.models.length} models — and it comes
+                from {STEER_N_CELLS} prompts ({cellList(STEER_CELLS)}). A separate run settles it, {' '}
+                {FACTORIAL.n_conditions} single-clause conditions across {FACTORIAL.models.length} models, and it comes
                 down on the attribute's side (p = {FACTORIAL.factor_r2.attribute.p < 0.001 ? '<0.001' : FACTORIAL.factor_r2.attribute.p.toFixed(3)}),
                 with the prompt it was typed into at the edge of chance (p ={' '}
                 {FACTORIAL.factor_r2.cell.p.toFixed(3)}) and clearly null once the one circular attribute leaves the
                 test (p = {FACTORIAL.factor_r2_no_fa2.cell.p.toFixed(2)}). It tested {FACTORIAL.rows.length} cultural
                 attributes plus a control, not all {rows.length} below, so the box above is a projection from a
-                supported premise rather than an untested one — still not a measurement of {C8[code].name}.
+                supported premise rather than an untested one, still not a measurement of {C8[code].name}.
               </p>
             </div>
           )}
@@ -373,13 +373,13 @@ export default function Part6Clinic() {
               move, the shape does not. The median prompt in this study hands you{' '}
               <strong className="text-amber-200">{med}</strong> decisions you never made, and the deepest
               counter-prompt anyone ran here is <strong>{DEEPEST_LADDER}</strong> clauses. That gap is the
-              finding — not that prompting fails, but that it is being asked to do a job several times
+              finding, not that prompting fails, but that it is being asked to do a job several times
               larger than the one it has been shown to do.
             </p>
             <div className="mt-6">
             <TierNote
               tier="evidence"
-              text={`Clause wording is copied from the study's own COUNTER_CLAUSE table, never generated — an attribute with no entry there was never tested for steerability, so it is listed without a checkbox rather than given improvised phrasing. That is why "to take back all ${rows.length}" is a floor twice over: one clause per decision is the minimum, and some decisions have no clause at all. ${N_LADDERS} of the ${7 * 54} combinations have a measured ladder, and only ${STEER_N_CELLS} record which answers moved — the rest render as projections and say so. The projection's premise — that steerability belongs to the attribute rather than to the prompt it was typed into — was untested until a single-clause run tested it directly, which is why the box names it as supported rather than assumed. The deepest ladder anyone ran is ${DEEPEST_LADDER} clauses.`}
+              text={`Clause wording is copied from the study's own COUNTER_CLAUSE table, never generated, an attribute with no entry there was never tested for steerability, so it is listed without a checkbox rather than given improvised phrasing. That is why "to take back all ${rows.length}" is a floor twice over: one clause per decision is the minimum, and some decisions have no clause at all. ${N_LADDERS} of the ${7 * 54} combinations have a measured ladder, and only ${STEER_N_CELLS} record which answers moved, the rest render as projections and say so. The projection's premise, that steerability belongs to the attribute rather than to the prompt it was typed into, was untested until a single-clause run tested it directly, which is why the box names it as supported rather than assumed. The deepest ladder anyone ran is ${DEEPEST_LADDER} clauses.`}
             />
             </div>
           </div>

@@ -155,7 +155,7 @@ export default function Hero() {
           <p className="font-display text-xl leading-7 text-foreground/85 italic md:text-2xl">“{THESIS}”</p>
           <p className="mt-3 font-mono2 text-[11px] tracking-wider text-foreground/40 uppercase">
             6 situations × 9 prompt variants × 50 fixed seeds on seven text-to-image models, 18,900 images; with the
-            guidance sweep, counter-specification ladders and empty-prompt runs, {STATS.images.toLocaleString()}+ in
+            guidance sweep and counter-specification ladders, {STATS.images.toLocaleString()}+ in
             total
           </p>
         </motion.div>

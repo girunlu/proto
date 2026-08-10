@@ -42,3 +42,26 @@ export function niceTicks(lo: number, hi: number, count = 4): number[] {
   }
   return best.length >= 2 ? best : [lo, hi]
 }
+
+/** Which nav stop is the reader in? The last one *down the page* whose top has
+    passed `mark` — so the winner is the greatest `top` still ≤ mark.
+
+    The version this replaces assigned the winner by iterating the stop list and
+    keeping the final match, which silently required that list to be written in
+    DOM order. Nothing enforced it, and reordering the page's parts is exactly
+    the edit that breaks it: a stop listed before one that actually sits above it
+    can never hold the highlight, because the later array entry always overwrites
+    it. Comparing measured positions has no such requirement.
+
+    `top: null` = the stop's element is not in the DOM (a dismissed part); it is
+    skipped rather than treated as position 0. */
+export function pickActive(stops: { id: string; top: number | null }[], mark: number): string {
+  let current = stops[0].id
+  let lowest = -Infinity
+  for (const s of stops) {
+    if (s.top == null || s.top > mark || s.top <= lowest) continue
+    lowest = s.top
+    current = s.id
+  }
+  return current
+}

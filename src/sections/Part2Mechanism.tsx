@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { SceneShell, Reveal, Panel, TierNote, InfoBox } from '../components/Scene'
-import { ZoomImage, Picker, BoxPicker, MetricToggle, HowItWorks, useMagnet } from '../components/Viz'
+import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
+import { ZoomImage, Picker, BoxPicker, MetricToggle, HowItWorks, Setup, useMagnet } from '../components/Viz'
 import { Sd21Only } from '../components/ModelBar'
 import { rgb, rgba } from '../lib/colors'
 import { niceTicks } from '../lib/utils'
@@ -11,8 +11,8 @@ import {
   LAION,
 } from '../data/part2'
 import { swapImgSeed } from '../data/uiv2'
-import { lockFit, fitCurve, dist as xmDist, intraset as xmIntraset, type Ruler } from '../data/crossmodel'
-import { useModel, isSd21 } from '../data/modelData'
+import { lockFit, fitCurve, matrix, dist as xmDist, intraset as xmIntraset, type Ruler } from '../data/crossmodel'
+import { useModel, isSd21, MODEL_NAME } from '../data/modelData'
 
 const MONO = 'JetBrains Mono'
 const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
@@ -133,8 +133,8 @@ function CommitEarlyScene() {
 
   return (
     <SceneShell
-      number="08"
-      kicker="Part IV · the mechanism · finding 9"
+      number="06"
+      kicker="Part III · the mechanism · finding 9"
       title={<>Which country it depicts is settled in the <em className="font-display italic text-amber-200">first third</em> of generation.</>}
     >
       <Reveal>
@@ -143,18 +143,40 @@ function CommitEarlyScene() {
           another's. If the finished image still looks like the first country, its identity was decided before we
           intervened.
         </p>
-        <p className="mt-4 max-w-2xl font-mono2 text-[11px] leading-5 text-foreground/50">
-          Measured on <strong className="text-foreground/70">12 seeds</strong> per swap point rather than the 50 used
-          elsewhere: 24 directions × 5 step points × 12 seeds is already 1,440 interrupted generations.
-        </p>
         <Sd21Only />
       </Reveal>
 
       <Reveal delay={0.05}>
-        <div className="mt-6 max-w-2xl">
-          <InfoBox title="technical detail · the mid-generation swap">
-            DDIM trajectories are deterministic per seed: generation starts with prompt A and is re-conditioned to prompt B at one of five swap points in the 30-step schedule, 12 seeds per point, 24 direction pairs. The outcome is which country's centroid the final embedding sits nearer. A logistic fit per direction puts the switchover at step 9.6 of 30 (95% CI 8.4–11.3); two of the 24 fits did not converge and are drawn without a curve.
-          </InfoBox>
+        <div className="mt-6 max-w-3xl">
+          <Setup
+            rows={[
+              { k: 'what we ran', v: 'A 30-step generation started on one country’s prompt and quietly re-conditioned to another’s at step k. DDIM trajectories are deterministic per seed, so the only thing that changes is when we intervened.' },
+              { k: 'how much', v: '24 direction pairs × 5 swap points × 12 seeds = 1,440 interrupted generations. Twelve seeds rather than the usual fifty because each point is a separate run.' },
+              { k: 'what we measured', v: 'Which country’s centroid the finished image’s embedding sits nearer to.' },
+              { k: 'how we know', v: 'A logistic fit per direction puts the switchover at step 9.6 of 30 (95% CI 8.4–11.3). Two of the 24 fits did not converge and are drawn without a curve rather than smoothed over.' },
+            ]}
+          detail={<>
+              <p>
+                <strong>Why the swap is clean.</strong> DDIM is deterministic, so the same seed run twice gives the
+                same trajectory. Re-conditioning at step k therefore isolates one variable, when the intervention
+                happened, with the noise schedule and the seed held identical.
+              </p>
+              <p>
+                <strong>The fit.</strong> Five swap points per direction, 12 seeds each, outcome coded as “landed
+                nearer B”. A logistic curve is fitted per direction and the switchover is where it crosses 0.5;
+                confidence intervals are bootstrapped. Pooled across directions that lands at step 9.6 of 30.
+              </p>
+              <p>
+                <strong>Failures are drawn as failures.</strong> Two of the 24 directions (family EG→RU, funeral IN→RU)
+                did not converge to a usable fit. They are shown with their five measured points and no curve rather
+                than smoothed into a line that the data does not support.
+              </p>
+              <p>
+                <strong>Scope.</strong> This is the microscope tier and it is SD 2.1 only, by design, repeating 1,440
+                interrupted generations per model was never the plan. Treat it as done, not pending.
+              </p>
+          </>}
+        />
         </div>
       </Reveal>
 
@@ -294,6 +316,198 @@ function CommitEarlyScene() {
           </p>
         </Panel>
       </Reveal>
+    </SceneShell>
+  )
+}
+
+/* ── Scene 07 · not the text encoder (F12) ───────────────────────────────── */
+
+/* Restored 2026-08-10 (Giray) from frontend/proto @ ec2f943f, where it was
+   scene 09 before the 2026-08-06 restructure deleted it. It sits here, straight
+   after the prompt switching: that scene shows *when* the country is decided,
+   this one rules out the remaining innocent explanation for *where* it comes
+   from — the text encoder rather than the drawing. Every dependency (matrix(),
+   crossmodel.matrices, HowItWorks) survived the deletion untouched. */
+
+/* Each grid is scaled to its OWN range. Sharing one scale let the image grid's
+   larger spread wash the text grid out to near-blank, which is precisely the
+   comparison the reader is being asked to make. */
+function BigMatrix({ m, kind, title, sub }: {
+  m: NonNullable<ReturnType<typeof matrix>>
+  kind: 'txt' | 'img'
+  title: string
+  sub: string
+}) {
+  const mat = kind === 'txt' ? m.txt : m.img
+  const labels = m.countries
+  const [hover, setHover] = useState<{ i: number; j: number } | null>(null)
+  /* One grade for both grids (2026-08-10, Giray). Both encode the same job —
+     magnitude — so both take the page's sequential hue, the same amber ramp
+     scene 02's heatmap uses. The old sky/red split read as two different
+     measurements when the whole point is one measurement taken twice. */
+  const cv = '--c-amber'
+
+  const dists = mat.flatMap((row, i) => row.map((v, j) => (i === j ? null : 1 - v))).filter((v): v is number => v !== null)
+  const lo = Math.min(...dists)
+  const hi = Math.max(...dists)
+  const norm = (d: number) => (hi === lo ? 0.5 : (d - lo) / (hi - lo))
+
+  return (
+    <div>
+      {/* the title carried the grid's identity in its colour while the two ramps
+          differed; with one ramp it wears a text token and the words do the work */}
+      <div className="font-mono2 text-[11px] text-foreground/75">{title}</div>
+      <div className="font-mono2 text-[10px] leading-4 text-foreground/40">{sub}</div>
+      <div className="mt-3 grid gap-[2px]" style={{ gridTemplateColumns: `52px repeat(${labels.length}, minmax(0,1fr))` }}>
+        <div />
+        {labels.map((l) => (
+          <div key={l} className="pb-1 text-center font-mono2 text-[9px] text-foreground/45">{l === 'default' ? 'plain' : l}</div>
+        ))}
+        {labels.map((rl, i) => (
+          <Fragment key={rl}>
+            <div className="pr-1.5 text-right font-mono2 text-[9px] leading-8 text-foreground/45">
+              {rl === 'default' ? 'plain' : rl}
+            </div>
+            {mat[i].map((sim, j) => {
+              const d = 1 - sim
+              const t = i === j ? 0 : norm(d)
+              const on = hover?.i === i && hover?.j === j
+              return (
+                <div
+                  key={`${rl}-${j}`}
+                  onMouseEnter={() => setHover({ i, j })}
+                  onMouseLeave={() => setHover(null)}
+                  className={`flex h-8 items-center justify-center rounded-sm font-mono2 text-[9px] transition ${on ? 'ring-1 ring-foreground/60' : ''}`}
+                  style={{
+                    background: i === j ? 'hsl(var(--grid))' : rgba(cv, 0.1 + 0.85 * t),
+                    color: t > 0.55 ? '#0b0b10' : 'hsl(var(--foreground) / 0.7)',
+                  }}
+                >
+                  {i === j ? '' : d.toFixed(2)}
+                </div>
+              )
+            })}
+          </Fragment>
+        ))}
+      </div>
+      {/* this grid's own scale, printed with its own end points */}
+      <div className="mt-3 flex items-center gap-2">
+        <span className="font-mono2 text-[9px] text-foreground/45">{lo.toFixed(2)}</span>
+        <span
+          className="h-2.5 flex-1 rounded-sm"
+          style={{ background: `linear-gradient(90deg, ${rgba(cv, 0.1)}, ${rgba(cv, 0.95)})` }}
+        />
+        <span className="font-mono2 text-[9px] text-foreground/45">{hi.toFixed(2)}</span>
+      </div>
+      {/* Both grids now share one ramp, so nothing but this line tells the reader
+          the two scales are different. It carried a /35 opacity when the colour
+          split did that job; at /55 it is actually legible. */}
+      <p className="mt-1 font-mono2 text-[9px] leading-4 text-foreground/55">
+        nearest and furthest pair in <em>this</em> grid. The two grids measure in different spaces, so each is shaded
+        over its own range and the same shade means different numbers on either side. Read the <em>pattern</em>, never
+        the colour.
+      </p>
+      {/* The hover readout ("Nigeria vs the plain prompt: 0.251 apart") is off,
+          2026-08-10 (Giray) — this scene only. Every cell already prints its own
+          number, so the readout restated it three inches lower, and its extra
+          decimal invited exactly the cross-grid magnitude comparison the prose
+          above now warns against. Hover still lifts the cell; only the number
+          went. */}
+    </div>
+  )
+}
+
+function TextEncoderScene() {
+  const { model } = useModel()
+  const [sit, setSit] = useState<Sit>('wedding')
+  /* Tier C: all seven models are here now. The text side is each model's own
+     encoder stack — the 2026-07-27 fix, since only SDXL is CLIP-family — and the
+     image side is that model's own 50-image sets. */
+  const m = matrix(model, sit)
+  /* the per-event Mantel rows were computed here for the panel removed on
+     2026-08-10; matrix() still carries r and p per (model, event) if it returns */
+  if (!m) return null
+  return (
+    <SceneShell
+      number="07"
+      kicker="Part III · the mechanism · finding 12"
+      title={<>The assumption is added <em className="font-display italic text-amber-200">while drawing</em>, not read off the prompt.</>}
+    >
+      <Reveal>
+        <p className="prose-scene max-w-2xl">
+          One more innocent explanation to rule out. Before any picture is drawn, the sentence you typed is turned into
+          numbers by a separate component, the text encoder. Perhaps that component already puts “a wedding” and “a
+          wedding in the USA” next to each other, and the image half is simply following orders. If so, the shape of
+          the two geometries should match.
+        </p>
+      </Reveal>
+
+      <Reveal delay={0.05}>
+        <div className="mt-8 max-w-3xl">
+          <Setup
+            rows={[
+              { k: 'what we compared', v: 'For one event, all nine prompts measured twice over: once as sentences in the model’s own text encoder, once as the 50-image sets those sentences actually produce.' },
+              { k: 'what would settle it', v: 'If the picture geometry were inherited from the sentence geometry, the two grids would have the same shape, the same pairs near, the same pairs far.' },
+              { k: 'how we know', v: 'A Mantel test compares two distance grids and returns r, from 0 (no shared shape) to 1 (identical). Its p-value comes from reshuffling the labels 10,000 times.' },
+              { k: 'the limit', v: 'The two grids measure in different spaces, so only their shape can be compared, never their magnitudes.' },
+            ]}
+          detail={<>
+              <p>
+                <strong>Each model reads with its own encoder.</strong> The text side is not CLIP standing in for
+                everyone, only SDXL is CLIP-family. Every model's own encoder stack embeds the nine prompts, which is
+                the only version of this test that can support a claim about that model.
+              </p>
+              <p>
+                <strong>The Mantel test.</strong> Two 9×9 distance grids, correlated entry-by-entry over the
+                off-diagonal, with significance from 10,000 label reshuffles. It is a test of <em>shape</em>: whether
+                the pairs that are near in one grid are the pairs that are near in the other.
+              </p>
+              <p>
+                <strong>The result is a null, and that is the finding.</strong> Across the six other models' native
+                encoders only a small minority of event × model combinations show any significant relationship. If the
+                separation were inherited from the prompt geometry, this is where it would show, and it does not.
+              </p>
+          </>}
+        />
+        </div>
+      </Reveal>
+
+      <Reveal delay={0.08}>
+        <Panel className="mt-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
+              the same nine prompts, measured two ways
+            </div>
+            <BoxPicker label="event" value={sit} onChange={setSit} options={SIT_OPTS} size="sm" />
+          </div>
+          <div className="mt-6 grid gap-8 lg:grid-cols-2">
+            <BigMatrix
+              m={m}
+              kind="txt"
+              title="as sentences · before any image exists"
+              sub={`how far apart the nine prompts are, read by ${MODEL_NAME[model]}'s own text encoder`}
+            />
+            <BigMatrix m={m} kind="img" title="as pictures · once they are drawn" sub="how far apart the nine 50-image sets are" />
+          </div>
+          {/* No prose under the grids, 2026-08-10 (Giray). Do not write a sentence
+              here comparing the two grids' magnitudes — that is what used to be
+              here ("in the picture grid the same pair is dramatically farther
+              apart") and it was false: on SD 2.1 the wedding/Nigeria pair is 0.40
+              apart as sentences and 0.25 as pictures, with the image distance the
+              smaller one in four of the seven models. It cannot be repaired by
+              picking a different pair either — a cosine in text space and a cosine
+              in image space are different rulers, so no magnitude claim across the
+              two grids is meaningful. Only the shape of the two grids can be
+              compared, which is what the reader is asked to do by eye. */}
+        </Panel>
+      </Reveal>
+
+      {/* The Mantel panel ("does the sentence pattern predict the picture
+          pattern?") is REMOVED 2026-08-10 (Giray). It reported r per event with a
+          permutation p, and the answer was a null: the sentence geometry does not
+          predict the picture geometry. The two grids above now carry the scene on
+          their own. NATIVE_MANTEL and the per-matrix r/p are still exported and
+          still in crossmodel.json, so this can be rebuilt from data if wanted. */}
     </SceneShell>
   )
 }
@@ -618,6 +832,7 @@ export default function Part2Mechanism() {
   return (
     <>
       <CommitEarlyScene />
+      <TextEncoderScene />
       {/* Scene 11 (the LAION inheritance null) is DISMISSED, 2026-08-06. The
           component stays compiled above as a named export — restore
           <LaionScene /> here to bring it back. */}

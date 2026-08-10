@@ -67,13 +67,20 @@ export default function Home() {
       <div id="p4">
         <Part4Assumptions />
       </div>
-      <PartDivider label="Part III · the escape" sub="counter-specifying the named assumptions, one clause at a time · measured" />
-      <div id="p3">
-        <Part6Escape />
-      </div>
-      <PartDivider label="Part IV · the mechanism" sub="how deep does the assumption sit? settled in the first third of denoising" />
+      <PartDivider label="Part III · the mechanism" sub="how deep does the assumption sit? settled in the first third of denoising" />
       <div id="p2">
         <Part2Mechanism />
+      </div>
+      {/* Reordered 2026-08-10 (Giray): the mechanism now precedes the escape — you
+          need to know when the choice is made before it means anything that a clause
+          cannot undo it. The guidance knob came out of the extras and opens the part:
+          it is the cheapest thing a user would reach for, so it gets refused first,
+          and the prompting follows. Anchors keep their old ids (#p2/#p3) so existing
+          links and the Overview jump list do not break. */}
+      <PartDivider label="Part IV · the escape" sub="turning the dial, then counter-specifying the named assumptions one clause at a time · measured" />
+      <div id="p3">
+        <CfgScene />
+        <Part6Escape />
       </div>
       {/* Part V · an outside reference — DISMISSED 2026-08-06 (unreliable reference set).
           Restore the import above and this block to bring it back:
@@ -82,16 +89,18 @@ export default function Home() {
         <Part5Reality />
       </div>
       */}
-      <PartDivider violet label="Part V · is it just this model?" sub="the identical frozen instrument, run in full on six more models · all real data" />
-      <div id="xa">
-        <BranchAModels />
-        <Part7Consensus />
-      </div>
-      <PartDivider label="extras · more attempts at undoing the default" sub="the guidance knob, and what a clause can move · measured, off the main line of the argument" />
+      {/* The cross-model part (was Part V) moved into the extras wholesale on
+          2026-08-10 (Giray), ahead of what was already there — so the steering
+          scene is now the last thing on the page before the closing. It keeps its
+          #xa anchor, which resolves once the extras are open. */}
+      <PartDivider label="extras · across models" sub="how far the cultural assumptions agree from one model to the next, and what the attempts to undo them actually report" />
       <div id="p6">
         {showExtras ? (
           <>
-            <CfgScene />
+            <div id="xa">
+              <BranchAModels />
+              <Part7Consensus />
+            </div>
             <Part6Steer />
             <div className="mx-auto max-w-6xl px-6 pt-12 text-center">
               <button
@@ -111,10 +120,10 @@ export default function Home() {
               onClick={() => setShowExtras(true)}
               className="rounded-md border border-border px-4 py-2 font-mono2 text-xs text-foreground/60 transition hover:border-amber-300/50 hover:text-amber-200"
             >
-              show the two scenes
+              show the extras
             </button>
             <p className="mt-3 font-mono2 text-[10px] tracking-wider text-foreground/35">
-              the guidance knob · what a clause can move
+              cross-model agreement on the named assumptions, and the reverting attempts, reported
             </p>
           </div>
         )}

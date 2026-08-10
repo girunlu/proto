@@ -1,10 +1,10 @@
 import { Fragment, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { SceneShell, Reveal, Panel, TierNote, InfoBox } from '../components/Scene'
+import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
 import { CountUp } from '../components/CountUp'
 import { rgb, rgba } from '../lib/colors'
 import branchA from '../data/branchA.json'
-import { ZoomImage, BoxPicker, BarRow, MetricToggle } from '../components/Viz'
+import { ZoomImage, BoxPicker, BarRow, MetricToggle, Setup } from '../components/Viz'
 import { XM, xmImgPath, Q_TEXT } from '../data/uiv2'
 import { dist as xmDist, RULER_MAX, type Ruler } from '../data/crossmodel'
 import { useModel, modelSeeds, type ModelId } from '../data/modelData'
@@ -477,8 +477,8 @@ export default function BranchAModels() {
           named export; restore this SceneShell to bring it back. */}
 
       <SceneShell
-        number="09"
-        kicker="Part V · zero exceptions"
+        number="X1"
+        kicker="extras · across models · zero exceptions"
         title={
           <>
             Thirty-six of thirty-six.
@@ -496,10 +496,33 @@ export default function BranchAModels() {
           </p>
         </Reveal>
         <Reveal delay={0.05}>
-          <div className="mt-6 max-w-2xl">
-            <InfoBox title="technical detail · the replication setup">
-              The frozen grid (54 prompts × 50 fixed seeds, identical instrument) re-run on Flux.1-dev, Kolors, SDXL, SD 3.5 Large, Qwen-Image and Hunyuan-DiT; a cell clears when the country-named set sits farther from the model's own default than the US set at permutation p &lt; 0.05. With 288 simultaneous tests, the counts are Benjamini–Hochberg corrected (5% false-discovery rate): 286 of 288 distance gaps survive; the homogeneity count falls 168 → 158 in either direction and 134 → 130 of the 196 predicted-direction cells, with a wide per-model spread: 18 of 48 in Qwen-Image up to 36 of 48 in SD 2.1 and SD 3.5 Large.
-            </InfoBox>
+          <div className="mt-6 max-w-3xl">
+            <Setup
+              rows={[
+                { k: 'what we ran', v: 'The frozen grid, 54 prompts × 50 fixed seeds, the identical instrument, re-run in full on Flux.1-dev, Kolors, SDXL, SD 3.5 Large, Qwen-Image and Hunyuan-DiT.' },
+                { k: 'when a cell clears', v: 'When the country-named set sits farther from that model’s own default than the US set does, at permutation p < 0.05.' },
+                { k: 'how we know', v: 'With 288 simultaneous tests the counts are Benjamini–Hochberg corrected at a 5% false-discovery rate: 286 of 288 distance gaps survive.' },
+                { k: 'the limit', v: 'Homogeneity is the weaker half: 168 → 158 in either direction, 134 → 130 of the 196 predicted-direction cells, and the per-model spread is wide, 18 of 48 in Qwen-Image up to 36 of 48 in SD 2.1 and SD 3.5 Large.' },
+              ]}
+            detail={<>
+                <p>
+                  <strong>Identical instrument, not a re-implementation.</strong> The same 54 prompts, the same 50 seed
+                  values, the same embedding model, the same annotator and the same frozen battery. Each model runs at
+                  its own documented guidance scale, which is the one parameter that cannot be held constant without
+                  handicapping some of them.
+                </p>
+                <p>
+                  <strong>Multiple comparisons.</strong> 288 simultaneous tests invite false positives, so counts are
+                  Benjamini–Hochberg corrected at a 5% false-discovery rate. The distance result barely moves under
+                  correction (286 of 288). The homogeneity result does move, and both numbers are shown.
+                </p>
+                <p>
+                  <strong>What it does not settle.</strong> Six models is not the ecosystem, and they are not
+                  independent, several share training-data lineage. A property common to all seven is evidence of a
+                  shared origin, not proof of one.
+                </p>
+            </>}
+          />
           </div>
         </Reveal>
         <ReplicationWall />
@@ -526,8 +549,8 @@ export default function BranchAModels() {
       </SceneShell>
 
       <SceneShell
-        number="10"
-        kicker="Part V · whose assumptions are they? · SD 2.1's own, checked elsewhere"
+        number="X2"
+        kicker="extras · across models · whose assumptions are they? · SD 2.1's own, checked elsewhere"
         title={
           <>
             A third of the worldview is <span className="text-emerald-300">inherited</span>.
@@ -543,10 +566,29 @@ export default function BranchAModels() {
           </p>
         </Reveal>
         <Reveal delay={0.05}>
-          <div className="mt-6 max-w-2xl">
-            <InfoBox title="technical detail · what persistence means">
-              SD 2.1's headline assumptions (the gemma4-matched 708-card table) were re-checked in the other six models' blind-questionnaire answers under the identical annotator setup: 217 of 708 persist in at least one other model, 141 are SD 2.1-only. A green chip fires in every one of the other six.
-            </InfoBox>
+          <div className="mt-6 max-w-3xl">
+            <Setup
+              rows={[
+                { k: 'what we compared', v: `SD 2.1’s own ${branchA.persistence.total} named assumptions, looked for again in the other six models’ blind-questionnaire answers.` },
+                { k: 'what we found', v: `${branchA.persistence.ecosystem} of the ${branchA.persistence.total} persist in at least one other model; ${branchA.persistence.sd21_only} are SD 2.1’s alone.` },
+                { k: 'one instrument', v: 'The same annotator, questions and threshold read every model, so a card meaning something different in one column than another is not a way this comparison can fail.' },
+              ]}
+            detail={<>
+                <p>
+                  <strong>One instrument, which this study did not always have.</strong> An earlier version scored
+                  SD 2.1 with two annotators and the cross-models with one, so a persistence count confounded “this
+                  assumption is absent there” with “our detector was less sensitive there”, and the page had to print
+                  two different SD 2.1 totals. gemma4 became the sole annotator on 2026-07-31 and that asymmetry is
+                  gone: every column here is the same detector at the same threshold.
+                </p>
+                <p>
+                  <strong>Reading the split.</strong> 217 of 708 appearing in at least one other model is a floor, not a
+                  ceiling: an assumption can be present in another model and simply fall below its naming threshold.
+                  “SD 2.1-only” therefore means “not named elsewhere by this instrument”, which is a weaker statement
+                  than “absent elsewhere”.
+                </p>
+            </>}
+          />
           </div>
         </Reveal>
         <SharedWorldview />
