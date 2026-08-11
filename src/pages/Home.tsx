@@ -59,7 +59,7 @@ const SECTIONS = {
   p3: {
     /* no sub: the section above it already promises "when during generation they
        settle", so a caption here would say it twice. */
-    title: 'When Country-Specific Assumptions Stabilize',
+    title: 'When country-specific assumptions stabilize',
   },
   p6: {
     title: 'Appendix',
@@ -149,7 +149,7 @@ export default function Home() {
               show the appendix
             </button>
             <p className="mt-3 font-mono2 text-[10px] tracking-wider text-foreground/35">
-              is the Western default a property of this one model?
+              is the Western alignment a property of this one model?
             </p>
           </div>
         )}

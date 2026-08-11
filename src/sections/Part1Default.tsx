@@ -356,7 +356,7 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
                   opacity: !cross || !hover ? 1 : hover.code === code ? 1 : 0.45,
                 }}
               >
-                {code === 'default' ? 'default' : code}
+                {code === 'default' ? 'unspecified' : code}
               </div>
             ))}
           </div>
@@ -516,7 +516,7 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
                 </div>
                 <div className="mt-1 font-mono2 text-[10px] text-foreground/45">
                   {c.d
-                    ? `${c.d.mean.toFixed(3)} from the unspecified prompt · very likely ${c.d.ci_low.toFixed(2)}–${c.d.ci_high.toFixed(2)}`
+                    ? `${c.d.mean.toFixed(3)} from the unspecified prompt · uncertainty interval ${c.d.ci_low.toFixed(2)}–${c.d.ci_high.toFixed(2)}`
                     : 'the unspecified prompt, the reference point'}
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-1.5">
@@ -859,7 +859,7 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
               <circle cx={X(c[0])} cy={Y(c[1])} r={(compact ? 6 : 8) / k} fill="none" stroke={rgb(cv)} strokeWidth={2 / k} />
               {!compact && (
                 <text x={X(c[0])} y={Y(c[1]) - 12 / k} textAnchor="middle" fontSize={9 / k} fill={rgb(cv)} fontFamily="JetBrains Mono">
-                  {name === 'default' ? 'default' : code}
+                  {name === 'default' ? 'unspecified' : code}
                 </text>
               )}
             </g>
@@ -899,7 +899,7 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
               />
               <div className="font-mono2 text-[11px] leading-5 text-foreground/55">
                 <span style={{ color: rgb(hover.code === 'default' ? CV_DEFAULT : C8[hover.code].cv) }}>
-                  {hover.code === 'default' ? 'default' : C8[hover.code].name}
+                  {hover.code === 'default' ? 'unspecified prompt' : C8[hover.code].name}
                 </span>
                 {' · '}seed {hover.seed}
                 <br />a {situation}

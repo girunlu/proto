@@ -17,7 +17,7 @@ const MOVES: { id: string; part: string; claim: string; how: string }[] = [
   {
     id: 'p1',
     part: 'I · the default',
-    claim: 'A default prompt already has a nationality.',
+    claim: 'An unspecified prompt already has a nationality.',
     how: 'distance from “a wedding” to “a wedding in …”, measured seed by seed and mapped',
   },
   {

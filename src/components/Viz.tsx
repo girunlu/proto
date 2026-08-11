@@ -209,7 +209,7 @@ export function BarRow({
           <span
             className="pointer-events-none absolute top-1/2 flex -translate-y-1/2 items-center"
             style={{ left: pct(ci[0]), width: `${((ci[1] - ci[0]) / max) * 100}%` }}
-            title={`the true value is very likely between ${ci[0].toFixed(3)} and ${ci[1].toFixed(3)}`}
+            title={`uncertainty interval ${ci[0].toFixed(3)}–${ci[1].toFixed(3)}`}
           >
             <span className="h-2.5 w-px bg-foreground/70" />
             <span className="h-px flex-1 bg-foreground/70" />

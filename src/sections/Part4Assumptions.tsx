@@ -17,6 +17,7 @@ import {
 } from '../data/uiv2'
 import { useModel, modelImg, modelSeeds, seedCount, modelVqa, isSd21, MODEL_NAME, CROSS_MODEL_NOTE } from '../data/modelData'
 import { openForModel, shiftFor, type ShiftRow } from '../data/crossmodel'
+import { STATS } from '../data/research'
 
 const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
 const CODE_OPTS = [
@@ -73,6 +74,9 @@ function DistributionStrip({ sit, code }: { sit: Sit; code: Code | 'default' }) 
    version listed all 33 in one ramp with three tier words and no threshold
    shown, which asked the reader to infer the boundary themselves. */
 const SETTLED = 0.8
+/* the weaker tier's floor, verified against attribute_summary.json: headline cards
+   run 0.800–1.000 consistency, secondary 0.600–0.780 */
+const SECONDARY = 0.6
 /* how many open-answer clusters get their own bar before the tail is folded */
 const OPEN_SHOWN = 4
 
@@ -337,11 +341,18 @@ function NamedScene() {
           example, “Is food visible?” where food is the semantic concept. Then we aggregate the answers across the
           prompt images.
         </p>
+        {/* Rewritten 2026-08-11 (Giray). "Where 50 answers converge" named no
+            threshold, and "the weaker tier" was defined nowhere on the page once the
+            Setup blocks went. Both floors are now stated as a count of images, and
+            the totals are scoped to SD 2.1, which is whose table they come from. */}
         <p className="prose-scene mt-4 max-w-2xl text-foreground/55">
-          {BATTERY.universal} questions are asked of every prompt and {BATTERY.perCellMin}–{BATTERY.perCellMax} of any
-          one, {BATTERY.distinct} distinct across the study. Where 50 answers converge, that is a named assumption:{' '}
-          <strong className="text-foreground/75">{CARDS_HEADLINE} firm ones, {CARDS_TOTAL} counting the weaker
-          tier</strong>.
+          Every prompt is asked the same {BATTERY.universal} questions, plus a few that only apply to its scene,
+          giving {BATTERY.perCellMin} or {BATTERY.perCellMax} in all and {BATTERY.distinct} distinct across the study.
+          When one answer comes back for at least {Math.round(SETTLED * STATS.seeds)} of a prompt's {STATS.seeds}{' '}
+          images, we treat it as a named assumption: something the model tends to decide that the prompt left open.
+          Stable Diffusion 2.1 has <strong className="text-foreground/75">{CARDS_HEADLINE}</strong> of these, or{' '}
+          <strong className="text-foreground/75">{CARDS_TOTAL}</strong> if answers reaching{' '}
+          {Math.round(SECONDARY * STATS.seeds)} of {STATS.seeds} are also counted.
         </p>
       </Reveal>
 

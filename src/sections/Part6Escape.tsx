@@ -681,7 +681,7 @@ export default function Part6Escape() {
                 </p>
                 <p>
                   • <strong>The exception</strong> is a celebration in Egypt, where the count falls 8 → 6 → 4 → 3. Its
-                  rehearsed scene was the shallowest to begin with, sitting closest to the default prompt, so resistance
+                  rehearsed scene was the shallowest to begin with, sitting closest to the unspecified prompt, so resistance
                   tracks how deeply the scene is dug in rather than which country was named.
                 </p>
               </div>

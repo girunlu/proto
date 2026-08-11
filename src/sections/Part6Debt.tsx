@@ -283,7 +283,7 @@ export default function Part6Debt() {
             <div className="space-y-2 text-sm leading-6 text-foreground/70">
               <p>
                 • <strong>The blind spot cuts the friendly way here.</strong> The detector clears its bar more easily on
-                already-collapsed output, so a prompt that sits close to the default looks <em>cheap</em> to specify
+                already-collapsed output, so a prompt that sits close to the unspecified one looks <em>cheap</em> to specify
                 precisely because the instrument cannot see what it assumes. The bill is if anything understated where
                 it is lowest.
               </p>

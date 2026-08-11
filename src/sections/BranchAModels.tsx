@@ -391,7 +391,7 @@ function StrongerClaims() {
       </div>
       <p className="mt-4 max-w-3xl text-sm leading-6 text-foreground/60">
         Where the USA is not the single closest country, the closest is almost always Germany or Russia, and the
-        exceptions concentrate on “a celebration”, the scene with the most diffuse default of the six. The pull is
+        exceptions concentrate on “a celebration”, the scene whose unspecified prompt is the most diffuse of the six. The pull is
         Western, but a gradient across several Western countries, not a bullseye on one.
       </p>
     </Panel>
@@ -493,7 +493,7 @@ export default function BranchAModels() {
         <Reveal delay={0.1}>
           <p className="prose-scene mb-8 max-w-2xl">
             Is “…in Nigeria” farther from each model's own unspecified prompt than “…in the USA”? Not{' '}
-            <em>usually</em>. <strong>Always.</strong> The Western default is not a property of one
+            <em>usually</em>. <strong>Always.</strong> The Western alignment is not a property of one
             checkpoint; it is a property of how these systems are made. And the furthest country from the unspecified prompt is
             never the US or Germany: in <strong>{FURTHEST.south} of {FURTHEST.cells}</strong> model × scene cells it
             is India, Nigeria or Egypt, whichever model, whichever scene.
