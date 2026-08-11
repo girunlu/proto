@@ -22,10 +22,7 @@ export default function Closing() {
           scene ∴ ("Every image is a negotiation") are DISMISSED 2026-08-10 (Giray),
           ahead of a rewrite: the closing is being replaced by a conclusion /
           references / acknowledgement structure rather than this finale + stat grid.
-          Unmounted, not deleted, same treatment as Part III and Part V. Their JSX is
-          preserved below in this comment's sibling block; STAT_CELLS and the
-          instrument-check helper above still compile and feed nothing. To restore,
-          re-mount them ahead of the Sources scene. */}
+          STAT_CELLS above still compiles and feeds nothing. */}
 
       {/* Acknowledgements, Giray's text 2026-08-10, moved above the references and
           retitled on 2026-08-11 at Giray's request: the section is called what it is
@@ -117,9 +114,10 @@ export default function Closing() {
       {/* Trimmed 2026-08-10 (Giray) to the domain and the keywords. The five-author
           list with affiliations was the third printing of the same names (the hero's
           authors block is the first, the acknowledgements sit right above), and the
-          run specification (SD 2.1 · DDIM 30 steps · 768² · DINOv3-7B · gemma4) is
-          stated in the introduction's setup block and again in the model-weights list
-          twenty lines up. */}
+          run specification it also carried is deliberately not restated anywhere: the
+          per-model settings differ (each generator runs at its own documented guidance)
+          and no single line is true of all seven, so the weights list twenty lines up
+          names the exact repos instead. */}
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-5xl flex-col gap-3 px-6 py-10 md:flex-row md:items-center md:justify-between">
           <div className="font-mono2 text-[11px] leading-5 text-foreground/40">

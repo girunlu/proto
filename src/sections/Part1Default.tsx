@@ -616,7 +616,7 @@ function NationalityScene() {
             <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
               the whole board · 54 cells ·{' '}
               {gridMode === 'thumbs'
-                ? `4 of ${seedCount(model)} seeds each, ${roll === 0 ? 'typical → outlier' : 'random seeds'}`
+                ? `4 of ${seedCount(model)} seeds each, ${roll === 0 ? 'the least-alike four' : 'four at random'}`
                 : "distance from each row's unspecified prompt"}
             </div>
             {/* the same measurement, drawn two ways — pictures with a bar, or the
@@ -651,17 +651,30 @@ function NationalityScene() {
               controls={
                 <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-background/70 p-3">
                   <MetricToggle value={ruler} onChange={setRuler} showLabel={false} />
+                  {/* Two buttons, both always present, 2026-08-11 (Giray). "⚄ roll
+                      other seeds" and "typical → outlier" named the gesture rather
+                      than what you end up looking at, and the second only appeared
+                      once you had already left the default view — so the way back
+                      was invisible until you no longer needed telling it existed.
+                      They are now a labelled pair naming the two samples. */}
                   {gridMode === 'thumbs' && (
-                    <>
-                      <button onClick={() => setRoll((r) => r + 1)} className="chip !px-2.5 !py-1">
-                        ⚄ roll other seeds
-                      </button>
-                      {roll > 0 && (
-                        <button onClick={() => setRoll(0)} className="chip !px-2.5 !py-1">
-                          typical → outlier
+                    <div className="flex items-center gap-1 rounded-lg border border-border p-0.5">
+                      {([
+                        ['least-alike', roll === 0, () => setRoll(0)],
+                        ['random', roll > 0, () => setRoll((r) => r + 1)],
+                      ] as const).map(([label, on, act]) => (
+                        <button
+                          key={label}
+                          onClick={act}
+                          aria-pressed={on}
+                          className={`rounded-md px-2.5 py-1 font-mono2 text-[11px] transition ${
+                            on ? 'bg-amber-300/15 text-amber-200' : 'text-foreground/50 hover:text-foreground/80'
+                          }`}
+                        >
+                          show {label} images
                         </button>
-                      )}
-                    </>
+                      ))}
+                    </div>
                   )}
                 </div>
               }
@@ -673,16 +686,10 @@ function NationalityScene() {
             <Legend withDefault={false} />
           </div>
           {/* REMOVED 2026-08-10 (Giray): the DistanceRuler ("how to read a distance")
-              and the whole "how the gap for one event was tested" block (KnnNote,
-              the diffuse-event caveat and the evidence TierNote). Both are parked in
-              scratchpad/scene01_ruler_and_knn.tsx.
-
-              Note if either comes back: review 01 · R5.7 declined removing the
-              evidence block once before, because four disclosures existed nowhere
-              else on the page — the per-cell sorting test, its below-chance floor on
-              some models, the permutation result, and the CLIP-ruler replication.
-              Three of those now live in this scene's Setup detail tier; the
-              below-chance floor does not, and left with this block. */}
+              and the whole "how the gap for one scene was tested" block. One
+              disclosure went with them and is now stated nowhere: per-cell k-NN AUC
+              runs 0.46–1.00 across the cross-models, i.e. Flux's floor is below
+              chance. The page makes no separability claim that depends on it. */}
         </Panel>
       </Reveal>
     </SceneShell>
@@ -902,12 +909,9 @@ function UmapScatter({ situation, focus, ruler, compact = false }: {
             <p className="p-2 font-mono2 text-[11px] text-foreground/35">hover a point to see its image</p>
           )}
         </div>
-        {/* REMOVED 2026-08-10 (Giray): the "finding 5 · the countries are separable"
-            box (k-NN range, the silhouette caveat, the SD-2.1-only marker). Parked in
-            scratchpad/scene02_finding5_box.tsx.
-            It carried the one statement that the projection is a view rather than the
-            evidence, and the silhouette range that justified saying so. The Setup
-            detail tier on this scene still makes that point. */}
+        {/* REMOVED 2026-08-10 (Giray): the "the countries are separable" box (k-NN
+            range, the silhouette caveat, the SD-2.1-only marker). The prose above
+            still says the projection is a view of the evidence, not the evidence. */}
       </div>
     </div>
   )
@@ -1013,10 +1017,7 @@ function SectionLead() {
 export default function Part1Default() {
   return (
     <>
-      {/* Scene 01, "the unsaid", is DISMISSED 2026-08-10 (Giray), ahead of the
-          rewrite into intro / underspecified alignment / alignment source. The
-          UnsaidScene component above is intact and unreferenced; restore this line
-          to bring it back. Part I now opens on the nationality scene. */}
+      {/* Scene 01, "the unsaid", is DISMISSED 2026-08-10 (Giray). */}
       {/* <UnsaidScene /> */}
       {/* Order set 2026-08-10 by the section text: the UMAP projection first as the
           overview, then the same alignment measured directly in the embedding space,

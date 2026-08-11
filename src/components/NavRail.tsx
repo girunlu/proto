@@ -11,7 +11,7 @@ const STOPS = [
   { id: 'p2', label: 'alignment source' },
   { id: 'p4', label: 'semantic assumptions' },   // p3 (stabilization) is a subsection of p2 and has no stop
   { id: 'conc', label: '∴ · conclusion' },
-  { id: 'p6', label: '+ · extras' },
+  { id: 'p6', label: '+ · appendix' },
   { id: 'closing', label: '§ · references' },
 ]
 

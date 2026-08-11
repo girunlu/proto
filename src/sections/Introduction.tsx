@@ -1,8 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The introduction, and the image sets it rests on. Written 2026-08-10 (Giray's
-// text, verbatim) as the first of the new sections: introduction · underspecified
-// alignment · alignment source · semantic assumptions · assumption stabilization ·
-// conclusion · references · acknowledgements.
+// The introduction, and the image sets it rests on. Giray's text, verbatim.
+// It opens the page; Home.tsx carries the current section order.
 //
 // It replaces Overview.tsx, whose jump list was dismissed earlier the same day and
 // whose method paragraph is superseded by the setup prose here.
@@ -29,7 +27,7 @@ export default function Introduction() {
           between textual and visual concepts. These associations shape the model's assumptions about the world. When a
           prompt leaves details unspecified, the model relies on its assumptions to resolve the gaps. Some of these
           assumptions appear more often in the model output than others, reducing the model’s diversity and sometimes
-          reflecting harmful biases <Cite ids={['chinchure2024', 'eschner2025']} />.
+          reflecting harmful biases <Cite ids={['chinchure2024', 'eschner2025', 'default2026']} />.
         </p>
       </Reveal>
 

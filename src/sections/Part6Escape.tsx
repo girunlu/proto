@@ -231,7 +231,7 @@ export function CfgScene() {
           <div className="mt-6 border-t border-border pt-5">
             <TierNote
               tier="evidence"
-              text="50 seeds per point, bootstrap confidence intervals; the near-default lines have barely a gap to open, the finding is about the far ones."
+              text="50 seeds per point, bootstrap confidence intervals; the near-unspecified lines have barely a gap to open, the finding is about the far ones."
             />
           </div>
         </Panel>

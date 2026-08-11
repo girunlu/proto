@@ -426,10 +426,10 @@ function NamedScene() {
 
           {/* REMOVED 2026-08-10 (Giray): the red "caveat that rides on every count on
               this page" box (BLIND_SPOT) and the evidence TierNote under it.
-              BLIND_SPOT is still exported from data/part4.ts, so restoring is one
-              line. The cross-model strip caveat the TierNote carried, that the other
-              six span 24 published thumbnails rather than all 50, now appears only in
-              this scene's Setup rows. */}
+              The caveat it carried — that the six cross-models publish 24 thumbnails
+              of the 50, while every statistic uses all 50 — is stated on scene 02,
+              in the note above the grid that appears whenever the reader is not on
+              SD 2.1. BLIND_SPOT is still exported from data/part4.ts and unread. */}
         </Panel>
       </Reveal>
     </SceneShell>
@@ -449,7 +449,7 @@ function NamedScene() {
    this page does with small numbers. */
 /* MinorRow and its MINOR = 0.1 threshold collapsed the small shares into a
    one-line summary. Removed 2026-08-10 with the switch to showing every attribute
-   as a bar; the component is in scratchpad/part4_MinorRow.tsx if a cell ever grows
+   as a bar; MinorRow was removed with it if a cell ever grows
    long enough to need folding again. */
 
 function ShiftBar({ r, i, maxShare, cv, muted }: {

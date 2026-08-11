@@ -5,25 +5,19 @@ import Part1Default from '../sections/Part1Default'
 import { CommitEarlyScene, TextEncoderScene } from '../sections/Part2Mechanism'
 // The override (old Part III) is DISMISSED, 2026-08-06 — it spent a day mounted in the
 // extras section for review and came back out: the stereotyping-inversion scene and the
-// specifically-cultural control are out of the flow. Unmounted, not deleted.
+// specifically-cultural control are out of the flow.
 // import Part3Override from '../sections/Part3Override'
 import Part4Assumptions from '../sections/Part4Assumptions'
 // Part V (the outside reference, scene 12) is DISMISSED, 2026-08-06 — the collected
-// reference-photograph set is not reliable enough to anchor a comparison. Unmounted,
-// not deleted: the file and part5.ts's data stay in the tree. To bring it back:
-// restore this import, the divider and <div id="p5"> below, and the NavRail/Overview
-// entries.
+// reference-photograph set is not reliable enough to anchor a comparison.
 // import Part5Reality from '../sections/Part5Reality'
-// Scene 16·d, the prompt clinic ("try it yourself"), is DISMISSED 2026-08-06 —
-// unmounted, not deleted, same treatment as Part III. The file and remedy.json's
-// `clinic` block stay in the tree; nothing imports them. To bring it back: restore
-// this import and the <Part6Clinic /> below.
+// Scene 16·d, the prompt clinic ("try it yourself"), is DISMISSED 2026-08-06.
 // import Part6Clinic from '../sections/Part6Clinic'
-// Scene 16·a, the size of the bill, is DISMISSED 2026-08-06 — unmounted, not deleted.
-// Part VI now opens on scene 16. The file is intact (chart card, threshold slider,
-// predict-before-reveal) and remedy.json's `debt` block is untouched; restore this
-// import and the <Part6Debt /> below to bring the whole scene back.
+// Scene 16·a, the size of the bill, is DISMISSED 2026-08-06.
 // import Part6Debt from '../sections/Part6Debt'
+// Part6Escape's default export (scene 10, "the escape", the counter-specification
+// ladders) is DISMISSED 2026-08-11 — confirmed out, and the meta description in
+// index.html no longer advertises it. Only CfgScene from that file is mounted.
 import { CfgScene } from '../sections/Part6Escape'
 // import Part6Steer from '../sections/Part6Steer'  // dismissed 2026-08-10
 import BranchAModels from '../sections/BranchAModels'
@@ -65,7 +59,7 @@ const SECTIONS = {
     sub: 'switching the country partway through denoising, to find when the choice is already fixed',
   },
   p6: {
-    title: 'Extras',
+    title: 'Appendix',
     sub: 'the identical frozen instrument, re-run in full on six more models',
   },
 } as const
@@ -83,12 +77,13 @@ export default function Home() {
       <div id="intro">
         <Introduction />
       </div>
-      {/* ── the new section structure, 2026-08-10 (Giray) ────────────────────
-          introduction · underspecified alignment · alignment source · semantic
-          assumptions · assumption stabilization · conclusion · references ·
-          acknowledgements, with the extras kept.
+      {/* ── the section structure, current as of 2026-08-11 ───────────────────
+          introduction · the geographic alignment · the source of the alignment
+          (with "when assumptions stabilize" as a subsection of it) · the semantic
+          assumptions · conclusion · appendix · acknowledgements · references.
 
-          Anchors keep their historical ids so nothing that links here breaks.
+          Anchors keep their historical ids so nothing that links here breaks —
+          which is why they read p1, p2, p4, p3, p6 rather than in page order.
 
           Scene numbers were resequenced 01–08 in page order on 2026-08-10: they had
           drifted out of order and 03 was used twice. The "finding N" kickers went at
@@ -125,12 +120,10 @@ export default function Home() {
           <>
             <div id="xa">
               <BranchAModels />
-              {/* X3, the shared prior, is DISMISSED 2026-08-10 (Giray).
-                  Unmounted, not deleted: Part7Consensus.tsx is intact. */}
+              {/* X2, the shared prior, is DISMISSED 2026-08-10 (Giray). */}
               {/* <Part7Consensus /> */}
             </div>
-            {/* X3, "what a clause can move", is DISMISSED 2026-08-10 (Giray).
-                Unmounted, not deleted: Part6Steer.tsx is intact. */}
+            {/* X3, "what a clause can move", is DISMISSED 2026-08-10 (Giray). */}
             {/* <Part6Steer /> */}
             <div className="mx-auto max-w-6xl px-6 pt-12 text-center">
               <button
@@ -140,7 +133,7 @@ export default function Home() {
                 }}
                 className="rounded-md border border-border px-4 py-2 font-mono2 text-xs text-foreground/60 transition hover:border-amber-300/50 hover:text-amber-200"
               >
-                hide the extras
+                hide the appendix
               </button>
             </div>
           </>
@@ -150,7 +143,7 @@ export default function Home() {
               onClick={() => setShowExtras(true)}
               className="rounded-md border border-border px-4 py-2 font-mono2 text-xs text-foreground/60 transition hover:border-amber-300/50 hover:text-amber-200"
             >
-              show the extras
+              show the appendix
             </button>
             <p className="mt-3 font-mono2 text-[10px] tracking-wider text-foreground/35">
               is the Western default a property of this one model?

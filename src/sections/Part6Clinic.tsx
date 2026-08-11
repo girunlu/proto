@@ -62,7 +62,8 @@ export default function Part6Clinic() {
   const toggle = (q: string) =>
     setTicked((prev) => {
       const next = new Set(prev)
-      next.has(q) ? next.delete(q) : next.add(q)
+      if (next.has(q)) next.delete(q)
+      else next.add(q)
       return next
     })
 

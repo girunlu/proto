@@ -75,8 +75,7 @@ export default function Overview() {
           2026-08-10 (Giray): the part structure it indexes is being replaced
           (intro / underspecified alignment / alignment source / semantic
           assumptions / assumption stabilization / conclusion), so an index of the
-          old one would only go stale. Unmounted, not deleted, the block is in
-          scratchpad/overview_jumplist.tsx and MOVES still drives the title's
+          old one would only go stale. MOVES still drives the title's
           count. */}
 
       <Reveal delay={0.1}>

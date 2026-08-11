@@ -85,7 +85,10 @@ export default function Hero() {
       <LatentNoise />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,hsl(var(--background))_78%)]" />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-6 pt-28 pb-16">
+      <div /* max-w-6xl, not 5xl: every other section on the page is 6xl, so a 5xl hero
+           centred itself 4rem inside them and the title, byline and kicker all sat
+           indented against the introduction directly beneath. */
+        className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-6 pt-28 pb-16">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}>
           <div className="font-mono2 text-[11px] tracking-[0.35em] uppercase text-amber-200/70">
             An interactive explorable · explainable AI × human–computer interaction

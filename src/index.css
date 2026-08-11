@@ -322,8 +322,11 @@ input[type='range'].slider::-moz-range-thumb {
 /* Accessibility basics, not a preference (review B6). The only
    prefers-reduced-motion rule in this codebase used to live in App.css, which is
    Vite template boilerplate that nothing imports — so in practice there was none.
-   The hero canvas is handled separately in Hero.tsx: a CSS rule cannot stop a
-   requestAnimationFrame loop. */
+   This rule alone is NOT sufficient and never was: it only reaches CSS animations
+   and transitions, and nearly every animation on this page is JS-driven. The two
+   that matter are handled in code — framer-motion via <MotionConfig
+   reducedMotion="user"> in App.tsx, and the hero canvas in Hero.tsx, since a CSS
+   rule cannot stop a requestAnimationFrame loop. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

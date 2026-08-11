@@ -40,12 +40,20 @@ export interface Reference {
   role?: string
 }
 
-/* The thirteen Giray supplied, 2026-08-11, in the order the prose cites them:
-     [1,2] introduction · [3] geographic alignment · [4] semantic assumptions
-     [5] SD 2.1 · [6] SDXL · [7] SD 3.5 · [8] Kolors · [9] HunyuanDiT · [10] Qwen
-     [11] DINOv3 · [12] CLIP · [13] the annotator
-   Order is load-bearing: the introduction prints these numbers from GENERATORS[].ref
-   and the list renders its index, so inserting an entry renumbers the prose with it.
+/* Sorted into true citation order on 2026-08-11 — first appearance scrolling the
+   page, so a reader never sees a number go backwards:
+
+     1,2,3  introduction ¶1      10     geographic alignment lead
+     4      introduction ¶2      11,12  the two image encoders
+     5–9    the model list       13,14  semantic assumptions lead, then the annotator
+
+   Before this the order was thematic (prior work · generators · instruments) while
+   the comment claimed it was citation order; 8 of the 14 disagreed, and the markers
+   ran 1, 2, 14, 5, 6, 7, 8, 9, 10, 3, 11, 12, 4, 13 down the page.
+
+   Position is the only place a citation number exists — refNumber() reads this array
+   and the list renders its index — so a new reference goes in at its first-citation
+   point and every marker on the page renumbers itself. Nothing needs hand-editing.
 
    Every arXiv link here was opened and read back before being stored — the five
    supplied ids plus SDXL's, checked against title and first author, none of them
@@ -67,18 +75,20 @@ const REFS = [
     venue: 'Computer Graphics Forum, Vol. 44, No. 3',
   },
   {
-    id: 'basu2023',
-    authors: 'Basu, A., Venkatesh Babu, R., & Pruthi, D.',
-    year: 2023,
-    title: 'Inspecting the Geographical Representativeness of Images from Text-to-Image Models',
-    venue: '2023 IEEE/CVF International Conference on Computer Vision (ICCV). IEEE',
-  },
-  {
-    id: 'franchi2025',
-    authors: 'Franchi, G., et al.',
-    year: 2025,
-    title: 'Towards Understanding and Quantifying Uncertainty for Text-to-Image Generation',
-    venue: '2025 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR). IEEE',
+    /* Appended 2026-08-11 (Giray), cited alongside [1,2] in the introduction.
+       OpenReview blocks automated requests behind a browser check, so this is the one
+       entry here not machine-verified; Giray confirmed it from the forum page and the
+       PDF on 2026-08-11 — title exact, submission 16872, posted 26 May 2026 (revised
+       02 Jul), CC BY 4.0. "Anonymous" is not a placeholder: the PDF's byline is
+       literally "Anonymous ACL submission", as ARR papers are while under review.
+       The submission number is in `venue` because it is what makes an anonymous
+       preprint findable. */
+    id: 'default2026',
+    authors: 'Anonymous',
+    year: 2026,
+    title: 'Quantifying and Mitigating Default Behaviors in Text-to-Image Models',
+    venue: 'ACL Rolling Review, May 2026 cycle, submission 16872. OpenReview',
+    url: 'https://openreview.net/forum?id=qD2hf23Jb9',
   },
   {
     id: 'rombach2022',
@@ -131,6 +141,13 @@ const REFS = [
     url: 'https://arxiv.org/abs/2508.02324',
   },
   {
+    id: 'basu2023',
+    authors: 'Basu, A., Venkatesh Babu, R., & Pruthi, D.',
+    year: 2023,
+    title: 'Inspecting the Geographical Representativeness of Images from Text-to-Image Models',
+    venue: '2023 IEEE/CVF International Conference on Computer Vision (ICCV). IEEE',
+  },
+  {
     id: 'simeoni2025',
     authors: 'Siméoni, O., et al.',
     year: 2025,
@@ -144,6 +161,13 @@ const REFS = [
     year: 2021,
     title: 'Learning Transferable Visual Models from Natural Language Supervision',
     venue: 'International Conference on Machine Learning (ICML). PMLR',
+  },
+  {
+    id: 'franchi2025',
+    authors: 'Franchi, G., et al.',
+    year: 2025,
+    title: 'Towards Understanding and Quantifying Uncertainty for Text-to-Image Generation',
+    venue: '2025 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR). IEEE',
   },
   {
     id: 'gemma2026',
@@ -221,6 +245,6 @@ export const CLIP = {
 
 export const WEIGHTS: { group: string; models: { label: string; url: string }[] }[] = [
   { group: 'image generators', models: GENERATORS },
-  { group: 'the annotator, one model reads every image on this page', models: [ANNOTATOR] },
+  { group: 'the annotator', models: [ANNOTATOR] },
   { group: 'embeddings, the two rulers', models: [DINOV3, CLIP] },
 ]

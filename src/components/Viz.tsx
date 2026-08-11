@@ -29,10 +29,14 @@ export function RepoLink({ m }: { m: { label: string; url: string } }) {
    insert a reference and every marker on the page follows, and a mistyped id is a
    type error rather than a marker pointing at the wrong paper. */
 export function Cite({ ids }: { ids: RefId[] }) {
+  /* Sorted by number, not by the order the ids were typed. With the list in citation
+     order these already agree, but a marker that printed [3, 1] would be a visible
+     defect caused by an invisible one, and this costs a line. */
+  const sorted = [...ids].sort((a, b) => refNumber(a) - refNumber(b))
   return (
     <span className="whitespace-nowrap">
       [
-      {ids.map((id, i) => (
+      {sorted.map((id, i) => (
         <span key={id}>
           {i > 0 && ', '}
           <a href={`#ref-${id}`} className="text-foreground/70 underline decoration-border underline-offset-2 hover:decoration-amber-200">
@@ -256,7 +260,7 @@ export function MetricToggle({ value, onChange, showLabel = true }: {
 const RULER_STOPS = [
   { v: 0.0, t: 'the same prompt, twice', d: 'identical wording, different seeds' },
   { v: 0.06, t: '“a wedding” vs “a wedding in the USA”', d: 'the same pictures, essentially' },
-  { v: 0.26, t: 'the empty prompt vs any default', d: 'no prompt at all, for scale' },
+  { v: 0.26, t: 'the empty prompt vs any unspecified prompt', d: 'no prompt at all, for scale' },
   { v: 0.53, t: '“a wedding” vs “a wedding in Nigeria”', d: 'most of the way to another scene' },
   { v: 0.8, t: '“a wedding” vs “a breakfast”', d: 'two unrelated scenes: the ceiling' },
 ]

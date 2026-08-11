@@ -150,7 +150,9 @@ export function CommitEarlyScene() {
     <SceneShell
       number="06"
       kicker="the swap"
-      title={<>Fixed in the <em className="font-display italic text-amber-200">first third of denoising.</em></>}
+      /* No title, 2026-08-11 (Giray): the SubsectionHeader immediately above already
+         names this content ("When Country-Specific Assumptions Stabilize"), and a
+         scene headline under it was a second headline for one subsection. */
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
@@ -695,15 +697,18 @@ export function LaionScene() {
   const ptsB = rowsB.map((r) => ({ x: r.moved, y: r.output, cv: r.cv, label: r.label }))
   /* every value both panels draw, on one scale: the LAION neighbourhoods, this
      model's output homogeneity, and how far its prompts moved */
-  const yDomain = useMemo(() => {
+  /* Not memoized. `rows` is rebuilt on every render just above, so a useMemo keyed
+     on [rows] re-ran every time anyway — it cached nothing and blocked the React
+     Compiler from optimizing the component at all. Min/max over ~100 numbers. */
+  const yDomain = ((): [number, number] => {
     /* the selected model's homogeneity AND SD 2.1's published values, so the frame
        holds both and switching model moves the dots inside a scale that stays put */
     const all = [...rows.map((r) => r.output), ...LAION.rows.map((r) => r.output_intraset_sim)]
     const lo = Math.min(...all)
     const hi = Math.max(...all)
     const pad = (hi - lo) * 0.06
-    return [lo - pad, hi + pad] as [number, number]
-  }, [rows])
+    return [lo - pad, hi + pad]
+  })()
   const rhoA = isSd21(model) && ruler === 'dinov3' ? LAION.rho : spearman(rows.map((r) => r.training), rows.map((r) => r.output))
   const rhoB = spearman(rowsB.map((r) => r.moved), rowsB.map((r) => r.output))
 
@@ -844,7 +849,7 @@ export default function Part2Mechanism() {
       <TextEncoderScene />
       {/* Scene 11 (the LAION inheritance null) is DISMISSED, 2026-08-06. The
           component stays compiled above as a named export — restore
-          <LaionScene /> here to bring it back. */}
+          LaionScene above is unreachable. */}
     </>
   )
 }

@@ -47,7 +47,9 @@ export function SceneShell({
   /* optional: a section whose title already IS its name (Acknowledgements) would
      otherwise print the same word twice, six pixels apart */
   kicker?: string
-  title: ReactNode
+  /* optional: a scene that is the only one under a SubsectionHeader would print a
+     second headline for the same content. It keeps its number and kicker. */
+  title?: ReactNode
   children: ReactNode
   id?: string
   lead?: boolean
@@ -59,15 +61,17 @@ export function SceneShell({
         {kicker && (
           <div className="mt-2 font-mono2 text-xs tracking-[0.2em] uppercase text-foreground/40">{kicker}</div>
         )}
-        <h2
-          className={`font-display mt-4 max-w-3xl leading-[1.08] font-light ${
-            lead ? 'text-4xl md:text-5xl' : 'text-3xl md:text-4xl'
-          }`}
-        >
-          {title}
-        </h2>
+        {title && (
+          <h2
+            className={`font-display mt-4 max-w-3xl leading-[1.08] font-light ${
+              lead ? 'text-4xl md:text-5xl' : 'text-3xl md:text-4xl'
+            }`}
+          >
+            {title}
+          </h2>
+        )}
       </Reveal>
-      <div className="mt-10">{children}</div>
+      <div className={title ? 'mt-10' : 'mt-6'}>{children}</div>
     </section>
   )
 }
