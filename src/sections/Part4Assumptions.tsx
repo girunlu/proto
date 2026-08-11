@@ -345,14 +345,15 @@ function NamedScene() {
             threshold, and "the weaker tier" was defined nowhere on the page once the
             Setup blocks went. Both floors are now stated as a count of images, and
             the totals are scoped to SD 2.1, which is whose table they come from. */}
-        <p className="prose-scene mt-4 max-w-2xl text-foreground/55">
-          Every prompt is asked the same {BATTERY.universal} questions, plus a few that only apply to its scene,
-          giving {BATTERY.perCellMin} or {BATTERY.perCellMax} in all and {BATTERY.distinct} distinct across the study.
-          When one answer comes back for at least {Math.round(SETTLED * STATS.seeds)} of a prompt's {STATS.seeds}{' '}
-          images, we treat it as a named assumption: something the model tends to decide that the prompt left open.
-          Stable Diffusion 2.1 has <strong className="text-foreground/75">{CARDS_HEADLINE}</strong> of these, or{' '}
-          <strong className="text-foreground/75">{CARDS_TOTAL}</strong> if answers reaching{' '}
-          {Math.round(SECONDARY * STATS.seeds)} of {STATS.seeds} are also counted.
+        <p className="prose-scene mt-4 max-w-2xl">
+          Every prompt image set is annotated using the same {BATTERY.universal} questions, along with a small number of
+          scene-specific questions, for a total of {BATTERY.perCellMin} or {BATTERY.perCellMax} per prompt and{' '}
+          {BATTERY.distinct} distinct questions across the study. We define a frequent assumption as an answer that
+          appears in at least {Math.round(SETTLED * STATS.seeds)} of a prompt's {STATS.seeds} generated images, as
+          assumptions the model consistently decides to fill the underspecified gaps in the prompt. With this threshold,
+          Stable Diffusion 2.1 exhibits <strong className="text-foreground">{CARDS_HEADLINE}</strong> frequent
+          assumptions, increasing to <strong className="text-foreground">{CARDS_TOTAL}</strong> when the threshold is
+          relaxed to {Math.round(SECONDARY * STATS.seeds)} of {STATS.seeds} images.
         </p>
       </Reveal>
 
@@ -572,7 +573,8 @@ function BridgeScene() {
           the corresponding geographically unspecified prompt. If a concept receives similar answers in both sets of
           generations, it contributes little to explaining their embedding distance. In contrast, concepts whose
           answers change substantially between the two prompts account for a larger share of the observed difference.
-          Example findings from the figure below include the dominant economic-status annotation for “a family”, which
+          Example findings from the figure below for Stable Diffusion 2.1 include the dominant economic-status annotation
+          for “a family”, which
           shifts from average under the geographically unspecified prompt toward poor for Indonesia, India, and
           Nigeria. For “a celebration”, clothing shifts from mixed in the unspecified prompt toward traditional for
           Japan. And for “a wedding”, the dominant building type shifts from a hall in the unspecified prompt toward a

@@ -248,6 +248,10 @@
   }
   .prose-scene {
     @apply text-[15px] leading-7 text-foreground/85;
+    /* justified with hyphenation: without hyphens:auto, justification opens rivers
+       of white space around long tokens like "Stable Diffusion 3.5 Large" */
+    text-align: justify;
+    hyphens: auto;
   }
   .prose-scene strong {
     @apply text-foreground font-medium;
