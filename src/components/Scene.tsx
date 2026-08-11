@@ -21,9 +21,17 @@ export function Reveal({ children, delay = 0, className }: { children: ReactNode
    descending and nothing else should be inserted into it without moving a level:
 
      hero title            5xl / 7xl
-     section heading       4xl / 5xl   ← the leads, and `lead` scenes below
-     scene title           3xl / 4xl
+     section heading       4xl / 5xl   ← SectionHeader, and `lead` scenes below
+     subsection / scene    3xl / 4xl
      in-scene subhead      2xl / 3xl
+
+   And the vertical rhythm, at md. A scene's top padding is deliberately smaller
+   than its bottom, so a heading placed between two scenes falls toward the one it
+   names instead of floating midway:
+
+     scene → scene              6rem + 4rem = 10rem
+     scene → section heading    6rem + 4rem = 10rem, then 4rem down to its scene
+     scene → subsection heading 6rem + 1.5rem, then 4rem down to its scene
 
    `lead` marks a scene that IS a section — introduction, conclusion, references,
    acknowledgements have no separate lead above them, so they carry section size. */
@@ -45,7 +53,7 @@ export function SceneShell({
   lead?: boolean
 }) {
   return (
-    <section id={id} className="relative mx-auto w-full max-w-6xl px-6 py-24 md:py-32">
+    <section id={id} className="relative mx-auto w-full max-w-6xl px-6 pt-12 pb-20 md:pt-16 md:pb-24">
       <Reveal>
         <div className="scene-number">{number}</div>
         {kicker && (
@@ -72,14 +80,28 @@ export function SceneShell({
    section prefix. Titles live in Home.tsx beside the section structure, so the
    rail and the page cannot drift apart. */
 export function SectionHeader({ title, sub }: { title: string; sub: string }) {
+  /* No leading rule, and no ml on the subtitle. The rule cost w-10 + gap-4 = 3.5rem
+     of indent, which pushed every section heading that far right of the body text it
+     introduces — the one element on the page not sharing the prose's left edge. */
   return (
-    <div className="mx-auto mt-28 w-full max-w-6xl px-6">
+    <div className="mx-auto mt-16 w-full max-w-6xl px-6">
       <Reveal>
-        <div className="flex items-center gap-4">
-          <span className="h-px w-10 shrink-0 bg-amber-300/30" />
-          <h2 className="font-display max-w-4xl text-4xl leading-tight font-light md:text-5xl">{title}</h2>
-        </div>
-        <p className="mt-4 ml-14 max-w-2xl text-[15px] leading-6 text-foreground/50">{sub}</p>
+        <h2 className="font-display max-w-4xl text-4xl leading-tight font-light md:text-5xl">{title}</h2>
+        <p className="mt-4 max-w-2xl text-[15px] leading-6 text-foreground/50">{sub}</p>
+      </Reveal>
+    </div>
+  )
+}
+
+/* A heading one level below SectionHeader, for a run of scenes that belongs inside
+   a section rather than beside it. Same size as the introduction's "Image Sets and
+   Experimental Setup", which keeps the four-level scale intact. */
+export function SubsectionHeader({ title, sub }: { title: string; sub: string }) {
+  return (
+    <div className="mx-auto mt-6 w-full max-w-6xl px-6">
+      <Reveal>
+        <h3 className="font-display max-w-3xl text-2xl leading-snug font-light md:text-3xl">{title}</h3>
+        <p className="mt-3 max-w-2xl text-[15px] leading-6 text-foreground/50">{sub}</p>
       </Reveal>
     </div>
   )

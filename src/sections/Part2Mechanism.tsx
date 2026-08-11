@@ -1,7 +1,8 @@
 import { Fragment, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
-import { ZoomImage, Picker, BoxPicker, MetricToggle, HowItWorks, useMagnet } from '../components/Viz'
+import { ZoomImage, Picker, BoxPicker, MetricToggle, HowItWorks, useMagnet, RepoLink } from '../components/Viz'
+import { DINOV3, CLIP } from '../data/references'
 import { Sd21Only } from '../components/ModelBar'
 import { rgb, rgba } from '../lib/colors'
 import { niceTicks } from '../lib/utils'
@@ -147,7 +148,7 @@ export function CommitEarlyScene() {
 
   return (
     <SceneShell
-      number="08"
+      number="06"
       kicker="the swap"
       title={<>Fixed in the <em className="font-display italic text-amber-200">first third of denoising.</em></>}
     >
@@ -163,6 +164,21 @@ export function CommitEarlyScene() {
           countries A and B and record which one it is closer to. We fit a logistic curve across the intervention
           points to estimate the denoising step at which the final image shifts from being more strongly aligned with
           country B to being more strongly aligned with country A.
+        </p>
+        {/* Moved out of the Panel and above it, 2026-08-11 (Giray). It reads as the
+            reader's instruction for the figure, so it belongs with the prose that
+            sets the figure up, not wedged between the pickers and the images they
+            drive. The three worked examples are all selectable in those pickers:
+            celebration_DE_to_US, family_RU_to_EG and breakfast_DE_to_NG are three of
+            the 24 directions in lockup_curve.json. */}
+        <p className="prose-scene mt-6 max-w-2xl">
+          As you explore the intervened generations, note how the visual details are reshaped when we switch from
+          country A to country B. These changes provide a qualitative view of the country-specific assumptions. For
+          example, when a celebration is redirected from Germany to the US, the model reshapes existing European
+          architecture to resemble the White House architectural style. When a family scene is switched from Russia to
+          Egypt, the background is reshaped toward the ancient Egyptian architectural style. Similarly, when a
+          breakfast is redirected from Germany to Nigeria, existing food elements such as bread take on a different
+          appearance similar to meat and rice.
         </p>
         <Sd21Only />
       </Reveal>
@@ -181,19 +197,6 @@ export function CommitEarlyScene() {
             />
           </div>
 
-          {/* The three worked examples are all selectable in the pickers above:
-              celebration_DE_to_US, family_RU_to_EG and breakfast_DE_to_NG are three
-              of the 24 directions in lockup_curve.json, so a reader can reproduce
-              each one without leaving the figure. */}
-          <p className="mt-6 max-w-3xl text-sm leading-6 text-foreground/60">
-            As you explore the intervened generations, note how the visual details are reshaped when we switch from
-            country A to country B. These changes provide a qualitative view of the country-specific assumptions. For
-            example, when a celebration is redirected from Germany to the US, the model reshapes existing European
-            architecture to resemble the White House architectural style. When a family scene is switched from Russia
-            to Egypt, the background is reshaped toward the ancient Egyptian architectural style. Similarly, when a
-            breakfast is redirected from Germany to Nigeria, existing food elements such as bread take on a different
-            appearance similar to meat and rice.
-          </p>
           {/* the transition: A's own image, the swapped result, B's own image */}
           <div className="mt-6 grid items-center gap-3 sm:grid-cols-[1fr_auto_1.3fr_auto_1fr]">
             <figure className="text-center">
@@ -369,15 +372,15 @@ function BigMatrix({ mat, labels, title, sub }: {
           differed; with one ramp it wears a text token and the words do the work */}
       <div className="font-mono2 text-[11px] text-foreground/75">{title}</div>
       <div className="font-mono2 text-[10px] leading-4 text-foreground/40">{sub}</div>
-      <div className="mt-3 grid gap-[2px]" style={{ gridTemplateColumns: `52px repeat(${labels.length}, minmax(0,1fr))` }}>
+      <div className="mt-3 grid gap-[2px]" style={{ gridTemplateColumns: `68px repeat(${labels.length}, minmax(0,1fr))` }}>
         <div />
         {labels.map((l) => (
-          <div key={l} className="pb-1 text-center font-mono2 text-[9px] text-foreground/45">{l === 'default' ? 'plain' : l}</div>
+          <div key={l} className="pb-1 text-center font-mono2 text-[9px] leading-[1.15] text-foreground/45">{l === 'default' ? 'unspecified' : l}</div>
         ))}
         {labels.map((rl, i) => (
           <Fragment key={rl}>
             <div className="pr-1.5 text-right font-mono2 text-[9px] leading-8 text-foreground/45">
-              {rl === 'default' ? 'plain' : rl}
+              {rl === 'default' ? 'unspecified' : rl}
             </div>
             {mat[i].map((sim, j) => {
               const t = i === j ? 0 : norm(sim)
@@ -457,7 +460,7 @@ export function TextEncoderScene() {
           perhaps the text encoder already puts “a wedding” and “a wedding in the USA” next to each other, and the
           image decoder is simply reflecting this alignment. To test this, for each scene we compare the experimental
           prompts in two spaces: the prompt embeddings from the model's text encoder and the visual embeddings of the
-          50 images generated from each prompt obtained by DINOv3 ViT-7B/16 and CLIP ViT-L/14. In each space, we
+          50 images generated from each prompt obtained by <RepoLink m={DINOV3} /> and <RepoLink m={CLIP} />. In each space, we
           construct a distance matrix describing which prompt variants are closer to or farther from one another. If
           the structure observed in the generated images were directly inherited from the text encoder, the two
           distance matrices should show a similar pattern. The following figure shows that this correspondence is weak,
@@ -795,7 +798,7 @@ export function LaionScene() {
           {/* one legend for both panels: every dot is one of the 54 prompts, coloured
               by the country in it, and hovering a country isolates it in both clouds */}
           <div className="mt-5 flex flex-wrap gap-x-4 gap-y-1.5 border-t border-border pt-4">
-            {[{ id: 'default', name: 'default prompt', cv: '--c-gray' }, ...COUNTRY8.map((c) => ({ id: c.id as string, name: c.name, cv: c.cv }))].map((e) => {
+            {[{ id: 'default', name: 'unspecified prompt', cv: '--c-gray' }, ...COUNTRY8.map((c) => ({ id: c.id as string, name: c.name, cv: c.cv }))].map((e) => {
               const dim = focus != null && focus !== e.cv
               return (
                 <button
@@ -817,7 +820,7 @@ export function LaionScene() {
 
           <div className="mt-5 border-t border-border pt-5">
             <p className="max-w-3xl text-sm leading-6 text-foreground/70">
-              The six no-country prompts drop out of the right panel: a default prompt has no distance from itself.
+              The six no-country prompts drop out of the right panel: an unspecified prompt has no distance from itself.
               Whatever narrows these outputs is clearly measurable (the right panel finds it easily). It is simply
               not the narrowness of the training neighbourhood. The same null holds on a second diversity measure
               ({LAION.vendiRho.toFixed(2)}, DINOv3 side), so it is not an artefact of how variety was counted.

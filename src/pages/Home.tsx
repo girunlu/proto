@@ -30,7 +30,7 @@ import BranchAModels from '../sections/BranchAModels'
 // import Part7Consensus from '../sections/Part7Consensus'  // dismissed 2026-08-10
 import Conclusion from '../sections/Conclusion'
 import Closing from '../sections/Closing'
-import { SectionHeader } from '../components/Scene'
+import { SectionHeader, SubsectionHeader } from '../components/Scene'
 import { NavRail } from '../components/NavRail'
 import { ModelBar } from '../components/ModelBar'
 import { ModelProvider } from '../data/modelData'
@@ -56,8 +56,11 @@ const SECTIONS = {
     title: 'The Semantic Assumptions',
     sub: 'the concepts the model fills in, named one question at a time',
   },
+  /* p3 is a SUBSECTION of p2 as of 2026-08-11 (Giray): its opening paragraph reads
+     "the previous experiments suggest… this raises a natural question", and those
+     previous experiments are the text-encoder test and the guidance sweep directly
+     above it. It lost its NavRail stop with the promotion — #p3 still anchors it. */
   p3: {
-    /* Giray's supplied heading, 2026-08-11; the rail keeps the short form. */
     title: 'When Country-Specific Assumptions Stabilize',
     sub: 'switching the country partway through denoising, to find when the choice is already fixed',
   },
@@ -103,14 +106,14 @@ export default function Home() {
         {/* the guidance sweep belongs to this section, not to stabilization: it tests
             a second explanation for where the alignment comes from (2026-08-10). */}
         <CfgScene />
+        <div id="p3">
+          <SubsectionHeader {...SECTIONS.p3} />
+          <CommitEarlyScene />
+        </div>
       </div>
       <div id="p4">
         <SectionHeader {...SECTIONS.p4} />
         <Part4Assumptions />
-      </div>
-      <div id="p3">
-        <SectionHeader {...SECTIONS.p3} />
-        <CommitEarlyScene />
       </div>
       <div id="conc">
         <Conclusion />

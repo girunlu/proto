@@ -165,7 +165,7 @@ export function CfgScene() {
           <div className="mt-6">
             <div className="flex flex-wrap items-baseline justify-between gap-3">
               <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-                distance from the default prompt at each guidance level
+                distance from the unspecified prompt at each guidance level
               </div>
               <button
                 onClick={() => { setPinned(null); setHoverC(null) }}
@@ -354,13 +354,13 @@ function LadderMap({ model, pair, rung, onPick }: {
               className="h-2 w-2 rounded-full"
               style={{ background: rgb(CV[l] ?? '--c-gray'), opacity: active === l ? 1 : 0.4 }}
             />
-            {l === 'default' ? 'default prompt' : l === 'L0' ? 'country named' : l}
+            {l === 'default' ? 'unspecified prompt' : l === 'L0' ? 'country named' : l}
           </button>
         ))}
       </div>
       <p className="mt-1 font-mono2 text-[9px] leading-4 text-foreground/40">
         {hover
-          ? `${hover.l === 'default' ? 'default prompt' : hover.l === 'L0' ? 'country named' : hover.l} · seed ${hover.s}`
+          ? `${hover.l === 'default' ? 'unspecified prompt' : hover.l === 'L0' ? 'country named' : hover.l} · seed ${hover.s}`
           : 'one dot per seed · rings are each rung\'s centre · click a rung to bring it forward'}
       </p>
     </div>
@@ -507,7 +507,7 @@ export default function Part6Escape() {
                   onClick={() => setRungId(l.id)}
                   className={`chip !px-3 !py-1.5 ${cur.id === l.id ? 'chip-active' : ''}`}
                 >
-                  {l.id === 'default' ? 'default prompt' : l.id === 'L0' ? `+ in ${C8[activeCountry].name}` : l.id}
+                  {l.id === 'default' ? 'unspecified prompt' : l.id === 'L0' ? `+ in ${C8[activeCountry].name}` : l.id}
                 </button>
               ))}
             </div>

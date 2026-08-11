@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
-import { ZoomImage, BoxPicker} from '../components/Viz'
+import { ZoomImage, BoxPicker, RepoLink, Cite } from '../components/Viz'
+import { ANNOTATOR } from '../data/references'
 import { rgb, rgba } from '../lib/colors'
 import { ordinal } from '../lib/utils'
 import { C8, COUNTRY8, SITS, CV_DEFAULT, cell, seedImg, type Sit, type Code } from '../data/part1'
@@ -19,7 +20,7 @@ import { openForModel, shiftFor, type ShiftRow } from '../data/crossmodel'
 
 const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
 const CODE_OPTS = [
-  { value: 'default' as const, label: 'default prompt' },
+  { value: 'default' as const, label: 'unspecified prompt' },
 ...COUNTRY8.map((c) => ({ value: c.id, label: c.name, cv: c.cv })),
 ]
 
@@ -321,7 +322,7 @@ function NamedScene() {
 
   return (
     <SceneShell
-      number="06"
+      number="07"
       kicker="the named concepts"
       title={<>Named, not implied, <em className="font-display italic text-amber-200">with the distribution they describe.</em></>}
     >
@@ -331,7 +332,7 @@ function NamedScene() {
             by these same labels, so a paraphrase here would not match any row the
             reader can see. */}
         <p className="prose-scene max-w-2xl">
-          For this experiment, we use Gemma-4-E4B-it [13] as a visual annotator. For each prompt, the annotator is
+          For this experiment, we use <RepoLink m={ANNOTATOR} /> <Cite ids={['gemma2026']} /> as a visual annotator. For each prompt, the annotator is
           shown each generated image and answers a fixed set of questions, each addressing one semantic concept, for
           example, “Is food visible?” where food is the semantic concept. Then we aggregate the answers across the
           prompt images.
@@ -534,7 +535,7 @@ function BridgeScene() {
 
   return (
     <SceneShell
-      number="07"
+      number="08"
       kicker="what carries the distance"
       title={<>Which concepts <em className="font-display italic text-amber-200">carry the distance.</em></>}
     >
@@ -633,7 +634,7 @@ function BridgeScene() {
           <div className="mt-8 border-t border-border pt-5">
             <TierNote
               tier="evidence"
-              text={`Each bar is the share of the default→country movement predicted from one attribute's answer proportions over the pooled 50+50 images, DINOv3 embeddings, ${MODEL_NAME[model]}'s own answers${isSd21(model) ? '' : `, from the cross-model run: ${CROSS_MODEL_NOTE.charAt(0).toLowerCase()}${CROSS_MODEL_NOTE.slice(1)}`}. Shares are per attribute and deliberately do not sum to 1.`}
+              text={`Each bar is the share of the unspecified→country movement predicted from one attribute's answer proportions over the pooled 50+50 images, DINOv3 embeddings, ${MODEL_NAME[model]}'s own answers${isSd21(model) ? '' : `, from the cross-model run: ${CROSS_MODEL_NOTE.charAt(0).toLowerCase()}${CROSS_MODEL_NOTE.slice(1)}`}. Shares are per attribute and deliberately do not sum to 1.`}
             />
           </div>
         </Panel>
@@ -657,7 +658,7 @@ function SectionLead() {
         <p className="prose-scene max-w-2xl">
           So far, distances in the embedding space have described the geometric alignment between the generated
           images. We next examine semantic concepts in the images, such as clothing, objects, and other scene-specific
-          attributes, that are more directly interpretable in relation to what a user may care about [4]. For each
+          attributes, that are more directly interpretable in relation to what a user may care about <Cite ids={['franchi2025']} />. For each
           prompt, we test which semantic concepts from a predefined set recur consistently across generations. For
           example, when generating “a breakfast in Japan”, the model may frequently assume “rice” among the dishes. We
           can further use these concepts to characterize how the generated images differ semantically across prompts.

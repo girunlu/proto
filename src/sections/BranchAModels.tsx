@@ -125,7 +125,7 @@ export function ModelStrip() {
             ))}
           </div>
           <p className="mt-2 font-mono2 text-[11px] text-foreground/50">
-            “a {sit}” · {(branchA.models as any)[model]}'s own default · 20 seeds, typical to unusual (no curation)
+            “a {sit}” · {(branchA.models as any)[model]}'s own unspecified prompt · 20 seeds, typical to unusual (no curation)
           </p>
 
           {/* distance bars, its own default as origin */}
@@ -176,7 +176,7 @@ function ReplicationWall() {
             <span className="text-foreground/30">/36</span>
           </div>
           <div className="mt-2 max-w-[200px] font-mono2 text-[11px] tracking-wider text-foreground/45 uppercase">
-            situation × model pairs where Nigeria sits farther from the default than the USA
+            scene × model pairs where Nigeria sits farther from the unspecified prompt than the USA
           </div>
         </div>
 
@@ -250,7 +250,7 @@ export function SharedWorldview() {
           label="country"
           value={code}
           onChange={setCode}
-          options={[{ value: 'default' as const, label: 'default prompt' },
+          options={[{ value: 'default' as const, label: 'unspecified prompt' },
 ...CODES.map((c) => ({ value: c, label: COUNTRY_NAME[c], cv: COUNTRY_CV[c] }))]}
           size="sm"
         />
@@ -490,7 +490,7 @@ export default function BranchAModels() {
           <p className="prose-scene mb-8 max-w-2xl">
             Is “…in Nigeria” farther from each model's own default than “…in the USA”? Not{' '}
             <em>usually</em>. <strong>Always.</strong> The Western default is not a property of one
-            checkpoint; it is a property of how these systems are made. And the furthest country from the default is
+            checkpoint; it is a property of how these systems are made. And the furthest country from the unspecified prompt is
             never the US or Germany: in <strong>{FURTHEST.south} of {FURTHEST.cells}</strong> model × scene cells it
             is India, Nigeria or Egypt, whichever model, whichever scene.
           </p>

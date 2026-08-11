@@ -9,8 +9,7 @@ const STOPS = [
   { id: 'intro', label: '· introduction' },
   { id: 'p1', label: 'geographic alignment' },
   { id: 'p2', label: 'alignment source' },
-  { id: 'p4', label: 'semantic assumptions' },
-  { id: 'p3', label: 'assumption stabilization' },
+  { id: 'p4', label: 'semantic assumptions' },   // p3 (stabilization) is a subsection of p2 and has no stop
   { id: 'conc', label: '∴ · conclusion' },
   { id: 'p6', label: '+ · extras' },
   { id: 'closing', label: '§ · references' },

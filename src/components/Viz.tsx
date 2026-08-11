@@ -1,11 +1,49 @@
 import { useState, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { rgb, rgba } from '../lib/colors'
+import { refNumber, type RefId } from '../data/references'
 
 /* ── hover-to-inspect ─────────────────────────────────────────────────────────
    Small thumbnails everywhere in this page are unreadable at their layout size.
    Hovering one pins a large copy in a fixed corner panel: readable, and it never
    covers the chart you are reading it from. */
+
+/* A model name in running prose, linked to the weights it was actually loaded from.
+   Takes the {label, url} objects out of data/references so the text on the page and
+   the repo it points at are the same string, never two copies that can drift. */
+export function RepoLink({ m }: { m: { label: string; url: string } }) {
+  return (
+    <a
+      href={m.url}
+      target="_blank"
+      rel="noreferrer"
+      className="underline decoration-border underline-offset-2 hover:decoration-amber-200"
+    >
+      {m.label}
+    </a>
+  )
+}
+
+/* An in-text citation. Takes reference ids, prints their position in REFERENCES,
+   and links to the entry in the reference list. Numbers are never typed: reorder or
+   insert a reference and every marker on the page follows, and a mistyped id is a
+   type error rather than a marker pointing at the wrong paper. */
+export function Cite({ ids }: { ids: RefId[] }) {
+  return (
+    <span className="whitespace-nowrap">
+      [
+      {ids.map((id, i) => (
+        <span key={id}>
+          {i > 0 && ', '}
+          <a href={`#ref-${id}`} className="text-foreground/70 underline decoration-border underline-offset-2 hover:decoration-amber-200">
+            {refNumber(id)}
+          </a>
+        </span>
+      ))}
+      ]
+    </span>
+  )
+}
 
 export function ZoomImage({
   src, alt, caption, className = '', imgClassName = '',
@@ -268,7 +306,7 @@ export function KnnNote({ auc }: { auc?: number }) {
           default-prompt one — so the wording is now a ranking, not an accuracy. */}
       <p className="mt-2 max-w-2xl text-[13px] leading-6 text-foreground/65">
         A distance can look small and still matter, so we ran a second, blunter check. Take one
-        default-prompt image and one country image at random, and ask a simple program which is which,
+        unspecified-prompt image and one country image at random, and ask a simple program which is which,
         using nothing but the pictures. The score is how often it puts the country image on the right
         side of the line. If both prompts generated the same world it is guessing, and scores{' '}
         <strong className="text-foreground">50%</strong>. A score of{' '}

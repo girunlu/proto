@@ -168,7 +168,7 @@ function SeedScatter({ situation, labels }: { situation: Sit; labels: Code[] }) 
             {(thumbed == null || thumbed.has(hover)) && (
               <ZoomImage
                 src={modelImg(model, situation, 'default', hover)}
-                alt={`${situation} default seed ${hover}`}
+                alt={`${situation} unspecified-prompt seed ${hover}`}
                 caption={`“a ${situation}” · seed ${hover} · nearest country cluster: ${C8[labels[hover]].name}`}
                 imgClassName="h-20 w-20 cursor-zoom-in rounded-lg border border-border object-cover"
               />
@@ -207,7 +207,7 @@ function ClusterTally({ situation }: { situation: Sit }) {
   return (
     <div className="rounded-lg border border-border p-3">
       <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-        the {labels.length} default seeds, by nearest cluster · {situation}
+        the {labels.length} unspecified-prompt seeds, by nearest cluster · {situation}
       </div>
       <div className="mt-3 space-y-1.5">
         {counts.map(([code, n]) => (
@@ -293,7 +293,7 @@ function SeedBySeedScene() {
         <Panel className="mt-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="font-mono2 text-xs tracking-widest text-foreground/40 uppercase">
-              all {labels.length} default seeds of “a {situation}” · dot colour = nearest country cluster
+              all {labels.length} seeds of the unspecified prompt “a {situation}” · dot colour = nearest country cluster
             </div>
             <BoxPicker label="scene" value={situation} onChange={setSituation} options={SIT_OPTS} size="sm" />
           </div>
@@ -304,7 +304,7 @@ function SeedBySeedScene() {
                   <span key={seed} className="relative block">
                     <ZoomImage
                       src={modelImg(model, situation, 'default', seed)}
-                      alt={`${situation} default seed ${seed}`}
+                      alt={`${situation} unspecified-prompt seed ${seed}`}
                       caption={`“a ${situation}” · seed ${seed} · nearest country cluster: ${C8[labels[seed]].name}`}
                       imgClassName="aspect-square w-full cursor-zoom-in rounded-md border border-border object-cover"
                     />

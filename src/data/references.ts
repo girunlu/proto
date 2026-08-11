@@ -51,7 +51,7 @@ export interface Reference {
    supplied ids plus SDXL's, checked against title and first author, none of them
    constructed from memory. The remaining six are conference papers whose DOIs were
    not in the supplied list; they render as plain text rather than a guessed link. */
-export const REFERENCES: Reference[] = [
+const REFS = [
   {
     id: 'chinchure2024',
     authors: 'Chinchure, A., et al.',
@@ -153,7 +153,13 @@ export const REFERENCES: Reference[] = [
     venue: 'arXiv preprint arXiv:2607.02770',
     url: 'https://arxiv.org/abs/2607.02770',
   },
-]
+] as const satisfies readonly Reference[]
+
+/* Two exports of one list. REFS keeps its literal types so RefId below is the union
+   of the actual ids; REFERENCES is the widened view consumers read, because `as const`
+   drops `url` entirely from the entries that have none, and the renderer needs it to
+   be an optional property rather than absent. */
+export const REFERENCES: readonly Reference[] = REFS
 
 /* Every set of weights the page's numbers came out of, grouped by the job it did.
    Repo ids are the ones the run scripts actually loaded — phase2_generation/
@@ -172,33 +178,49 @@ export const REFERENCES: Reference[] = [
    own because the introduction now links each model name to its repo: one list
    feeds both that sentence and the weights table below, so a label there can never
    drift from the link it carries. */
-/* `ref` is the bracketed citation number the introduction prints after the model
-   name. SD 2.1 and FLUX.1 [dev] carry none in that sentence: SD 2.1 is cited as [5]
-   a paragraph earlier, and no citation was supplied for FLUX. The numbers are only
-   rendered in the introduction, never in the weights table below. */
-export const GENERATORS: { label: string; url: string; ref?: number }[] = [
+/** Every id in REFERENCES, as a literal union — a typo in a <Cite> is a type error. */
+export type RefId = (typeof REFS)[number]['id']
+
+/** 1-based position in the reference list. The only place a citation number exists. */
+export function refNumber(id: RefId) {
+  return REFS.findIndex((r) => r.id === id) + 1
+}
+
+/* `cite` is the reference the introduction prints after the model name. SD 2.1 and
+   FLUX.1 [dev] carry none in that sentence: SD 2.1 is cited a paragraph earlier, and
+   no citation was supplied for FLUX. Stored as an id, never a number — the number is
+   derived from list position at render time. */
+export const GENERATORS: { label: string; url: string; cite?: RefId }[] = [
   /* the official stabilityai repo became gated mid-project; these are the
      verified-identical v2-1_768-ema-pruned files actually used */
   { label: 'Stable Diffusion 2.1', url: 'https://huggingface.co/sd2-community/stable-diffusion-2-1' },
-  { label: 'SDXL 1.0', url: 'https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0' , ref: 6 },
-  { label: 'Stable Diffusion 3.5 Large', url: 'https://huggingface.co/stabilityai/stable-diffusion-3.5-large' , ref: 7 },
+  { label: 'SDXL 1.0', url: 'https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0' , cite: 'podell2024' },
+  { label: 'Stable Diffusion 3.5 Large', url: 'https://huggingface.co/stabilityai/stable-diffusion-3.5-large' , cite: 'esser2024' },
   { label: 'FLUX.1 [dev]', url: 'https://huggingface.co/black-forest-labs/FLUX.1-dev' },
-  { label: 'Kolors', url: 'https://huggingface.co/Kwai-Kolors/Kolors-diffusers' , ref: 8 },
-  { label: 'HunyuanDiT v1.2', url: 'https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers' , ref: 9 },
-  { label: 'Qwen-Image', url: 'https://huggingface.co/Qwen/Qwen-Image' , ref: 10 },
+  { label: 'Kolors', url: 'https://huggingface.co/Kwai-Kolors/Kolors-diffusers' , cite: 'kolors2024' },
+  { label: 'HunyuanDiT v1.2', url: 'https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers' , cite: 'li2024' },
+  { label: 'Qwen-Image', url: 'https://huggingface.co/Qwen/Qwen-Image' , cite: 'wu2025' },
 ]
+
+/* The instruments, exported individually for the same reason GENERATORS is: the
+   prose links each one where it first names it, and the weights table below reads
+   the same objects, so a label in a sentence cannot drift from the repo it points
+   at. `label` is exactly the string the prose prints. */
+export const ANNOTATOR = {
+  label: 'Gemma-4-E4B-it',
+  url: 'https://huggingface.co/google/gemma-4-E4B-it-qat-w4a16-ct',
+}
+export const DINOV3 = {
+  label: 'DINOv3 ViT-7B/16',
+  url: 'https://huggingface.co/facebook/dinov3-vit7b16-pretrain-lvd1689m',
+}
+export const CLIP = {
+  label: 'CLIP ViT-L/14',
+  url: 'https://huggingface.co/openai/clip-vit-large-patch14',
+}
 
 export const WEIGHTS: { group: string; models: { label: string; url: string }[] }[] = [
   { group: 'image generators', models: GENERATORS },
-  {
-    group: 'the annotator, one model reads every image on this page',
-    models: [{ label: 'Gemma-4-E4B-it', url: 'https://huggingface.co/google/gemma-4-E4B-it-qat-w4a16-ct' }],
-  },
-  {
-    group: 'embeddings, the two rulers',
-    models: [
-      { label: 'DINOv3 ViT-7B/16', url: 'https://huggingface.co/facebook/dinov3-vit7b16-pretrain-lvd1689m' },
-      { label: 'CLIP ViT-L/14', url: 'https://huggingface.co/openai/clip-vit-large-patch14' },
-    ],
-  },
+  { group: 'the annotator, one model reads every image on this page', models: [ANNOTATOR] },
+  { group: 'embeddings, the two rulers', models: [DINOV3, CLIP] },
 ]

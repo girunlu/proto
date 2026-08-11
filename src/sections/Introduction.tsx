@@ -13,6 +13,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { Reveal } from '../components/Scene'
 import { GENERATORS } from '../data/references'
+import { RepoLink, Cite } from '../components/Viz'
 
 /* No heading and no scene number, 2026-08-11 (Giray): the introduction runs
    straight on from the author block, so anything between the two would be the
@@ -21,14 +22,14 @@ import { GENERATORS } from '../data/references'
    in Home.tsx, so it still lands here. */
 export default function Introduction() {
   return (
-    <section className="relative mx-auto w-full max-w-6xl px-6 pt-4 pb-24 md:pb-32">
+    <section className="relative mx-auto w-full max-w-6xl px-6 pt-4 pb-20 md:pb-24">
       <Reveal>
         <p className="prose-scene max-w-2xl">
           Text-to-image (T2I) models generate complex visual content from textual prompts by learning associations
           between textual and visual concepts. These associations shape the model's assumptions about the world. When a
           prompt leaves details unspecified, the model relies on its assumptions to resolve the gaps. Some of these
           assumptions appear more often in the model output than others, reducing the model’s diversity and sometimes
-          reflecting harmful biases [1, 2].
+          reflecting harmful biases <Cite ids={['chinchure2024', 'eschner2025']} />.
         </p>
       </Reveal>
 
@@ -43,7 +44,7 @@ export default function Introduction() {
           countries, or are they skewed toward some more than others? In this article, we make these geographic
           assumptions explorable across different T2I models. We study how they appear when geographic context is
           specified or unspecified, what semantic concepts they reflect, and whether they arise before or during image
-          generation. Through experiments with Stable Diffusion 2.1 [5] we further experiment, for this particular
+          generation. Through experiments with Stable Diffusion 2.1 <Cite ids={['rombach2022']} /> we further experiment, for this particular
           model, how they respond to stronger prompt guidance, and when they become difficult to change during
           denoising.
         </p>
@@ -61,15 +62,8 @@ export default function Introduction() {
           {GENERATORS.map((m, i) => (
             <span key={m.label}>
               {i > 0 && ', '}
-              <a
-                href={m.url}
-                target="_blank"
-                rel="noreferrer"
-                className="underline decoration-border underline-offset-2 hover:decoration-amber-200"
-              >
-                {m.label}
-              </a>
-              {m.ref != null && ` [${m.ref}]`}
+              <RepoLink m={m} />
+              {m.cite && <>{' '}<Cite ids={[m.cite]} /></>}
             </span>
           ))}
           . We consider six scenes: wedding, funeral,

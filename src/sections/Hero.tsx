@@ -98,10 +98,10 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
         >
-          {/* "with Underspecified Prompts" dropped 2026-08-11 (Giray). The amber
-              italic accent it carried moves to the subject phrase rather than being
-              lost — the title is the one place on the page that uses it. */}
-          Exploring the <span className="italic text-amber-200">Geographic Assumptions</span> in Text-to-Image Models
+          {/* Restored in full 2026-08-11: the earlier removal misread Giray, who
+              wanted the emphasis dropped, not the clause. No accent on any part of
+              it now — no phrase here carries more weight than the rest. */}
+          Exploring the Geographic Assumptions in Text-to-Image Models with Underspecified Prompts
         </motion.h1>
 
         {/* Authors / Affiliations, 2026-08-10 (Giray). Two columns in the idiom the

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
-import { ZoomImage, BoxPicker, MetricToggle, useMagnet } from '../components/Viz'
+import { ZoomImage, BoxPicker, MetricToggle, RepoLink, Cite, useMagnet } from '../components/Viz'
+import { DINOV3, CLIP } from '../data/references'
 
 // const branchAKnn = ... — read only by the removed evidence block (see below)
 import { rgb, rgba } from '../lib/colors'
@@ -44,7 +45,7 @@ export function Legend({ withDefault = true, focus, onFocus }: {
 }) {
   const [pinned, setPinned] = useState<Focus>(null)
   const entries: { id: Code | 'default'; name: string; cv: string }[] = [
-    ...(withDefault ? [{ id: 'default' as const, name: 'default prompt', cv: CV_DEFAULT }] : []),
+    ...(withDefault ? [{ id: 'default' as const, name: 'unspecified prompt', cv: CV_DEFAULT }] : []),
     ...COUNTRY8.map((c) => ({ id: c.id as Code | 'default', name: c.name, cv: c.cv })),
   ]
   const select = (id: Focus) => {
@@ -399,7 +400,7 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
                     title={
                       d
                         ? `${sit} × ${code}: ${d.mean.toFixed(3)} [${d.ci_low.toFixed(3)}, ${d.ci_high.toFixed(3)}]`
-                        : 'the default prompt, the reference point'
+                        : 'the unspecified prompt, the reference point'
                     }
                     className={`group relative text-left transition ${
                       active || si >= 0 ? 'z-20 ' : ''
@@ -473,7 +474,7 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
               </div>
               <p className="font-mono2 text-[10px] leading-4 text-foreground/50">
                 the bar under each cell is one measurement: how far that variant's 50 images sit from the
-                default prompt in its own row.
+                unspecified prompt in its own row.
               </p>
             </div>
           ) : (
@@ -490,7 +491,7 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
                 ))}
               </div>
               <div className="mt-1 text-center font-mono2 text-[9px] text-foreground/35">
-                distance from that row's default prompt · one scale for all 48 cells · hover a cell for its interval
+                distance from that row's unspecified prompt · one scale for all 48 cells · hover a cell for its interval
               </div>
             </div>
           )}
@@ -515,8 +516,8 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
                 </div>
                 <div className="mt-1 font-mono2 text-[10px] text-foreground/45">
                   {c.d
-                    ? `${c.d.mean.toFixed(3)} from the default prompt · very likely ${c.d.ci_low.toFixed(2)}–${c.d.ci_high.toFixed(2)}`
-                    : 'the default prompt, the reference point'}
+                    ? `${c.d.mean.toFixed(3)} from the unspecified prompt · very likely ${c.d.ci_low.toFixed(2)}–${c.d.ci_high.toFixed(2)}`
+                    : 'the unspecified prompt, the reference point'}
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-1.5">
                   {/* plain <img>, deliberately: this grid IS already the preview for the
@@ -536,8 +537,8 @@ function CellGrid({ mode, onSelect, ruler, roll, controls }: {
             {sel.length === 2 && shown[0].d && shown[1].d && (
               <div className="mt-3 rounded-md border border-amber-300/25 bg-amber-300/5 p-2 font-mono2 text-[10px] leading-4 text-foreground/65">
                 {shown[0].d.mean.toFixed(3)} against {shown[1].d.mean.toFixed(3)}, each measured from its own
-                scene's default prompt
-                {shown[0].sit !== shown[1].sit && ', and those are two different default prompts, so read the pair as two separate departures rather than a distance between these two cells'}
+                scene's unspecified prompt
+                {shown[0].sit !== shown[1].sit && ', and those are two different unspecified prompts, so read the pair as two separate departures rather than a distance between these two cells'}
                 .
               </div>
             )}
@@ -616,7 +617,7 @@ function NationalityScene() {
               the whole board · 54 cells ·{' '}
               {gridMode === 'thumbs'
                 ? `4 of ${seedCount(model)} seeds each, ${roll === 0 ? 'typical → outlier' : 'random seeds'}`
-                : "distance from each row's default prompt"}
+                : "distance from each row's unspecified prompt"}
             </div>
             {/* the same measurement, drawn two ways — pictures with a bar, or the
                 number with its shading. Two panels used to show this side by side. */}
@@ -638,7 +639,7 @@ function NationalityScene() {
           {!onSd21 && gridMode === 'thumbs' && (
             <p className="mt-3 font-mono2 text-[10px] leading-4 text-foreground/50">
               Showing <span className="text-amber-200">{MODEL_NAME[model]}</span>: its own images, every distance
-              measured from <em>its own</em> default prompt. All 50 seeds go into the statistics; the{' '}
+              measured from <em>its own</em> unspecified prompt. All 50 seeds go into the statistics; the{' '}
               {seedCount(model)} published thumbnails span the 20 least alike plus the 4 most typical.
             </p>
           )}
@@ -994,10 +995,10 @@ function SectionLead() {
         <p className="prose-scene max-w-2xl">
           Previous work using crowdsourced human annotation has found that images generated from prompts that do not
           specify geographic location tend to resemble representations associated with the United States more closely
-          than those associated with other countries [3]. We visually examine such a geographic alignment by exploring
+          than those associated with other countries <Cite ids={['basu2023']} />. We visually examine such a geographic alignment by exploring
           the embedding spaces of images generated from the geographically unspecified prompts “a &lt;scene&gt;”, and
           their corresponding country-specific variants “a &lt;scene&gt; in &lt;country&gt;”. We obtain the visual
-          embeddings from two image encoders: DINOv3 ViT-7B/16 [11] and CLIP ViT-L/14 [12].
+          embeddings from two image encoders: <RepoLink m={DINOV3} /> <Cite ids={['simeoni2025']} /> and <RepoLink m={CLIP} /> <Cite ids={['radford2021']} />.
         </p>
       </Reveal>
     </div>

@@ -55,7 +55,7 @@ export default function Closing() {
         <Reveal delay={0.06}>
           <ol className="mt-8 max-w-3xl space-y-3.5">
             {REFERENCES.map((r, i) => (
-              <li key={r.id} className="grid grid-cols-[1.75rem_1fr] gap-2 text-sm leading-6">
+              <li id={`ref-${r.id}`} className="grid scroll-mt-28 grid-cols-[1.75rem_1fr] gap-2 text-sm leading-6" key={r.id}>
                 <span className="pt-0.5 font-mono2 text-[11px] text-foreground/30">[{i + 1}]</span>
                 <span className="text-foreground/70">
                   {r.authors} ({r.year}).{' '}
