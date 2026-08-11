@@ -52,15 +52,6 @@ const SECTIONS = {
     title: 'The Semantic Assumptions',
     sub: 'The concepts the model fills in, named one question at a time.',
   },
-  /* p3 is a SUBSECTION of p2 as of 2026-08-11 (Giray): its opening paragraph reads
-     "the previous experiments suggest… this raises a natural question", and those
-     previous experiments are the text-encoder test and the guidance sweep directly
-     above it. It lost its NavRail stop with the promotion — #p3 still anchors it. */
-  p3: {
-    /* no sub: the section above it already promises "when during generation they
-       settle", so a caption here would say it twice. */
-    title: 'When country-specific assumptions stabilize',
-  },
   p6: {
     title: 'Appendix',
     sub: 'The identical frozen instrument, re-run in full on six more models.',
@@ -104,8 +95,13 @@ export default function Home() {
         {/* the guidance sweep belongs to this section, not to stabilization: it tests
             a second explanation for where the alignment comes from (2026-08-10). */}
         <CfgScene />
+        {/* p3 is a SUBSECTION of p2 (2026-08-11, Giray): its opening paragraph reads
+            "the previous experiments suggest… this raises a natural question", and
+            those experiments are the two scenes directly above. It carries no
+            SectionHeader — it is formatted exactly like the other two scenes in this
+            section, number then kicker then title, so its heading lives on the scene
+            itself. No NavRail stop; #p3 still anchors it. */}
         <div id="p3">
-          <SectionHeader {...SECTIONS.p3} />
           <CommitEarlyScene />
         </div>
       </div>

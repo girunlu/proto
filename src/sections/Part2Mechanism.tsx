@@ -150,9 +150,7 @@ export function CommitEarlyScene() {
     <SceneShell
       number="06"
       kicker="the swap"
-      /* No title, 2026-08-11 (Giray): the SubsectionHeader immediately above already
-         names this content ("When Country-Specific Assumptions Stabilize"), and a
-         scene headline under it was a second headline for one subsection. */
+      title={<>When country-specific assumptions stabilize</>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
