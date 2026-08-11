@@ -100,8 +100,12 @@ export default function Hero() {
         >
           {/* Restored in full 2026-08-11: the earlier removal misread Giray, who
               wanted the emphasis dropped, not the clause. No accent on any part of
-              it now — no phrase here carries more weight than the rest. */}
-          Exploring the Geographic Assumptions in Text-to-Image Models with Underspecified Prompts
+              it — no phrase here carries more weight than the rest.
+
+              Capitalised "The" is Giray's, written that way three times. It is not
+              standard title case (articles stay lowercase mid-title); left as the
+              author writes it rather than corrected again. */}
+          Exploring The Geographic Assumptions in Text-to-Image Models with Underspecified Prompts
         </motion.h1>
 
         {/* Authors / Affiliations, 2026-08-10 (Giray). Two columns in the idiom the
