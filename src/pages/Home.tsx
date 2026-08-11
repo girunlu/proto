@@ -24,7 +24,7 @@ import BranchAModels from '../sections/BranchAModels'
 // import Part7Consensus from '../sections/Part7Consensus'  // dismissed 2026-08-10
 import Conclusion from '../sections/Conclusion'
 import Closing from '../sections/Closing'
-import { SectionHeader, SubsectionHeader } from '../components/Scene'
+import { SectionHeader } from '../components/Scene'
 import { NavRail } from '../components/NavRail'
 import { ModelBar } from '../components/ModelBar'
 import { ModelProvider } from '../data/modelData'
@@ -38,29 +38,32 @@ const SECTIONS = {
     /* Giray's supplied heading, 2026-08-11. The rail shortens it to "geographic
        alignment" — the full line is far too long for a 10px rail label. */
     title: 'The Geographic Alignment of Geographically Unspecified Generations',
-    sub: 'what the model supplies when the country is left unsaid, and how far that sits from naming one',
+    sub: 'What the model supplies when the country is left unsaid, and how far that sits from naming one.',
   },
   p2: {
     /* Giray's supplied heading, 2026-08-11; the rail keeps the short form. */
     title: 'The Source of the Geographic Alignment',
-    sub: 'do the assumptions arrive with the sentence, or get added on the way to the image?',
+    /* covers all three experiments in the section, not only the first: the text
+       encoder comparison, the guidance sweep, and the mid-generation swap. */
+    sub: 'Whether the assumptions arrive with the sentence, whether stronger conditioning removes them, and when during generation they settle.',
   },
   p4: {
     /* Giray's supplied heading, 2026-08-11. */
     title: 'The Semantic Assumptions',
-    sub: 'the concepts the model fills in, named one question at a time',
+    sub: 'The concepts the model fills in, named one question at a time.',
   },
   /* p3 is a SUBSECTION of p2 as of 2026-08-11 (Giray): its opening paragraph reads
      "the previous experiments suggest… this raises a natural question", and those
      previous experiments are the text-encoder test and the guidance sweep directly
      above it. It lost its NavRail stop with the promotion — #p3 still anchors it. */
   p3: {
+    /* no sub: the section above it already promises "when during generation they
+       settle", so a caption here would say it twice. */
     title: 'When Country-Specific Assumptions Stabilize',
-    sub: 'switching the country partway through denoising, to find when the choice is already fixed',
   },
   p6: {
     title: 'Appendix',
-    sub: 'the identical frozen instrument, re-run in full on six more models',
+    sub: 'The identical frozen instrument, re-run in full on six more models.',
   },
 } as const
 
@@ -102,7 +105,7 @@ export default function Home() {
             a second explanation for where the alignment comes from (2026-08-10). */}
         <CfgScene />
         <div id="p3">
-          <SubsectionHeader {...SECTIONS.p3} />
+          <SectionHeader {...SECTIONS.p3} />
           <CommitEarlyScene />
         </div>
       </div>

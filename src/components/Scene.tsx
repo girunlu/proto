@@ -83,7 +83,7 @@ export function SceneShell({
    divider's caption became this subtitle, and the scene kickers dropped their
    section prefix. Titles live in Home.tsx beside the section structure, so the
    rail and the page cannot drift apart. */
-export function SectionHeader({ title, sub }: { title: string; sub: string }) {
+export function SectionHeader({ title, sub }: { title: string; sub?: string }) {
   /* No leading rule, and no ml on the subtitle. The rule cost w-10 + gap-4 = 3.5rem
      of indent, which pushed every section heading that far right of the body text it
      introduces — the one element on the page not sharing the prose's left edge. */
@@ -91,25 +91,17 @@ export function SectionHeader({ title, sub }: { title: string; sub: string }) {
     <div className="mx-auto mt-16 w-full max-w-6xl px-6">
       <Reveal>
         <h2 className="font-display max-w-4xl text-4xl leading-tight font-light md:text-5xl">{title}</h2>
-        <p className="mt-4 max-w-2xl text-[15px] leading-6 text-foreground/50">{sub}</p>
+        {sub && <p className="mt-4 max-w-2xl text-[15px] leading-6 text-foreground/50">{sub}</p>}
       </Reveal>
     </div>
   )
 }
 
-/* A heading one level below SectionHeader, for a run of scenes that belongs inside
-   a section rather than beside it. Same size as the introduction's "Image Sets and
-   Experimental Setup", which keeps the four-level scale intact. */
-export function SubsectionHeader({ title, sub }: { title: string; sub: string }) {
-  return (
-    <div className="mx-auto mt-6 w-full max-w-6xl px-6">
-      <Reveal>
-        <h3 className="font-display max-w-3xl text-2xl leading-snug font-light md:text-3xl">{title}</h3>
-        <p className="mt-3 max-w-2xl text-[15px] leading-6 text-foreground/50">{sub}</p>
-      </Reveal>
-    </div>
-  )
-}
+/* SubsectionHeader was removed 2026-08-11 (Giray). It rendered a step below the
+   scene titles it introduced, so the stabilization heading came out smaller than
+   "Fixed in the first third of denoising." would have been — an inverted hierarchy
+   again. That heading now uses SectionHeader like every other one; its subordinate
+   position is carried by where it sits and by having no NavRail stop, not by size. */
 
 export function TierNote({ tier, text }: { tier: 'evidence' | 'illustration' | 'sim'; text: string }) {
   void tier // badges removed per design feedback; the note text stays as a quiet footnote
