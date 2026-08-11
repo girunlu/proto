@@ -11,7 +11,7 @@
    and the scatter. */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { SceneShell, Reveal, Panel } from '../components/Scene'
-import { ZoomImage, BoxPicker, Setup, useMagnet } from '../components/Viz'
+import { ZoomImage, BoxPicker, useMagnet } from '../components/Viz'
 import { rgb } from '../lib/colors'
 import { SITS, COUNTRY8, C8, CV_DEFAULT, F3, SOUTH, type Sit, type Code } from '../data/part1'
 import { useModel, modelImg, isSd21 } from '../data/modelData'
@@ -264,23 +264,23 @@ function SeedBySeedScene() {
   return (
     <SceneShell
       number="03"
-      kicker="underspecified alignment · image by image"
+      kicker="image by image"
       title={<>Not an average, <em className="font-display italic text-amber-200">image by image.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
           The distance shown above summarizes all 50 generations with a single value, which can hide what happens for
-          individual images. For example, a set generated from a geographically underspecified prompt may be close to
+          individual images. For example, a set generated from a geographically unspecified prompt may be close to
           the United States on average because almost all its 50 images are somewhat close to the United States, or
           some are very close to the United States while others are close to different countries.
         </p>
         <p className="prose-scene mt-4 max-w-2xl">
-          In the following figure, we therefore examine each geographically underspecified generation separately and
-          ask which country-specific set it is closest to. For each geographically underspecified generation, we
-          identify the nearest geographic reference by comparing its embedding with the centroid of each of the eight
+          In the following figure, we therefore examine each geographically unspecified generation separately and ask
+          which country-specific set it is closest to. For each geographically unspecified generation, we identify the
+          nearest geographic reference by comparing its embedding with the centroid of each of the eight
           country-specific sets using cosine distance. Each image is assigned to the country with the smallest
-          distance. The figure below shows 16 of these images per scene, spaced evenly across the run rather than sampled at
-          random, together with a bar chart counting all 50 generations by their nearest country.
+          distance. The figure below shows 16 images per scene, spaced evenly across the run rather than sampled at
+          random, and gives the per-country counts over all 50 generations as a bar chart.
         </p>
         <p className="prose-scene mt-4 max-w-2xl">
           This individual-image analysis shows that most geographically unspecified generations are closer to the
@@ -288,40 +288,6 @@ function SeedBySeedScene() {
           observed in the averaged distances is also present across individual generations rather than being driven
           only by averaging, which is further aligned with UMAP projection.
         </p>
-      </Reveal>
-      <Reveal delay={0.05}>
-        <div className="mt-6 max-w-3xl">
-          <Setup
-            rows={[
-              { k: 'what we ran', v: 'Nothing new. This is the same 50 default-prompt images per scene that the two figures above measure, read one seed at a time instead of as a mean.' },
-              { k: 'what we measured', v: 'Each default seed is labelled with whichever of the eight country centroids its embedding sits nearest to, so a single image gets a country rather than a distance.' },
-              { k: 'what you are seeing', v: 'Sixteen real seeds, evenly spaced across the ones this model publishes, with the colour bar under each thumbnail showing its label. A sample of the run, not a pick of it.' },
-            ]}
-            detail={<>
-              <p>
-                <strong>The label.</strong> Per seed, the argmin over the eight country centroids of cosine distance
-                in DINOv3 space, applied to that seed's own default-prompt embedding. The centroids are the same ones
-                the map draws, and the scatter here reuses the map's own UMAP fit, so the two cannot disagree.
-              </p>
-              <p>
-                <strong>Why a mean was not enough.</strong> An average over 50 images can hide a mixture: half Western,
-                half not, cancelling to something moderate. Labelling seed by seed is what distinguishes “the model
-                leans Western” from “the model is Western on nearly every draw”, and only the second is what the data
-                shows.
-              </p>
-              <p>
-                <strong>Flux is the real exception, and it is shown.</strong> 28.3% of its default seeds land nearest a
-                Global-South cluster against SD 2.1's 5.3%. Switch the model bar to Flux and the strip changes with it,
-                rather than the scene quietly staying on the model that suits the claim.
-              </p>
-              <p>
-                <strong>What it does not settle.</strong> “Nearest centroid” forces a choice: every seed is assigned to
-                some country even when it sits nowhere near any of them. The tally counts assignments, not
-                resemblances, and a diffuse cell will still produce a confident-looking histogram.
-              </p>
-            </>}
-          />
-        </div>
       </Reveal>
       <Reveal delay={0.08}>
         <Panel className="mt-10">

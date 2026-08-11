@@ -224,7 +224,12 @@ export const STATS = {
   prompts: 54,
 }
 
-/* "one rehearsed scene" until 2026-08-10, when the page settled on "scene" meaning
+/* UNREFERENCED since 2026-08-11: the hero's pull-quote was removed along with the
+   rest of the block between the author names and the introduction. Kept exported
+   rather than deleted, in case a one-line statement of the finding is ever wanted
+   again.
+
+   "one rehearsed scene" until 2026-08-10, when the page settled on "scene" meaning
    the wedding/funeral/school axis. Reworded to "picture" so the sentence does not
    collide with the six scenes it sits above. */
 export const THESIS = 'The default is Western; naming a country replaces it with one rehearsed picture; and that picture is settled in the first third of generation.'

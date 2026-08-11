@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
-import { ZoomImage, BoxPicker, MetricToggle, Setup, useMagnet } from '../components/Viz'
+import { ZoomImage, BoxPicker, MetricToggle, useMagnet } from '../components/Viz'
 
 // const branchAKnn = ... — read only by the removed evidence block (see below)
 import { rgb, rgba } from '../lib/colors'
@@ -153,36 +153,6 @@ export function UnsaidScene() {
           “A {sit}” fixes a noun and an article; the setting, clothing, period, light and wealth level it says nothing
           about. The model fills each gap in anyway, and the answers barely vary.
         </p>
-      </Reveal>
-
-      <Reveal delay={0.05}>
-        <div className="mt-6 max-w-3xl">
-          <Setup
-            rows={[
-              { k: 'what we ran', v: '“A wedding”, plainly, no country, no era, no detail. 50 images per prompt from fixed seeds (SD 2.1: DDIM, 30 steps, 768×768, guidance 7.5).' },
-              { k: 'who answered', v: 'A vision-language annotator (gemma4) sees each image and never the prompt, then answers a frozen battery, 13 questions in every cell, 17–18 per cell.' },
-              { k: 'what counts', v: 'A question is settled when one answer covers at least 80% of that cell’s 50 images.' },
-            ]}
-          detail={<>
-              <p>
-                <strong>The battery is frozen.</strong> The questions were fixed before the answers were looked at, and
-                the annotator never sees the prompt, it is describing a picture, not grading a caption. 13 questions
-                are asked in every one of the 54 cells; a further few are scene-specific, giving 17–18 per cell.
-              </p>
-              <p>
-                <strong>Why 80%.</strong> A question counts as settled when one answer covers at least 40 of a cell's
-                50 images. The threshold is a convention, not a discovery, it is stated here so you can discount it.
-                Questions that clear it in the plain-prompt cell are the ones this scene calls “decisions the model
-                made for you”.
-              </p>
-              <p>
-                <strong>What it does not settle.</strong> That an answer is consistent says nothing about whether it is
-                <em> right</em>. A model can be wrong the same way 50 times, and the annotator would report a settled
-                question either way.
-              </p>
-          </>}
-        />
-        </div>
       </Reveal>
 
       <Reveal delay={0.06}>
@@ -625,7 +595,7 @@ function NationalityScene() {
   return (
     <SceneShell
       number="02"
-      kicker="underspecified alignment · the distances"
+      kicker="the distances"
       title={<>The same alignment, <em className="font-display italic text-amber-200">measured directly.</em></>}
     >
       <Reveal>
@@ -633,41 +603,11 @@ function NationalityScene() {
           Dimensionality reduction compresses high-dimensional embeddings into two dimensions, resulting in
           information loss. We therefore examine the geographic alignment directly in the original embedding space
           using cosine distance. In the following figure, each bar and heatmap cell shows the distance between a
-          country-specific image set and the corresponding geographically underspecified set. The geographic alignment
+          country-specific image set and the corresponding geographically unspecified set. The geographic alignment
           visible in the projection persists in this space, with the unspecified generations remaining systematically
           closer to the United States, Germany, and Russia. Uncertainty intervals are estimated by bootstrap
           resampling over seeds.
         </p>
-      </Reveal>
-      <Reveal delay={0.05}>
-        <div className="mt-6 max-w-3xl">
-          <Setup
-            rows={[
-              { k: 'what we ran', v: 'Six scenes, each written nine ways: plainly, and once naming each of eight countries. The same 50 fixed seeds in every variant, so nothing differs but the words.' },
-              { k: 'what we measured', v: 'Cosine distance between the default set and each country set in DINOv3-7B space, with CLIP available as a second ruler on the toggle.' },
-              { k: 'how we know', v: 'Intervals come from resampling those 50 seeds (bootstrap). Separability is a nearest-neighbour classifier’s accuracy (k-NN AUC), read against a 10,000-shuffle null.' },
-              { k: 'the mosaics', v: 'Grids show the four least-alike images in a cell, picked by embedding distance, a grid curated for variety cannot be accused of hiding the collapse.' },
-            ]}
-          detail={<>
-              <p>
-                <strong>The distance.</strong> Each cell is 50 images → 50 DINOv3-7B CLS vectors → one mean vector.
-                The number plotted is the cosine distance between two such means. The confidence interval comes from
-                resampling the 50 seeds with replacement, so it reflects seed variation, not annotator noise.
-              </p>
-              <p>
-                <strong>Why the ruler strip is on every chart.</strong> A bare cosine is meaningless to a reader, so
-                every distance chart carries two anchors from this same data: ≈0.06 is “a wedding” against “a wedding in
-                the USA”, ≈0.8 is “a wedding” against “a breakfast”. Read every bar against those.
-              </p>
-              <p>
-                <strong>Separability.</strong> k-NN AUC is how reliably a nearest-neighbour classifier tells the two
-                50-image sets apart in the full embedding space, scored against a 10,000-shuffle permutation null. It
-                is reported alongside the distance because the two can disagree: sets whose centroids sit close can
-                still be almost perfectly separable.
-              </p>
-          </>}
-        />
-        </div>
       </Reveal>
       <Reveal delay={0.06}>
         <Panel className="mt-10">
@@ -982,40 +922,16 @@ function MapScene() {
   return (
     <SceneShell
       number="01"
-      kicker="underspecified alignment · the projection"
+      kicker="the projection"
       title={<>An overview of the <em className="font-display italic text-amber-200">embedding spaces.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
           For an initial overview of the embedding spaces, we use UMAP to project the image embeddings into two
-          dimensions, separately for each model and scene. The geographically underspecified generations appear to
-          align more closely with some country-specific generations, particularly those associated with the United
-          States, Germany, and Russia.
+          dimensions, separately for each model and scene. The geographically unspecified generations (grey points in
+          the projection) appear to align more closely with some country-specific generations, particularly those
+          associated with the United States, Germany, and Russia.
         </p>
-      </Reveal>
-      <Reveal delay={0.05}>
-        <div className="mt-6 max-w-3xl">
-          <Setup
-            rows={[
-              { k: 'what we drew', v: 'One UMAP fit per model and scene, over all nine variants’ embeddings at once, with coordinates normalised to [0,1]. The rings are each country’s centroid in the projection.' },
-              { k: 'how we know', v: 'The separability figure is nearest-neighbour accuracy computed in the full embedding space, not on this two-dimensional picture.' },
-              { k: 'the limit', v: 'Silhouette scores run only 0.10–0.27, barely above noise at the low end. The map is a view of the evidence, not the evidence.' },
-            ]}
-          detail={<>
-              <p>
-                <strong>One fit per model and scene.</strong> All nine variants' embeddings are projected together so
-                the clouds inside a single plot are comparable; coordinates are normalised to [0,1] by the exporter.
-                Fits are <em>not</em> comparable between plots, UMAP axes carry no units and no meaning.
-              </p>
-              <p>
-                <strong>Why the map is not the evidence.</strong> Silhouette scores over these clusters run 0.10–0.27,
-                which at the low end is barely above noise. The claim that the countries separate rests on k-NN AUC in
-                the full space, where it is 0.96–0.99 even for the scenes whose centroid distances look weak. UMAP is
-                a picture of a structure measured elsewhere.
-              </p>
-          </>}
-        />
-        </div>
       </Reveal>
       <Reveal delay={0.08}>
         <Panel className="mt-10">
@@ -1071,21 +987,17 @@ UMAP of real {ruler === 'dinov3' ? 'DINOv3' : 'CLIP'} embeddings · {board ? 'al
    rather than inside one, because it frames all three: the projection, the
    distances, and the per-image check. */
 function SectionLead() {
+  /* mt-8, not mt-20: SectionHeader above already carries the section's top margin */
   return (
-    <div className="mx-auto mt-20 w-full max-w-6xl px-6">
+    <div className="mx-auto mt-8 w-full max-w-6xl px-6">
       <Reveal>
-        <h2 className="font-display max-w-4xl text-4xl leading-tight font-light md:text-5xl">
-          The Geographic Alignment of Geographically Underspecified Generations
-        </h2>
-      </Reveal>
-      <Reveal delay={0.05}>
-        <p className="prose-scene mt-6 max-w-2xl">
+        <p className="prose-scene max-w-2xl">
           Previous work using crowdsourced human annotation has found that images generated from prompts that do not
           specify geographic location tend to resemble representations associated with the United States more closely
           than those associated with other countries [3]. We visually examine such a geographic alignment by exploring
-          the embedding spaces of images generated from the geographically underspecified prompts “a &lt;scene&gt;”,
-          and their corresponding country-specific variants “a &lt;scene&gt; in &lt;country&gt;”. We obtain the visual
-          embeddings from two image encoders: DINOv3 ViT-7B/16 and CLIP ViT-L/14.
+          the embedding spaces of images generated from the geographically unspecified prompts “a &lt;scene&gt;”, and
+          their corresponding country-specific variants “a &lt;scene&gt; in &lt;country&gt;”. We obtain the visual
+          embeddings from two image encoders: DINOv3 ViT-7B/16 [11] and CLIP ViT-L/14 [12].
         </p>
       </Reveal>
     </div>

@@ -6,7 +6,6 @@
 // no separately typed counts that could drift from the scenes below.
 // ─────────────────────────────────────────────────────────────────────────────
 import { SceneShell, Reveal } from '../components/Scene'
-import { Setup } from '../components/Viz'
 import { STATS } from '../data/research'
 import { CARDS_HEADLINE } from '../data/part4'
 import { MODELS } from '../data/modelData'
@@ -71,43 +70,6 @@ export default function Overview() {
       {/* The base every scene builds on, stated once. Each scene's own setup block
           carries only what that scene adds to this — restating the grid thirteen
           times is exactly the drowning we are trying to avoid. */}
-      <Reveal delay={0.04}>
-        <div className="mt-8 max-w-3xl">
-          <Setup
-            rows={[
-              { k: 'the grid', v: `Six everyday events × (plainly + eight countries) = ${STATS.prompts} prompts, each generated ${STATS.seeds} times on the same fixed seeds. Nothing differs between two cells but the words.` },
-              { k: 'how they were made', v: 'SD 2.1 is the baseline: DDIM, 30 steps, 768×768, guidance 7.5. The other six models run the identical grid at their own documented guidance.' },
-              { k: 'the two rulers', v: 'DINOv3-7B cosine distance throughout, with CLIP as an independent second ruler on every chart that carries a toggle.' },
-              { k: 'who reads the images', v: 'A vision-language annotator (gemma4) answers a frozen question battery on each image, never seeing the prompt that produced it.' },
-            ]}
-          detail={<>
-              <p>
-                <strong>Weights and settings.</strong> SD 2.1 via <code>sd2-community/stable-diffusion-2-1</code> (the
-                official repo became gated mid-project; the <code>v2-1_768-ema-pruned</code> files were verified
-                identical). DDIM sampler, deterministic per seed, 30 steps, 768×768, guidance 7.5. Seeds are 0–49 and
-                are the <em>same</em> 50 in every one of the 54 cells, so any difference between two cells is the
-                prompt and nothing else.
-              </p>
-              <p>
-                <strong>The rulers.</strong> DINOv3-7B CLS embeddings are the primary metric; a cell-to-cell distance
-                is the cosine distance between per-variant mean feature vectors (the Naik &amp; Nushi construction).
-                CLIP is carried as an independent second ruler and every distance chart can be switched to it, because
-                a finding that only exists in one embedding space is a finding about that space.
-              </p>
-              <p>
-                <strong>The annotator.</strong> One vision-language model, Gemma-4-E4B-QAT-w4a16, reads every image
-                with the prompt withheld. Using a single instrument across all seven models is what makes their
-                assumption counts comparable at all.
-              </p>
-              <p>
-                <strong>Numbers on this page are derived, not typed.</strong> Every figure in the prose is read at
-                render time from the exported JSON the analysis wrote. This is a rule with a history: it exists
-                because typed numbers drifted from their sources twice.
-              </p>
-          </>}
-        />
-        </div>
-      </Reveal>
 
       {/* The "how the argument runs · jump in anywhere" list is DISMISSED
           2026-08-10 (Giray): the part structure it indexes is being replaced

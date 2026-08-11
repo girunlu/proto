@@ -40,39 +40,118 @@ export interface Reference {
   role?: string
 }
 
+/* The thirteen Giray supplied, 2026-08-11, in the order the prose cites them:
+     [1,2] introduction · [3] geographic alignment · [4] semantic assumptions
+     [5] SD 2.1 · [6] SDXL · [7] SD 3.5 · [8] Kolors · [9] HunyuanDiT · [10] Qwen
+     [11] DINOv3 · [12] CLIP · [13] the annotator
+   Order is load-bearing: the introduction prints these numbers from GENERATORS[].ref
+   and the list renders its index, so inserting an entry renumbers the prose with it.
+
+   Every arXiv link here was opened and read back before being stored — the five
+   supplied ids plus SDXL's, checked against title and first author, none of them
+   constructed from memory. The remaining six are conference papers whose DOIs were
+   not in the supplied list; they render as plain text rather than a guessed link. */
 export const REFERENCES: Reference[] = [
-  /* Replaced 2026-08-10 with the four Giray supplied, in the order the prose cites
-     them: [1,2] in the introduction, [3] in underspecified alignment, [4] in
-     semantic assumptions. No `url` is given on any of them: the source list carried
-     none, and guessing an arXiv id or a DOI is the kind of plausible-looking error
-     that is very hard to catch later. Add them and the list will link itself. */
   {
     id: 'chinchure2024',
-    authors: 'Chinchure, A. et al.',
+    authors: 'Chinchure, A., et al.',
     year: 2024,
     title: 'TIBET: Identifying and Evaluating Biases in Text-to-Image Generative Models',
     venue: 'European Conference on Computer Vision. Cham: Springer Nature Switzerland',
   },
   {
     id: 'eschner2025',
-    authors: 'Eschner, J. et al.',
+    authors: 'Eschner, J., et al.',
     year: 2025,
     title: 'Interactive Discovery and Exploration of Visual Bias in Generative Text-to-Image Models',
     venue: 'Computer Graphics Forum, Vol. 44, No. 3',
   },
   {
     id: 'basu2023',
-    authors: 'Basu, A., Babu, R. V. & Pruthi, D.',
+    authors: 'Basu, A., Venkatesh Babu, R., & Pruthi, D.',
     year: 2023,
     title: 'Inspecting the Geographical Representativeness of Images from Text-to-Image Models',
     venue: '2023 IEEE/CVF International Conference on Computer Vision (ICCV). IEEE',
   },
   {
     id: 'franchi2025',
-    authors: 'Franchi, G. et al.',
+    authors: 'Franchi, G., et al.',
     year: 2025,
     title: 'Towards Understanding and Quantifying Uncertainty for Text-to-Image Generation',
     venue: '2025 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR). IEEE',
+  },
+  {
+    id: 'rombach2022',
+    authors: 'Rombach, R., et al.',
+    year: 2022,
+    title: 'High-Resolution Image Synthesis with Latent Diffusion Models',
+    venue: '2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR). IEEE',
+  },
+  {
+    /* Replaced 2026-08-11 at Giray's confirmation. The supplied [6] was Meng et al.,
+       SDEdit — an image-editing method, not the model the introduction cites [6] for.
+       Title, authors, venue and arXiv id all checked against arxiv.org/abs/2307.01952
+       and the ICLR 2024 proceedings, not recalled. */
+    id: 'podell2024',
+    authors: 'Podell, D., et al.',
+    year: 2024,
+    title: 'SDXL: Improving Latent Diffusion Models for High-Resolution Image Synthesis',
+    venue: 'The Twelfth International Conference on Learning Representations (ICLR)',
+    url: 'https://arxiv.org/abs/2307.01952',
+  },
+  {
+    id: 'esser2024',
+    authors: 'Esser, P., et al.',
+    year: 2024,
+    title: 'Scaling Rectified Flow Transformers for High-Resolution Image Synthesis',
+    venue: 'Forty-first International Conference on Machine Learning (ICML)',
+  },
+  {
+    id: 'kolors2024',
+    authors: 'Kolors Team',
+    year: 2024,
+    title: 'Kolors: Effective Training of Diffusion Model for Photorealistic Text-to-Image Synthesis',
+    venue: 'Technical report',
+    url: 'https://github.com/Kwai-Kolors/Kolors/blob/master/imgs/Kolors_paper.pdf',
+  },
+  {
+    id: 'li2024',
+    authors: 'Li, Z., et al.',
+    year: 2024,
+    title: 'Hunyuan-DiT: A Powerful Multi-Resolution Diffusion Transformer with Fine-Grained Chinese Understanding',
+    venue: 'arXiv preprint arXiv:2405.08748',
+    url: 'https://arxiv.org/abs/2405.08748',
+  },
+  {
+    id: 'wu2025',
+    authors: 'Wu, C., et al.',
+    year: 2025,
+    title: 'Qwen-Image Technical Report',
+    venue: 'arXiv preprint arXiv:2508.02324',
+    url: 'https://arxiv.org/abs/2508.02324',
+  },
+  {
+    id: 'simeoni2025',
+    authors: 'Siméoni, O., et al.',
+    year: 2025,
+    title: 'DINOv3',
+    venue: 'arXiv preprint arXiv:2508.10104',
+    url: 'https://arxiv.org/abs/2508.10104',
+  },
+  {
+    id: 'radford2021',
+    authors: 'Radford, A., et al.',
+    year: 2021,
+    title: 'Learning Transferable Visual Models from Natural Language Supervision',
+    venue: 'International Conference on Machine Learning (ICML). PMLR',
+  },
+  {
+    id: 'gemma2026',
+    authors: 'Gemma Team',
+    year: 2026,
+    title: 'Gemma 4 Technical Report',
+    venue: 'arXiv preprint arXiv:2607.02770',
+    url: 'https://arxiv.org/abs/2607.02770',
   },
 ]
 
@@ -89,21 +168,28 @@ export const REFERENCES: Reference[] = [
    ONE ANNOTATOR. qwen3_vl was retired on 2026-07-31 and the whole page is narrated
    from gemma4 alone; there is no second reader to name here, and if one is ever
    added this list is where it becomes visible. */
+/* The seven generators, in the order the introduction names them. Exported on its
+   own because the introduction now links each model name to its repo: one list
+   feeds both that sentence and the weights table below, so a label there can never
+   drift from the link it carries. */
+/* `ref` is the bracketed citation number the introduction prints after the model
+   name. SD 2.1 and FLUX.1 [dev] carry none in that sentence: SD 2.1 is cited as [5]
+   a paragraph earlier, and no citation was supplied for FLUX. The numbers are only
+   rendered in the introduction, never in the weights table below. */
+export const GENERATORS: { label: string; url: string; ref?: number }[] = [
+  /* the official stabilityai repo became gated mid-project; these are the
+     verified-identical v2-1_768-ema-pruned files actually used */
+  { label: 'Stable Diffusion 2.1', url: 'https://huggingface.co/sd2-community/stable-diffusion-2-1' },
+  { label: 'SDXL 1.0', url: 'https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0' , ref: 6 },
+  { label: 'Stable Diffusion 3.5 Large', url: 'https://huggingface.co/stabilityai/stable-diffusion-3.5-large' , ref: 7 },
+  { label: 'FLUX.1 [dev]', url: 'https://huggingface.co/black-forest-labs/FLUX.1-dev' },
+  { label: 'Kolors', url: 'https://huggingface.co/Kwai-Kolors/Kolors-diffusers' , ref: 8 },
+  { label: 'HunyuanDiT v1.2', url: 'https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers' , ref: 9 },
+  { label: 'Qwen-Image', url: 'https://huggingface.co/Qwen/Qwen-Image' , ref: 10 },
+]
+
 export const WEIGHTS: { group: string; models: { label: string; url: string }[] }[] = [
-  {
-    group: 'image generators',
-    models: [
-      /* the official stabilityai repo became gated mid-project; these are the
-         verified-identical v2-1_768-ema-pruned files actually used */
-      { label: 'Stable Diffusion 2.1', url: 'https://huggingface.co/sd2-community/stable-diffusion-2-1' },
-      { label: 'SDXL 1.0', url: 'https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0' },
-      { label: 'Stable Diffusion 3.5 Large', url: 'https://huggingface.co/stabilityai/stable-diffusion-3.5-large' },
-      { label: 'FLUX.1 [dev]', url: 'https://huggingface.co/black-forest-labs/FLUX.1-dev' },
-      { label: 'Kolors', url: 'https://huggingface.co/Kwai-Kolors/Kolors-diffusers' },
-      { label: 'HunyuanDiT v1.2', url: 'https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers' },
-      { label: 'Qwen-Image', url: 'https://huggingface.co/Qwen/Qwen-Image' },
-    ],
-  },
+  { group: 'image generators', models: GENERATORS },
   {
     group: 'the annotator, one model reads every image on this page',
     models: [{ label: 'Gemma-4-E4B-it', url: 'https://huggingface.co/google/gemma-4-E4B-it-qat-w4a16-ct' }],

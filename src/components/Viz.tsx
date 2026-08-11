@@ -326,6 +326,12 @@ export function HowItWorks({ steps }: { steps: { k: string; v: string }[] }) {
 
 /* ── the experimental setup, stated in the open ──────────────────────────────
 
+   DISMISSED 2026-08-11 (Giray): all 15 call sites were removed. Nothing renders
+   this any more. Kept compiled and exported, unmounted-not-deleted like the
+   dismissed scenes, so restoring one is a matter of re-adding a <Setup rows={…}
+   detail={…} /> inside a <Reveal> — the rows and detail prose for every scene
+   are in the file history rather than parked in scratchpad.
+
    The technical InfoBoxes said most of this already, but folded shut: a reader
    who wanted to know what was actually run had to go looking, and what they
    found was one paragraph rather than a setup they could reproduce. This is the

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Setup } from '../components/Viz'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
 
 import { rgb, rgba } from '../lib/colors'
@@ -137,36 +136,6 @@ export default function Part7Consensus() {
           Across every (prompt, question) blank any model fills, <strong>{C.n_slots} of them</strong>, how much of
           what a model assumes is its own, and how much is everyone's?
         </p>
-      </Reveal>
-
-      <Reveal delay={0.05}>
-        <div className="mt-6 max-w-3xl">
-          <Setup
-            rows={[
-              { k: 'how to read it', v: 'Rows are headline-tier named assumptions, columns are models. A cell’s number is how many of that model’s 54 cells fire the assumption above the naming threshold.' },
-              { k: 'what blank means', v: 'Outside that model’s twenty most frequent, a cutoff, not an absence. Blanks are never imputed.' },
-              { k: 'how we know', v: 'Cross-model agreement is chance-corrected with Gwet’s AC1, an agreement score that discounts matches expected by luck, over the shared questions, read against a permutation null.' },
-            ]}
-          detail={<>
-              <p>
-                <strong>This agreement is between models, not between annotators.</strong> There is only one annotator
-                on this page, gemma4 reads every image for every model, so nothing here measures whether two readers
-                concur. What is being scored is whether two <em>image models</em> answer the same question the same
-                way, which is a claim about the models and is exactly the question this scene asks.
-              </p>
-              <p>
-                <strong>Gwet's AC1, not κ.</strong> AC1 is chance-corrected but, unlike Cohen's κ, does not collapse
-                when a category is near-universal. That mattered: under κ the assumptions shared by every model scored
-                worst, the opposite of what the statistic should say. Significance comes from a permutation null.
-              </p>
-              <p>
-                <strong>The cutoff is a cutoff.</strong> A blank cell means the assumption fell outside that model's
-                twenty most frequent, not that the model never produced it. Blanks are never imputed to zero, and no
-                row total treats them as absences.
-              </p>
-          </>}
-        />
-        </div>
       </Reveal>
 
       <Reveal delay={0.1}>

@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion'
-import { Setup } from '../components/Viz'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
 import { rgb } from '../lib/colors'
 import { Q_TEXT, Q_FAMILY } from '../data/uiv2'
@@ -56,36 +55,6 @@ export default function Part6Steer() {
           {total.n} side-effect observations across {N_STEER_MODELS} models, and ask, per attribute: when a clause
           was added, how often did the answer actually change?
         </p>
-      </Reveal>
-
-      <Reveal delay={0.05}>
-        <div className="mt-6 max-w-3xl">
-          <Setup
-            rows={[
-              { k: 'what we ran', v: 'One clause, one attribute, depth exactly one, 60 prompts × 7 models × 50 seeds. Every rung of every ladder pooled, rather than one prompt walked at a time.' },
-              { k: 'which attributes', v: 'Drawn from the ground set: the values all seven models independently name. The gate picks them balanced by assumed value, so the run deliberately carries clauses that fail as well as clauses that work.' },
-              { k: 'who answered', v: 'gemma4, blind to the prompt, on seeds 0–19 of each condition.' },
-              { k: 'how we know', v: 'Per-attribute flip verdicts with 95% Wilson intervals, then grouped by attribute, by model and by cell to ask which of the three the answer actually belongs to.' },
-            ]}
-          detail={<>
-              <p>
-                <strong>Why depth exactly one.</strong> Pooled ladder data could not answer this, no attribute
-                appeared in three or more cells, so attribute, prompt and model were hopelessly confounded. A
-                single-clause factorial breaks that: one clause, one attribute, everything else fixed.
-              </p>
-              <p>
-                <strong>The ground set.</strong> Attributes are drawn only from values all seven models independently
-                name, and the selection gate balances them by assumed value, so the run deliberately contains clauses
-                that fail as well as clauses that work. A set chosen for success would have measured nothing.
-              </p>
-              <p>
-                <strong>The statistic.</strong> Per-attribute flip rates with 95% Wilson intervals (which behave at the
-                extremes, where normal-approximation intervals run outside [0,1]), then the verdicts grouped by
-                attribute, by model and by cell to ask which factor the answer actually belongs to.
-              </p>
-          </>}
-        />
-        </div>
       </Reveal>
 
       <Reveal delay={0.08}>

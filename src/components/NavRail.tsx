@@ -7,7 +7,7 @@ const STOPS = [
      Acknowledgements has an #ack anchor but no stop: nine dots crowd the rail, and
      it is one paragraph below the references stop. */
   { id: 'intro', label: '· introduction' },
-  { id: 'p1', label: 'underspecified alignment' },
+  { id: 'p1', label: 'geographic alignment' },
   { id: 'p2', label: 'alignment source' },
   { id: 'p4', label: 'semantic assumptions' },
   { id: 'p3', label: 'assumption stabilization' },

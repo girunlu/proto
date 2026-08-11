@@ -1,8 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { THESIS, STATS } from '../data/research'
-import { AUTHORS, PUB_DATE } from '../data/references'
-import { MODELS } from '../data/modelData'
+import { AUTHORS } from '../data/references'
 import { useTheme } from '../hooks/useTheme'
 import { canvasColor } from '../lib/colors'
 
@@ -83,11 +81,11 @@ function LatentNoise() {
 
 export default function Hero() {
   return (
-    <header className="relative flex min-h-[100svh] flex-col overflow-hidden">
+    <header className="relative flex flex-col overflow-hidden">
       <LatentNoise />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,hsl(var(--background))_78%)]" />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-6 py-24">
+      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-6 pt-28 pb-16">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}>
           <div className="font-mono2 text-[11px] tracking-[0.35em] uppercase text-amber-200/70">
             An interactive explorable · explainable AI × human–computer interaction
@@ -100,8 +98,10 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
         >
-          Exploring the Geographic Assumptions in Text-to-Image Models with{' '}
-          <span className="italic text-amber-200">Underspecified Prompts</span>
+          {/* "with Underspecified Prompts" dropped 2026-08-11 (Giray). The amber
+              italic accent it carried moves to the subject phrase rather than being
+              lost — the title is the one place on the page that uses it. */}
+          Exploring the <span className="italic text-amber-200">Geographic Assumptions</span> in Text-to-Image Models
         </motion.h1>
 
         {/* Authors / Affiliations, 2026-08-10 (Giray). Two columns in the idiom the
@@ -141,80 +141,7 @@ export default function Hero() {
           </div>
         </motion.div>
 
-        <motion.div
-          className="mt-12 flex flex-col gap-3 font-mono2 text-sm md:text-base"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.4 }}
-        >
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <span className="w-52 shrink-0 text-[11px] tracking-widest text-foreground/40 uppercase">what you think happens</span>
-            <span className="text-foreground/40 line-through decoration-red-400/70 decoration-2">image = f( prompt )</span>
-          </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <span className="w-52 shrink-0 text-[11px] tracking-widest text-amber-200/70 uppercase">what actually happens</span>
-            <span className="text-amber-200">image ~ P( · | prompt, the model's worldview )</span>
-          </div>
-        </motion.div>
-
-        <motion.p
-          className="mt-10 max-w-2xl text-lg leading-8 text-foreground/70"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.6 }}
-        >
-          {/* Rewritten 2026-08-10 to promise what the page now delivers. The old
-              version advertised “what ‘realistic’ means” (the reference-photograph
-              anchor) and “what overriding it costs” (the counter-specification
-              ladders); both of those sections are dismissed. */}
-          Your prompt is never the whole input. It is read inside a worldview the model already learned: which country
-          a scene defaults to, who is in it, what is on the table. This explorable measures that worldview across seven
-          text-to-image models, and asks where in generation it gets decided.
-        </motion.p>
-
-        {/* The second byline that used to sit here (all five authors again, with
-            their full affiliation strings) is REMOVED 2026-08-10: the block above
-            already credits them, and the footer credits them a third time with
-            contact links. Only the date it also carried survives. */}
-        <motion.div
-          className="mt-8 font-mono2 text-[11px] leading-5 tracking-wider text-foreground/35"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.75 }}
-        >
-          {PUB_DATE}
-        </motion.div>
-
-        <motion.div
-          className="mt-14 max-w-2xl border-l-2 border-amber-300/50 pl-5"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.85 }}
-        >
-          <p className="font-display text-xl leading-7 text-foreground/85 italic md:text-2xl">“{THESIS}”</p>
-          <p className="mt-3 font-mono2 text-[11px] tracking-wider text-foreground/40 uppercase">
-            {/* 18,900 was typed here. It is 54 × 50 × 7 and is now read from the data
-                layer, per the project rule that no figure in the prose is hand-entered. */}
-            6 scenes × 9 prompt variants × {STATS.seeds} fixed seeds on {MODELS.length} text-to-image models,{' '}
-            {(STATS.prompts * STATS.seeds * MODELS.length).toLocaleString()} images; with the guidance sweep and the
-            mid-generation interventions, {STATS.images.toLocaleString()}+ in total
-          </p>
-        </motion.div>
       </div>
-
-      <motion.div
-        className="relative z-10 flex justify-center pb-10"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.4, duration: 1 }}
-      >
-        <div className="flex flex-col items-center gap-2 text-foreground/40">
-          <span className="font-mono2 text-[10px] tracking-[0.3em] uppercase">scroll to begin</span>
-          <motion.span animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 1.8 }} className="text-amber-200/80">
-            ↓
-          </motion.span>
-        </div>
-      </motion.div>
     </header>
   )
 }

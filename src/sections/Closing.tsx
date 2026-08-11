@@ -27,7 +27,26 @@ export default function Closing() {
           instrument-check helper above still compile and feed nothing. To restore,
           re-mount them ahead of the Sources scene. */}
 
-      <SceneShell number="§" kicker="references" title={<>What this stands on.</>} lead>
+      {/* Acknowledgements, Giray's text 2026-08-10, moved above the references and
+          retitled on 2026-08-11 at Giray's request: the section is called what it is
+          rather than "With thanks." Its kicker is dropped because the title now
+          carries the same word. */}
+      <div id="ack">
+        <SceneShell number="†" title={<>Acknowledgements</>} lead>
+          <Reveal>
+            <p className="prose-scene max-w-2xl">
+              This work was supported by the Austrian Science Fund (FWF DFH 23–N) and the Austrian Research Promotion
+              Agency (FFG 911655: “Pro<sup>2</sup>Future”).
+            </p>
+          </Reveal>
+        </SceneShell>
+      </div>
+
+      {/* `closing` sits on this scene rather than on the wrapper in Home.tsx: the
+          NavRail's last stop is labelled "references", and with acknowledgements
+          now first, a wrapper-level anchor would have landed the reader a section
+          short of it. */}
+      <SceneShell number="§" title={<>References</>} id="closing" lead>
         <Reveal>
           <p className="prose-scene max-w-2xl">
             Everything above is measured; almost nothing above is new on its own.
@@ -94,20 +113,6 @@ export default function Closing() {
           </div>
         </Reveal>
       </SceneShell>
-
-      {/* Acknowledgements, Giray's text 2026-08-10. It lives here rather than in its
-          own file because Closing.tsx owns the footer, and the section has to sit
-          between the references and it. */}
-      <div id="ack">
-        <SceneShell number="†" kicker="acknowledgements" title={<>With thanks.</>} lead>
-          <Reveal>
-            <p className="prose-scene max-w-2xl">
-              This work was supported by the Austrian Science Fund (FWF DFH 23–N) and the Austrian Research Promotion
-              Agency (FFG 911655: “Pro<sup>2</sup>Future”).
-            </p>
-          </Reveal>
-        </SceneShell>
-      </div>
 
       {/* Trimmed 2026-08-10 (Giray) to the domain and the keywords. The five-author
           list with affiliations was the third printing of the same names (the hero's

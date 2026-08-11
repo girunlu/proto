@@ -30,42 +30,42 @@ import BranchAModels from '../sections/BranchAModels'
 // import Part7Consensus from '../sections/Part7Consensus'  // dismissed 2026-08-10
 import Conclusion from '../sections/Conclusion'
 import Closing from '../sections/Closing'
+import { SectionHeader } from '../components/Scene'
 import { NavRail } from '../components/NavRail'
 import { ModelBar } from '../components/ModelBar'
 import { ModelProvider } from '../data/modelData'
 
-function PartDivider({ label, sub, violet }: { label: string; sub: string; violet?: boolean }) {
-  return (
-    <div className="mx-auto max-w-6xl px-6 pt-24">
-      <div className={`flex items-center gap-4 font-mono2 text-[11px] tracking-[0.35em] uppercase ${violet ? 'text-violet-300/70' : 'text-amber-200/60'}`}>
-        <span className={`h-px flex-1 ${violet ? 'bg-violet-400/30' : 'bg-amber-300/25'}`} />
-        {label}
-        <span className={`h-px flex-1 ${violet ? 'bg-violet-400/30' : 'bg-amber-300/25'}`} />
-      </div>
-      <p className="mt-3 text-center font-mono2 text-[11px] tracking-wider text-foreground/35">{sub}</p>
-    </div>
-  )
-}
-
-function AlignmentSourceLead() {
-  return (
-    <div className="mx-auto mt-20 w-full max-w-6xl px-6">
-      <h2 className="font-display max-w-4xl text-4xl leading-tight font-light md:text-5xl">
-        The Source of the Geographic Alignment
-      </h2>
-    </div>
-  )
-}
-
-function StabilizationLead() {
-  return (
-    <div className="mx-auto mt-20 w-full max-w-6xl px-6">
-      <h2 className="font-display max-w-4xl text-4xl leading-tight font-light md:text-5xl">
-        When Country-Specific Assumptions Stabilize
-      </h2>
-    </div>
-  )
-}
+/* The section names, matched to NavRail's stops one for one. PartDivider (a ruled
+   band carrying this same label) and the two paraphrasing <h2> leads that used to
+   follow it are gone: between them they announced each section three times before
+   its first sentence. Keep this table and NavRail's STOPS in step. */
+const SECTIONS = {
+  p1: {
+    /* Giray's supplied heading, 2026-08-11. The rail shortens it to "geographic
+       alignment" — the full line is far too long for a 10px rail label. */
+    title: 'The Geographic Alignment of Geographically Unspecified Generations',
+    sub: 'what the model supplies when the country is left unsaid, and how far that sits from naming one',
+  },
+  p2: {
+    /* Giray's supplied heading, 2026-08-11; the rail keeps the short form. */
+    title: 'The Source of the Geographic Alignment',
+    sub: 'do the assumptions arrive with the sentence, or get added on the way to the image?',
+  },
+  p4: {
+    /* Giray's supplied heading, 2026-08-11. */
+    title: 'The Semantic Assumptions',
+    sub: 'the concepts the model fills in, named one question at a time',
+  },
+  p3: {
+    /* Giray's supplied heading, 2026-08-11; the rail keeps the short form. */
+    title: 'When Country-Specific Assumptions Stabilize',
+    sub: 'switching the country partway through denoising, to find when the choice is already fixed',
+  },
+  p6: {
+    title: 'Extras',
+    sub: 'the identical frozen instrument, re-run in full on six more models',
+  },
+} as const
 
 export default function Home() {
   /* the technique scenes (override + escape attempts) stay out of the main flow and
@@ -93,32 +93,30 @@ export default function Home() {
           to, and after the restructure they ran 12, 11, 14–15, 16, 9 down the page.
           If a scene is ever moved again, renumber the whole run rather than patching
           one. */}
-      <PartDivider label="underspecified alignment" sub="what the model supplies when the country is left unsaid, and how far that sits from naming one" />
       <div id="p1">
+        <SectionHeader {...SECTIONS.p1} />
         <Part1Default />
       </div>
-      <PartDivider label="alignment source" sub="do the assumptions arrive with the sentence, or get added on the way to the image?" />
       <div id="p2">
-        <AlignmentSourceLead />
+        <SectionHeader {...SECTIONS.p2} />
         <TextEncoderScene />
         {/* the guidance sweep belongs to this section, not to stabilization: it tests
             a second explanation for where the alignment comes from (2026-08-10). */}
         <CfgScene />
       </div>
-      <PartDivider label="semantic assumptions" sub="the concepts the model fills in, named one question at a time" />
       <div id="p4">
+        <SectionHeader {...SECTIONS.p4} />
         <Part4Assumptions />
       </div>
-      <PartDivider label="assumption stabilization" sub="switching the country partway through denoising, to find when the choice is already fixed" />
       <div id="p3">
-        <StabilizationLead />
+        <SectionHeader {...SECTIONS.p3} />
         <CommitEarlyScene />
       </div>
       <div id="conc">
         <Conclusion />
       </div>
-      <PartDivider label="extras · across models" sub="the identical frozen instrument, re-run in full on six more models" />
       <div id="p6">
+        <SectionHeader {...SECTIONS.p6} />
 
         {showExtras ? (
           <>
@@ -157,9 +155,9 @@ export default function Home() {
           </div>
         )}
       </div>
-      <div id="closing">
-        <Closing />
-      </div>
+      {/* the `closing` anchor lives on the references scene inside Closing.tsx, so
+          the rail's last stop lands there and not on the acknowledgements above it */}
+      <Closing />
     </main>
     </ModelProvider>
   )

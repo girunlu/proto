@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
-import { ZoomImage, BoxPicker, Setup } from '../components/Viz'
+import { ZoomImage, BoxPicker} from '../components/Viz'
 import { rgb, rgba } from '../lib/colors'
 import { ordinal } from '../lib/utils'
 import { C8, COUNTRY8, SITS, CV_DEFAULT, cell, seedImg, type Sit, type Code } from '../data/part1'
@@ -11,8 +11,8 @@ import { C8, COUNTRY8, SITS, CV_DEFAULT, cell, seedImg, type Sit, type Code } fr
    comparing a number with itself. */
 import { cardsFor, CARDS_TOTAL, CARDS_HEADLINE } from '../data/part4'
 import {
-  VQA, DAAM_INDEX, daamImg, key, Q_TEXT, BATTERY, tidyOpen, FORCED_CELLS, FORCED_U12,
-  type Answer, type ForcedQ,
+  VQA, DAAM_INDEX, daamImg, key, Q_TEXT, BATTERY, tidyOpen,
+  type Answer,
 } from '../data/uiv2'
 import { useModel, modelImg, modelSeeds, seedCount, modelVqa, isSd21, MODEL_NAME, CROSS_MODEL_NOTE } from '../data/modelData'
 import { openForModel, shiftFor, type ShiftRow } from '../data/crossmodel'
@@ -246,62 +246,11 @@ function OpenAnswers({ sit, code }: { sit: Sit; code: Code | 'default' }) {
   )
 }
 
-/* The forced-choice control, shown BESIDE the battery and never instead of it.
-   Only renders where the annotator actually refused something on this cell, and only
-   on SD 2.1 — the re-ask was run over the main run's images, so showing it under
-   another model's name would be the exact class of error UI_MAP §5 exists to stop. */
-function ForcedControl({ sit, code }: { sit: Sit; code: Code | 'default' }) {
-  const { model } = useModel()
-  if (!isSd21(model)) return null
-  const cellKey = key(sit, code)
-  const rows = Object.entries(FORCED_CELLS[cellKey] ?? {}) as [string, ForcedQ][]
-  if (!rows.length) return null
-  const asked = rows.reduce((a, [, v]) => a + v.n, 0)
-  const refused = rows.reduce((a, [, v]) => a + v.refused, 0)
-
-  return (
-    <div className="mt-8 rounded-lg border border-sky-300/25 bg-sky-300/[0.04] p-4">
-      <div className="font-mono2 text-[10px] tracking-widest text-sky-200/80 uppercase">
-        a second instrument · the same images, asked again without “unclear”
-      </div>
-      <p className="mt-2 max-w-3xl text-[13px] leading-5 text-foreground/60">
-        <strong>{asked}</strong> answers above were “unclear”; re-asking without that option can only push the
-        consistency numbers up, so these never replace the numbers above. What they test is whether the model was being
-        careful or merely quiet:{' '}
-        <strong className="text-foreground/80">
-          it refused again {refused} of {asked} times
-        </strong>
-        {refused > 0 && ', often by writing “n-a”, a reply that was never on the list'}.
-      </p>
-      <div className="mt-3 space-y-1">
-        {rows.map(([q, v]) => (
-          <div key={q} className="flex items-center gap-3 font-mono2 text-[10px]">
-            <span className="w-40 shrink-0 truncate text-right text-foreground/50" title={Q_TEXT[q] ?? q}>
-              {Q_TEXT[q] ?? q}
-            </span>
-            <span className="w-24 shrink-0 truncate text-foreground/35">was “{v.was ?? 'unclear'}”</span>
-            <span className="min-w-0 flex-1 truncate text-foreground/85">
-              → {v.top.map((t) => `${t.v} ${t.n}`).join(' · ')}
-            </span>
-            <span className="w-24 shrink-0 text-right text-foreground/40">
-              {v.refused}/{v.n} refused again
-            </span>
-          </div>
-        ))}
-      </div>
-      {FORCED_U12.plain && FORCED_U12.non_western && (
-        <p className="mt-3 border-t border-sky-300/20 pt-2.5 text-[12px] leading-5 text-foreground/55">
-          Forced to name a continent, the default prompt says{' '}
-          <strong className="text-foreground/80">Europe or North America</strong> in{' '}
-          {Math.round((FORCED_U12.plain.west_share_of_named ?? 0) * 100)}% of the answers that named one. Prompts
-          naming a non-Western country land on a non-Western continent{' '}
-          {100 - Math.round((FORCED_U12.non_western.west_share_of_named ?? 0) * 100)}% of the time. The model can
-          read the pictures; on the default prompt what it reads is Western.
-        </p>
-      )}
-    </div>
-  )
-}
+/* The forced-choice control ("a second instrument · the same images, asked again
+   without 'unclear'") is REMOVED 2026-08-11 (Giray), along with its sky-tinted
+   panel. It re-asked the refused questions with the "unclear" option withheld and
+   reported how often the annotator refused anyway. uiv2's FORCED_CELLS and
+   FORCED_U12 still carry the data if it is ever wanted back. */
 
 function AttentionMaps({ sit, code }: { sit: Sit; code: Code | 'default' }) {
   const [seed, setSeed] = useState(0)
@@ -373,18 +322,19 @@ function NamedScene() {
   return (
     <SceneShell
       number="06"
-      kicker="semantic assumptions · the named concepts"
+      kicker="the named concepts"
       title={<>Named, not implied, <em className="font-display italic text-amber-200">with the distribution they describe.</em></>}
     >
       <Reveal>
-        {/* aligned to the backend: the annotator is the QAT w4a16 build of
-            Gemma-4-E4B-it, and the example question is quoted as the battery
-            actually asks it ("Is food visible?", W4). */}
+        {/* The example question is quoted as the battery actually asks it (W4, "is
+            food visible"), not as "Is there food?": the figure below lists the battery
+            by these same labels, so a paraphrase here would not match any row the
+            reader can see. */}
         <p className="prose-scene max-w-2xl">
-          For this experiment, we use Gemma-4-E4B-it (QAT, w4a16) as a visual annotator. For each prompt, the
-          annotator is shown each generated image and answers a fixed set of questions, each addressing one semantic
-          concept, for example, “Is food visible?” where food is the semantic concept. Then we aggregate the answers
-          across the prompt images.
+          For this experiment, we use Gemma-4-E4B-it [13] as a visual annotator. For each prompt, the annotator is
+          shown each generated image and answers a fixed set of questions, each addressing one semantic concept, for
+          example, “Is food visible?” where food is the semantic concept. Then we aggregate the answers across the
+          prompt images.
         </p>
         <p className="prose-scene mt-4 max-w-2xl text-foreground/55">
           {BATTERY.universal} questions are asked of every prompt and {BATTERY.perCellMin}–{BATTERY.perCellMax} of any
@@ -392,38 +342,6 @@ function NamedScene() {
           <strong className="text-foreground/75">{CARDS_HEADLINE} firm ones, {CARDS_TOTAL} counting the weaker
           tier</strong>.
         </p>
-      </Reveal>
-
-      <Reveal delay={0.05}>
-        <div className="mt-6 max-w-3xl">
-          <Setup
-            rows={[
-              { k: 'who answered', v: 'One vision-language model (gemma4), shown each image without ever seeing the prompt that made it, answering a frozen battery, 13 questions in every cell, 17–18 per cell.' },
-              { k: 'what counts', v: 'An answer covering at least 80% of a cell’s 50 images names an assumption.' },
-              { k: 'why comparable', v: 'All seven models were annotated under this identical setup, so a card in one model means the same thing as a card in another.' },
-            ]}
-          detail={<>
-              <p>
-                <strong>Tiers.</strong> The gate is consistency across the cell's own 50 seeds: an answer covering
-                ≥80% names a headline-tier assumption, ≥60% a secondary one. Both tiers are exported; the page reports
-                the headline count and the total, never a filtered middle.
-              </p>
-              <p>
-                <strong>There is no inter-annotator agreement statistic here, and there should not be.</strong> An
-                earlier version of this study ran two annotators and gated assumptions on how well they agreed. Since
-                2026-07-31 gemma4 is the sole annotator, so “do the two readers agree?” is not a question this
-                instrument can ask. What replaces it is a consistency threshold over 50 independent images and a
-                direct audit of whether the annotator is actually looking, same questions, same cells, one clause
-                changed in the prompt, and the answers have to move.
-              </p>
-              <p>
-                <strong>What it does not settle.</strong> A named assumption is the annotator's reading of the image,
-                not ground truth about the world. The instrument is also blind in places, near-default cells produce
-                very few named assumptions, which is a property of the detector as much as of the model.
-              </p>
-          </>}
-        />
-        </div>
       </Reveal>
 
       <Reveal delay={0.08}>
@@ -475,7 +393,6 @@ function NamedScene() {
             <div className="mt-4">
               <BatteryList sit={sit} code={code} />
             </div>
-            <ForcedControl sit={sit} code={code} />
           </div>
 
           <div className="mt-8 border-t border-border pt-5">
@@ -618,54 +535,39 @@ function BridgeScene() {
   return (
     <SceneShell
       number="07"
-      kicker="semantic assumptions · what carries the distance"
+      kicker="what carries the distance"
       title={<>Which concepts <em className="font-display italic text-amber-200">carry the distance.</em></>}
     >
-      {/* One sentence of the source text is corrected here. It read: "If a concept
-          receives similar answers in both sets of generations, it contributes little
-          to explaining their embedding distance." That is the exact misconception
-          this chart was rebuilt to remove. `share` reads the whole answer
-          DISTRIBUTION, not the majority label: 3,597 of 5,080 rows have an identical
-          top answer in both prompts, and 1,106 of those still carry a share of 0.10
-          or more, one as high as 0.70, because the split underneath the winner moved.
-          "Similar answers" therefore has to mean a similar distribution. */}
+      {/* Giray's text, 2026-08-11. Every example below was checked against the
+          shift table this chart draws (crossmodel.json → shift.sd21), plain → value
+          with its share:
+            family   U11  average → poor    ID .775  IN .755  NG .382
+            celebr.  U05b mixed   → trad.   JP .597
+            wedding  U07  hall    → house   DE .306
+                          hall    → church  RU .082
+                          hall    → temple  ID .703  JP .794  EG .718
+            breakfast B2  table   → table   .002–.153, ranked 10th-15th of 15
+          The wording "receives similar answers" is restored from Giray's source here
+          after having been corrected once: the breakfast example that closes the
+          paragraph is exactly this case and its shares really are the low ones. The
+          subtlety it glosses — a concept can keep its top answer and still carry a
+          share, because the split underneath moved — is carried by the panel's own
+          note above the unchanged-answer group, where the reader meets the bars. */}
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          We can now connect the semantic concepts to the geometric alignment observed in the embedding space. For
-          each country-specific prompt, we compare the distribution of answers for every concept with those obtained
-          under the corresponding geographically underspecified prompt. If a concept's answers are distributed
-          similarly in both sets of generations, it contributes little to explaining their embedding distance. In
-          contrast, concepts whose answer distributions change substantially between the two prompts account for a
-          larger share of the observed difference.
+          We can now connect the semantic concepts to the geometric alignment observed in the embedding space. For each
+          country-specific prompt, we compare the distribution of answers for every concept with those obtained under
+          the corresponding geographically unspecified prompt. If a concept receives similar answers in both sets of
+          generations, it contributes little to explaining their embedding distance. In contrast, concepts whose
+          answers change substantially between the two prompts account for a larger share of the observed difference.
+          Example findings from the figure below include the dominant economic-status annotation for “a family”, which
+          shifts from average under the geographically unspecified prompt toward poor for Indonesia, India, and
+          Nigeria. For “a celebration”, clothing shifts from mixed in the unspecified prompt toward traditional for
+          Japan. And for “a wedding”, the dominant building type shifts from a hall in the unspecified prompt toward a
+          house in Germany, a church in Russia, and a temple in Indonesia, Japan, and Egypt. By contrast, breakfast is
+          usually generated on a table regardless of the geographic context. Therefore, the food placement does not
+          contribute much to explaining the embedding distance.
         </p>
-        <p className="prose-scene mt-4 max-w-2xl text-foreground/55">
-          This is a claim about the distribution, not about the majority answer. A concept can keep the same most
-          common answer in both prompts and still carry a large share, because the split underneath that answer moved.
-        </p>
-      </Reveal>
-      <Reveal delay={0.05}>
-        <div className="mt-6 max-w-3xl">
-          <Setup
-            rows={[
-              { k: 'what we compared', v: 'The answer marginals of the default cell against a country-named cell, 50 images each, alongside the DINOv3 distance between those same two cells.' },
-              { k: 'what a share is', v: 'The fraction of the between-cell distance that an attribute’s changed answers account for.' },
-              { k: 'the limit', v: 'Shares deliberately do not sum to 1. Attributes are not independent of one another, and this decomposition is not a second, independent measurement of the distance.' },
-            ]}
-          detail={<>
-              <p>
-                <strong>The decomposition is between-cell.</strong> For a default/country pair it asks how much of the
-                measured DINOv3 distance is accounted for by each attribute whose answers changed. It replaced an
-                earlier η² formulation on 2026-07-30, which was reporting variance explained within cells and could not
-                answer the question this figure asks.
-              </p>
-              <p>
-                <strong>Tautological rows are shown, not hidden.</strong> Some attributes shift because the prompt
-                named them, the country qualifier entails them. Those rows stay on the chart and are labelled, since
-                silently dropping them would make the remaining attributes look more explanatory than they are.
-              </p>
-          </>}
-        />
-        </div>
       </Reveal>
       <Reveal delay={0.08}>
         <Panel className="mt-10">
@@ -748,15 +650,11 @@ function BridgeScene() {
 
 /* The section's heading and opening paragraph, above both scenes. */
 function SectionLead() {
+  /* mt-8, not mt-20: SectionHeader above already carries the section's top margin */
   return (
-    <div className="mx-auto mt-20 w-full max-w-6xl px-6">
+    <div className="mx-auto mt-8 w-full max-w-6xl px-6">
       <Reveal>
-        <h2 className="font-display max-w-4xl text-4xl leading-tight font-light md:text-5xl">
-          The Semantic Assumptions
-        </h2>
-      </Reveal>
-      <Reveal delay={0.05}>
-        <p className="prose-scene mt-6 max-w-2xl">
+        <p className="prose-scene max-w-2xl">
           So far, distances in the embedding space have described the geometric alignment between the generated
           images. We next examine semantic concepts in the images, such as clothing, objects, and other scene-specific
           attributes, that are more directly interpretable in relation to what a user may care about [4]. For each

@@ -1,7 +1,7 @@
 import { Fragment, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
-import { ZoomImage, Picker, BoxPicker, MetricToggle, HowItWorks, Setup, useMagnet } from '../components/Viz'
+import { ZoomImage, Picker, BoxPicker, MetricToggle, HowItWorks, useMagnet } from '../components/Viz'
 import { Sd21Only } from '../components/ModelBar'
 import { rgb, rgba } from '../lib/colors'
 import { niceTicks } from '../lib/utils'
@@ -148,57 +148,23 @@ export function CommitEarlyScene() {
   return (
     <SceneShell
       number="08"
-      kicker="assumption stabilization · the swap"
+      kicker="the swap"
       title={<>Fixed in the <em className="font-display italic text-amber-200">first third of denoising.</em></>}
     >
       <Reveal>
         <p className="prose-scene max-w-2xl">
-          To test when country-specific geographic assumptions stabilize during generation, we intervene in Stable
-          Diffusion 2.1's 30-step denoising process by switching the country named in the prompt partway through
-          generation. Each image begins with a prompt specifying country A and, at one of five intervention points, is
-          re-conditioned on the same scene with country B. We repeat this using 12 seeds per intervention point.
-        </p>
-        <p className="prose-scene mt-4 max-w-2xl">
-          For each completed image, we compare its embedding with the reference centroids of countries A and B and
-          record which one it is closer to. We fit a logistic curve across the intervention points to estimate the
-          denoising step at which the final image shifts from being more strongly aligned with country B to being more
-          strongly aligned with country A.
+          The previous experiments suggest that geographic assumptions are not simply inherited from the text
+          representation, and that increasing prompt guidance does not remove the geographic pattern. This raises a
+          natural question: when during image generation do country-specific assumptions stabilize? We explore this in
+          Stable Diffusion 2.1, where we intervene in its 30-step denoising process by switching the country named in
+          the prompt partway through generation. Each image begins with a prompt specifying country A and, at one of
+          five intervention points, is re-conditioned on the same scene with country B. We repeat this using 12 seeds
+          per intervention point. For each completed image, we compare its embedding with the reference centroids of
+          countries A and B and record which one it is closer to. We fit a logistic curve across the intervention
+          points to estimate the denoising step at which the final image shifts from being more strongly aligned with
+          country B to being more strongly aligned with country A.
         </p>
         <Sd21Only />
-      </Reveal>
-
-      <Reveal delay={0.05}>
-        <div className="mt-6 max-w-3xl">
-          <Setup
-            rows={[
-              { k: 'what we ran', v: 'A 30-step generation started on one country’s prompt and quietly re-conditioned to another’s at step k. DDIM trajectories are deterministic per seed, so the only thing that changes is when we intervened.' },
-              { k: 'how much', v: '24 direction pairs × 5 swap points × 12 seeds = 1,440 interrupted generations. Twelve seeds rather than the usual fifty because each point is a separate run.' },
-              { k: 'what we measured', v: 'Which country’s centroid the finished image’s embedding sits nearer to.' },
-              { k: 'how we know', v: 'A logistic fit per direction puts the switchover at step 9.6 of 30 (95% CI 8.4–11.3). Two of the 24 fits did not converge and are drawn without a curve rather than smoothed over.' },
-            ]}
-          detail={<>
-              <p>
-                <strong>Why the swap is clean.</strong> DDIM is deterministic, so the same seed run twice gives the
-                same trajectory. Re-conditioning at step k therefore isolates one variable, when the intervention
-                happened, with the noise schedule and the seed held identical.
-              </p>
-              <p>
-                <strong>The fit.</strong> Five swap points per direction, 12 seeds each, outcome coded as “landed
-                nearer B”. A logistic curve is fitted per direction and the switchover is where it crosses 0.5;
-                confidence intervals are bootstrapped. Pooled across directions that lands at step 9.6 of 30.
-              </p>
-              <p>
-                <strong>Failures are drawn as failures.</strong> Two of the 24 directions (family EG→RU, funeral IN→RU)
-                did not converge to a usable fit. They are shown with their five measured points and no curve rather
-                than smoothed into a line that the data does not support.
-              </p>
-              <p>
-                <strong>Scope.</strong> This is the microscope tier and it is SD 2.1 only, by design, repeating 1,440
-                interrupted generations per model was never the plan. Treat it as done, not pending.
-              </p>
-          </>}
-        />
-        </div>
       </Reveal>
 
       <Reveal delay={0.06}>
@@ -215,9 +181,18 @@ export function CommitEarlyScene() {
             />
           </div>
 
+          {/* The three worked examples are all selectable in the pickers above:
+              celebration_DE_to_US, family_RU_to_EG and breakfast_DE_to_NG are three
+              of the 24 directions in lockup_curve.json, so a reader can reproduce
+              each one without leaving the figure. */}
           <p className="mt-6 max-w-3xl text-sm leading-6 text-foreground/60">
-            As you explore the intervened generations, note which visual details change when we switch from country A
-            to country B. These changes provide a qualitative view of the country-specific assumptions.
+            As you explore the intervened generations, note how the visual details are reshaped when we switch from
+            country A to country B. These changes provide a qualitative view of the country-specific assumptions. For
+            example, when a celebration is redirected from Germany to the US, the model reshapes existing European
+            architecture to resemble the White House architectural style. When a family scene is switched from Russia
+            to Egypt, the background is reshaped toward the ancient Egyptian architectural style. Similarly, when a
+            breakfast is redirected from Germany to Nigeria, existing food elements such as bread take on a different
+            appearance similar to meat and rice.
           </p>
           {/* the transition: A's own image, the swapped result, B's own image */}
           <div className="mt-6 grid items-center gap-3 sm:grid-cols-[1fr_auto_1.3fr_auto_1fr]">
@@ -469,65 +444,27 @@ export function TextEncoderScene() {
   return (
     <SceneShell
       number="04"
-      kicker="alignment source · the text encoder"
+      kicker="the text encoder"
       title={<>Not inherited from the <em className="font-display italic text-amber-200">text encoder.</em></>}
     >
-      {/* Section text 2026-08-10 (Giray), aligned to the backend in one place: the
-          source text said the image side came from DINOv3 ViT-7B/16. It does not.
-          export_tier_c.build_matrices() reads img_img_collapsed from the CLIP block
-          of clip_matrix/{sit}.json ("image side from that model's CLIP image
-          embeddings"); DINOv3 is present in those files but only as an Img×Img view,
-          never in the Mantel pair. Corrected to CLIP here. */}
+      {/* One paragraph, Giray's text 2026-08-11. It names both rulers rather than
+          the selected one: the toggle on the figure below switches which is drawn,
+          but both were computed, so the static "and" is the accurate statement. */}
       <Reveal>
         <p className="prose-scene max-w-2xl">
           Each prompt is first represented by the model's text encoder, so the geographic alignments observed in the
           visual space might reflect corresponding alignments already present in the textual space. For example,
           perhaps the text encoder already puts “a wedding” and “a wedding in the USA” next to each other, and the
-          image decoder is simply reflecting this alignment.
+          image decoder is simply reflecting this alignment. To test this, for each scene we compare the experimental
+          prompts in two spaces: the prompt embeddings from the model's text encoder and the visual embeddings of the
+          50 images generated from each prompt obtained by DINOv3 ViT-7B/16 and CLIP ViT-L/14. In each space, we
+          construct a distance matrix describing which prompt variants are closer to or farther from one another. If
+          the structure observed in the generated images were directly inherited from the text encoder, the two
+          distance matrices should show a similar pattern. The following figure shows that this correspondence is weak,
+          suggesting that the geographic alignment observed in the images emerges during image generation. Since the
+          text and image representations belong to different embedding spaces, we compare only their relative structure
+          rather than the magnitude of their distances.
         </p>
-        <p className="prose-scene mt-4 max-w-2xl">
-          To test this, for each scene we compare the experimental prompts in two spaces: the prompt embeddings from
-          the model's text encoder, and the visual embeddings of the 50 images generated from each prompt obtained by{' '}
-          {imgRuler === 'dinov3' ? 'DINOv3 ViT-7B/16' : 'CLIP ViT-L/14'}. In each space, we construct a matrix describing which prompt variants are closer to or
-          farther from one another. If the structure observed in the generated images were directly inherited from the
-          text encoder, the two matrices should show a similar pattern. The following figure shows that this
-          correspondence is weak, suggesting that the geographic alignment observed in the images emerges during image
-          generation.
-        </p>
-        <p className="prose-scene mt-4 max-w-2xl">
-          Since the text and image representations belong to different embedding spaces, we compare only their
-          relative structure rather than the magnitude of their distances.
-        </p>
-      </Reveal>
-
-      <Reveal delay={0.05}>
-        <div className="mt-8 max-w-3xl">
-          <Setup
-            rows={[
-              { k: 'what we compared', v: 'For one scene, all nine prompts measured twice over: once as sentences in the model’s own text encoder, once as the 50-image sets those sentences actually produce.' },
-              { k: 'what would settle it', v: 'If the picture geometry were inherited from the sentence geometry, the two grids would have the same shape, the same pairs near, the same pairs far.' },
-              { k: 'how we know', v: 'A Mantel test compares two distance grids and returns r, from 0 (no shared shape) to 1 (identical). Its p-value comes from reshuffling the labels 10,000 times.' },
-              { k: 'the limit', v: 'The two grids measure in different spaces, so only their shape can be compared, never their magnitudes.' },
-            ]}
-          detail={<>
-              <p>
-                <strong>Each model reads with its own encoder.</strong> The text side is not CLIP standing in for
-                everyone, only SDXL is CLIP-family. Every model's own encoder stack embeds the nine prompts, which is
-                the only version of this test that can support a claim about that model.
-              </p>
-              <p>
-                <strong>The Mantel test.</strong> Two 9×9 distance grids, correlated entry-by-entry over the
-                off-diagonal, with significance from 10,000 label reshuffles. It is a test of <em>shape</em>: whether
-                the pairs that are near in one grid are the pairs that are near in the other.
-              </p>
-              <p>
-                <strong>The result is a null, and that is the finding.</strong> Across the six other models' native
-                encoders only a small minority of scene × model combinations show any significant relationship. If the
-                separation were inherited from the prompt geometry, this is where it would show, and it does not.
-              </p>
-          </>}
-        />
-        </div>
       </Reveal>
 
       <Reveal delay={0.08}>

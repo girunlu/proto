@@ -36,7 +36,9 @@ export function SceneShell({
   lead = false,
 }: {
   number: string
-  kicker: string
+  /* optional: a section whose title already IS its name (Acknowledgements) would
+     otherwise print the same word twice, six pixels apart */
+  kicker?: string
   title: ReactNode
   children: ReactNode
   id?: string
@@ -46,7 +48,9 @@ export function SceneShell({
     <section id={id} className="relative mx-auto w-full max-w-6xl px-6 py-24 md:py-32">
       <Reveal>
         <div className="scene-number">{number}</div>
-        <div className="mt-2 font-mono2 text-xs tracking-[0.2em] uppercase text-foreground/40">{kicker}</div>
+        {kicker && (
+          <div className="mt-2 font-mono2 text-xs tracking-[0.2em] uppercase text-foreground/40">{kicker}</div>
+        )}
         <h2
           className={`font-display mt-4 max-w-3xl leading-[1.08] font-light ${
             lead ? 'text-4xl md:text-5xl' : 'text-3xl md:text-4xl'
@@ -57,6 +61,27 @@ export function SceneShell({
       </Reveal>
       <div className="mt-10">{children}</div>
     </section>
+  )
+}
+
+/* One heading per section, named exactly as the NavRail names it (2026-08-11,
+   Giray). Before this, a section announced itself three times over: a PartDivider
+   rule carrying the rail's label, then an <h2> paraphrasing it, then the first
+   scene's kicker prefixing it again. The rail's label is now the only name, the
+   divider's caption became this subtitle, and the scene kickers dropped their
+   section prefix. Titles live in Home.tsx beside the section structure, so the
+   rail and the page cannot drift apart. */
+export function SectionHeader({ title, sub }: { title: string; sub: string }) {
+  return (
+    <div className="mx-auto mt-28 w-full max-w-6xl px-6">
+      <Reveal>
+        <div className="flex items-center gap-4">
+          <span className="h-px w-10 shrink-0 bg-amber-300/30" />
+          <h2 className="font-display max-w-4xl text-4xl leading-tight font-light md:text-5xl">{title}</h2>
+        </div>
+        <p className="mt-4 ml-14 max-w-2xl text-[15px] leading-6 text-foreground/50">{sub}</p>
+      </Reveal>
+    </div>
   )
 }
 
