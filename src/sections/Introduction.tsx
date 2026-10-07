@@ -9,7 +9,7 @@
 // 2026-08-11 (Giray). The weights, sampler and rulers now live only in the model
 // weights list in Closing.tsx, which is the right home for them.
 // ─────────────────────────────────────────────────────────────────────────────
-import { Reveal } from '../components/Scene'
+import { Reveal, InfoBox } from '../components/Scene'
 import { GENERATORS } from '../data/references'
 import { RepoLink, Cite } from '../components/Viz'
 
@@ -46,6 +46,12 @@ export default function Introduction() {
           model, how they respond to stronger prompt guidance, and when they become difficult to change during
           denoising.
         </p>
+        <InfoBox title="glossary · prompt guidance (CFG)">
+          <p>
+            A dial for how strictly the system follows the words you typed: turn it up and it obeys
+            them closely, turn it down and it takes liberties.
+          </p>
+        </InfoBox>
       </Reveal>
 
       <Reveal delay={0.08}>
@@ -70,6 +76,12 @@ export default function Introduction() {
           the United States, Germany, Russia, Indonesia, Japan, Egypt, India, and Nigeria. For each prompt, we generate
           50 images using the same fixed seeds across all seven models.
         </p>
+        <InfoBox title="glossary · seed">
+          <p>
+            The random speckle a picture is started from: the same words with the same speckle give
+            the same picture.
+          </p>
+        </InfoBox>
       </Reveal>
 
       <Reveal delay={0.12}>

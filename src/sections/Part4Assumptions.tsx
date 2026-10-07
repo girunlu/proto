@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
-import { ZoomImage, BoxPicker, RepoLink, Cite } from '../components/Viz'
+import { ZoomImage, BoxPicker, RepoLink, Cite, BarRow } from '../components/Viz'
 import { ANNOTATOR } from '../data/references'
 import { rgb, rgba } from '../lib/colors'
 import { ordinal } from '../lib/utils'
@@ -16,7 +16,7 @@ import {
   type Answer,
 } from '../data/uiv2'
 import { useModel, modelImg, modelSeeds, seedCount, modelVqa, isSd21, MODEL_NAME, CROSS_MODEL_NOTE } from '../data/modelData'
-import { openForModel, shiftFor, type ShiftRow } from '../data/crossmodel'
+import { openForModel, shiftFor, SHIFT_AGG, type ShiftRow } from '../data/crossmodel'
 import { STATS } from '../data/research'
 
 const SIT_OPTS = SITS.map((s) => ({ value: s, label: `a ${s}` }))
@@ -585,6 +585,40 @@ function BridgeScene() {
       </Reveal>
       <Reveal delay={0.08}>
         <Panel className="mt-10">
+          <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
+            every model, every cell · one bar per question
+          </div>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground/60">
+            Each bar is a question's mean share of the movement from an unspecified prompt to a
+            country prompt, over every model and cell that asks it. Rows whose two prompts' answers
+            barely overlap are left out of the mean and counted at the right: there the prompt
+            already gave the answer.
+          </p>
+          <div className="mt-4 space-y-1.5">
+            {SHIFT_AGG.slice(0, 10).map((a, i) => (
+              <BarRow
+                key={a.q}
+                label={Q_TEXT[a.q] ?? a.q}
+                labelWidth="w-56"
+                value={a.mean}
+                max={SHIFT_AGG[0].mean}
+                color="--c-amber"
+                delay={i * 0.03}
+                right={
+                  a.sep > 0 ? (
+                    <span className="font-mono2 text-[11px] text-foreground/50">{a.sep} prompt-given</span>
+                  ) : undefined
+                }
+              />
+            ))}
+          </div>
+          <p className="mt-3 font-mono2 text-[11px] leading-5 text-foreground/50">
+            the remaining {SHIFT_AGG.length - 10} questions sit at or below {SHIFT_AGG[10].mean.toFixed(2)}
+          </p>
+        </Panel>
+      </Reveal>
+      <Reveal delay={0.08}>
+        <Panel className="mt-10">
           <div className="flex flex-wrap items-end gap-4">
             <BoxPicker label="scene" value={sit} onChange={setSit} options={SIT_OPTS} size="sm" />
             <BoxPicker label="country" value={code} onChange={setCode} options={CODE_OPTS.slice(1) as { value: Code; label: string; cv: string }[]} size="sm" />
@@ -601,9 +635,13 @@ function BridgeScene() {
                 the explained distance: <strong className="text-foreground">{data.distance.toFixed(3)}</strong>{' '}
                 between “a {sit}” and “a {sit} in {C8[code].name}”
               </div>
+              <p className="mt-6 max-w-3xl text-sm leading-6 text-foreground/60">
+                Each bar below is one answer's share of that distance. The shares are parts of one
+                movement, so they do not add up to 1.
+              </p>
 
               <div className="mt-6 font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-                attributes whose answer changed · {moved.length} of {real.length}
+                answers that moved · {moved.length} of {real.length}
               </div>
               <div className="mt-3 space-y-2.5">
                 {moved.map((r, i) => (
@@ -612,7 +650,7 @@ function BridgeScene() {
               </div>
 
               <div className="mt-7 font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-                attributes whose answer did not change · {still.length} of {real.length}
+                answers that stayed the same · {still.length} of {real.length}
               </div>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground/60">
                 <strong className="text-foreground/80">A bar here is not a contradiction.</strong> The measure reads
@@ -629,7 +667,7 @@ function BridgeScene() {
               {taut.length > 0 && (
                 <>
                   <div className="mt-7 font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
-                    true but circular · {taut.length}
+                    attributes the prompt already answers · {taut.length}
                   </div>
                   <div className="mt-3 space-y-2.5">
                     {taut.map((r, i) => (
@@ -637,8 +675,10 @@ function BridgeScene() {
                     ))}
                   </div>
                   <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/60">
-                    Here the answer groups simply <em>are</em> the two sets of pictures, so the share is forced
-                    towards 1, scored high, evidencing nothing.
+                    A row lands here when the two prompts' answer distributions overlap in less than
+                    a tenth of their mass: the country word already decided the answer, so the share
+                    measures the prompt, not the model. These rows stay visible because the same
+                    question keeps an honest row on an unspecified prompt.
                   </p>
                 </>
               )}

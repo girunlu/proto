@@ -1,6 +1,6 @@
 import { Fragment, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
+import { SceneShell, Reveal, Panel, TierNote, InfoBox } from '../components/Scene'
 import { ZoomImage, Picker, BoxPicker, MetricToggle, HowItWorks, useMagnet, RepoLink } from '../components/Viz'
 import { DINOV3, CLIP } from '../data/references'
 import { Sd21Only } from '../components/ModelBar'
@@ -12,7 +12,7 @@ import {
   LAION,
 } from '../data/part2'
 import { swapImgSeed } from '../data/uiv2'
-import { lockFit, fitCurve, matrix, dist as xmDist, intraset as xmIntraset, type Ruler } from '../data/crossmodel'
+import { lockFit, fitCurve, matrix, dist as xmDist, intraset as xmIntraset, type Ruler, type LockFit } from '../data/crossmodel'
 import { useModel, isSd21, MODEL_NAME } from '../data/modelData'
 
 const MONO = 'JetBrains Mono'
@@ -127,24 +127,48 @@ function LockupCurve({ direction, activeStep, onPick }: {
 }
 
 export function CommitEarlyScene() {
-  const [sit, setSit] = useState<Sit>('wedding')
-  const dirsFor = (s: Sit) => DIRECTIONS.filter((d) => parseDirection(d).sit === s)
   const [direction, setDirection] = useState(HERO_DIRECTION)
   const [step, setStep] = useState(10)
   const [seed, setSeed] = useState(1)
-
+  /* The scene is read off the direction rather than held as its own state, so
+     the scene control and the direction control can never disagree: a jump to
+     a foreign example moves the scene row with it, and the direction picker
+     always contains its own selected value. */
+  const [allDirs, setAllDirs] = useState(false)
   const setSituation = (s: Sit) => {
-    setSit(s)
-    setDirection(dirsFor(s)[0])
+    setAllDirs(false)
+    setDirection(DIRECTIONS.filter((d) => parseDirection(d).sit === s)[0])
   }
-  const { a, b } = parseDirection(direction)
+  const { a, b, sit } = parseDirection(direction)
   const fit = lockFit(direction)
   const pt = LOCKUP[direction].curve[stepKey(step)]
   const committed = pt.p_closer_B < 0.5
-  const dirOpts = dirsFor(sit).map((d) => {
+  const dirOpts = (allDirs ? DIRECTIONS : DIRECTIONS.filter((d) => parseDirection(d).sit === sit)).map((d) => {
     const p = parseDirection(d)
-    return { value: d, label: `${C8[p.a].name} → ${C8[p.b].name}` }
+    return {
+      value: d,
+      label: allDirs ? `a ${p.sit} · ${C8[p.a].name} → ${C8[p.b].name}` : `${C8[p.a].name} → ${C8[p.b].name}`,
+    }
   })
+  /* the population view (R3a): every direction's five measured points, the
+     non-school mean, and the fitted switchovers as a strip, so "is there a
+     common drop-off layer" is a picture instead of 24 toggles and a memory. */
+  const px = (k: number) => 40 + ((k - 1) / 29) * 580
+  const py = (p: number) => 200 - p * 180
+  const nonSchool = DIRECTIONS.filter((d) => parseDirection(d).sit !== 'school')
+  const meanAt = (k: number) => {
+    const xs = nonSchool.map((d) => LOCKUP[d].curve[stepKey(k)].p_closer_B)
+    return xs.reduce((s, x) => s + x, 0) / xs.length
+  }
+  const fits = DIRECTIONS.map((d) => ({ d, f: lockFit(d) }))
+    .filter((x): x is { d: string; f: LockFit } => x.f !== null)
+    .map((x) => ({ d: x.d, step: x.f.step }))
+  const unfitted = DIRECTIONS.filter((d) => lockFit(d) === null)
+  const sortedSteps = fits.map((x) => x.step).sort((a, b) => a - b)
+  const medianStep = sortedSteps[Math.floor((sortedSteps.length - 1) / 2)]
+  const firstThird = sortedSteps.filter((s) => s <= 10).length
+  const beforeHalf = sortedSteps.filter((s) => s < 15).length
+  const nsSteps = fits.filter((x) => parseDirection(x.d).sit !== 'school').map((x) => x.step)
 
   return (
     <SceneShell
@@ -168,17 +192,40 @@ export function CommitEarlyScene() {
         {/* Moved out of the Panel and above it, 2026-08-11 (Giray). It reads as the
             reader's instruction for the figure, so it belongs with the prose that
             sets the figure up, not wedged between the pickers and the images they
-            drive. The three worked examples are all selectable in those pickers:
-            celebration_DE_to_US, family_RU_to_EG and breakfast_DE_to_NG are three of
-            the 24 directions in lockup_curve.json. */}
+            drive. The three worked examples are buttons as of 2026-10-07 (M4):
+            each loads its direction from wherever the reader is, and the scene
+            row follows, because the scene is derived from the direction. */}
         <p className="prose-scene mt-6 max-w-2xl">
           As you explore the intervened generations, note how the visual details are reshaped when we switch from
           country A to country B. These changes provide a qualitative view of the country-specific assumptions. For
-          example, when a celebration is redirected from Germany to the US, the model reshapes existing European
-          architecture to resemble the White House architectural style. When a family scene is switched from Russia to
-          Egypt, the background is reshaped toward the ancient Egyptian architectural style. Similarly, when a
-          breakfast is redirected from Germany to Nigeria, existing food elements such as bread take on a different
-          appearance similar to meat and rice.
+          example, when a celebration is redirected from{' '}
+          <button
+            type="button"
+            onClick={() => setDirection('celebration_DE_to_US')}
+            className="underline decoration-foreground/40 underline-offset-4 transition hover:text-amber-200 hover:decoration-amber-200"
+          >
+            Germany to the US
+          </button>
+          , the model reshapes existing European architecture to resemble the White House architectural style. When a
+          family scene is switched from{' '}
+          <button
+            type="button"
+            onClick={() => setDirection('family_RU_to_EG')}
+            className="underline decoration-foreground/40 underline-offset-4 transition hover:text-amber-200 hover:decoration-amber-200"
+          >
+            Russia to Egypt
+          </button>
+          , the background is reshaped toward the ancient Egyptian architectural style. Similarly, when a breakfast is
+          redirected from{' '}
+          <button
+            type="button"
+            onClick={() => setDirection('breakfast_DE_to_NG')}
+            className="underline decoration-foreground/40 underline-offset-4 transition hover:text-amber-200 hover:decoration-amber-200"
+          >
+            Germany to Nigeria
+          </button>
+          , existing food elements such as bread take on a different appearance similar to meat and rice. All three
+          load into the panel below, from either direction list.
         </p>
         <Sd21Only />
       </Reveal>
@@ -186,8 +233,18 @@ export function CommitEarlyScene() {
       <Reveal delay={0.06}>
         <Panel className="mt-10">
           <div className="flex flex-col gap-2.5">
-            <BoxPicker label="scene" value={sit} onChange={setSituation} options={SIT_OPTS} size="sm" />
+            {!allDirs && (
+              <BoxPicker label="scene" value={sit} onChange={setSituation} options={SIT_OPTS} size="sm" />
+            )}
             <BoxPicker label="swap direction" value={direction} onChange={setDirection} options={dirOpts} size="sm" />
+            <button
+              type="button"
+              onClick={() => setAllDirs((v) => !v)}
+              aria-expanded={allDirs}
+              className="self-start rounded border border-border px-2 py-0.5 font-mono2 text-[10px] text-foreground/50 transition hover:border-amber-300/50 hover:text-amber-200"
+            >
+              {allDirs ? "← this scene's four directions" : 'all 24 directions →'}
+            </button>
             <Picker
               label="seed"
               value={String(seed)}
@@ -284,11 +341,11 @@ export function CommitEarlyScene() {
                   <span className="text-foreground/55">layout, setting, cultural content</span>
                 </div>
                 <div className={`px-3 py-2 text-center transition ${step > 10 && step <= 20 ? 'bg-amber-300/15 text-amber-200' : 'text-foreground/40'}`}>
-                  steps 10–20 · structure<br />
+                  steps 11–20 · structure<br />
                   <span className="text-foreground/55">objects, people, poses</span>
                 </div>
                 <div className={`px-3 py-2 text-center transition ${step > 20 ? 'bg-amber-300/15 text-amber-200' : 'text-foreground/40'}`}>
-                  steps 20–30 · texture<br />
+                  steps 21–30 · texture<br />
                   <span className="text-foreground/55">fabric, skin, detail</span>
                 </div>
               </div>
@@ -329,6 +386,75 @@ export function CommitEarlyScene() {
           )}
         </Panel>
       </Reveal>
+      <Reveal delay={0.08}>
+        <Panel className="mt-10">
+          <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
+            all {DIRECTIONS.length} directions at once
+          </div>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground/60">
+            One thin line per direction: the share of seeds ending up nearer the country named
+            after the swap, at the five sampled steps. The thick line is the mean over the{' '}
+            {nonSchool.length} non-school directions. School is drawn but never averaged: its two
+            sets overlap at the level of individual seeds, so a switchover fitted there measures
+            noise.
+          </p>
+          <svg viewBox="0 0 640 220" className="mt-4 w-full" role="img" aria-label="share of seeds nearer the new prompt, per step, for every direction">
+            {[0, 0.5, 1].map((g) => (
+              <g key={g}>
+                <line x1={40} x2={620} y1={200 - g * 180} y2={200 - g * 180} strokeWidth={1} style={{ stroke: 'rgb(var(--foreground) / 0.12)' }} />
+                <text x={34} y={204 - g * 180} textAnchor="end" fontSize={9} fontFamily="JetBrains Mono" className="fill-foreground/40">
+                  {g === 0.5 ? '50%' : g === 1 ? '100%' : '0%'}
+                </text>
+              </g>
+            ))}
+            {LOCKUP_STEPS.map((k) => (
+              <text key={k} x={px(k)} y={214} textAnchor="middle" fontSize={9} fontFamily="JetBrains Mono" className="fill-foreground/40">
+                {k}
+              </text>
+            ))}
+            {DIRECTIONS.map((d) => (
+              <polyline
+                key={d}
+                fill="none"
+                strokeWidth={d === direction ? 2 : 1}
+                style={{ stroke: d === direction ? 'rgb(var(--c-amber))' : 'rgb(var(--foreground) / 0.18)' }}
+                points={LOCKUP_STEPS.map((k) => `${px(k)},${py(LOCKUP[d].curve[stepKey(k)].p_closer_B)}`).join(' ')}
+              />
+            ))}
+            <polyline
+              fill="none"
+              strokeWidth={2.5}
+              style={{ stroke: 'rgb(var(--c-amber))' }}
+              points={LOCKUP_STEPS.map((k) => `${px(k)},${py(meanAt(k))}`).join(' ')}
+            />
+          </svg>
+          <div className="relative mt-2 h-6 border-t border-border">
+            {fits.map((x) => (
+              <span
+                key={x.d}
+                title={`${x.d}: switchover step ${x.step.toFixed(1)}`}
+                className="absolute top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                style={{ left: `${(x.step / 30) * 100}%`, background: 'rgb(var(--c-amber))' }}
+              />
+            ))}
+            {unfitted.map((d, i) => (
+              <span
+                key={d}
+                title={`${d}: never crosses cleanly, drawn as a ring at the axis edge`}
+                className="absolute top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border"
+                style={{ left: `${100 - i * 2.5}%`, borderColor: 'rgb(var(--foreground) / 0.5)' }}
+              />
+            ))}
+          </div>
+          <p className="mt-3 font-mono2 text-[11px] leading-5 text-foreground/50">
+            the strip: one dot per fitted switchover, of 30 steps. {fits.length} of{' '}
+            {DIRECTIONS.length} directions fit a logistic curve; {unfitted.length} never cross and
+            sit at the right edge as rings. median step {medianStep.toFixed(0)}, {firstThird} of{' '}
+            {fits.length} inside the first third, {beforeHalf} before the halfway point, non-school
+            fits {Math.min(...nsSteps).toFixed(1)} to {Math.max(...nsSteps).toFixed(1)}.
+          </p>
+        </Panel>
+      </Reveal>
     </SceneShell>
   )
 }
@@ -352,10 +478,11 @@ function BigMatrix({ mat, labels, title, sub }: {
   sub: string
 }) {
   const [hover, setHover] = useState<{ i: number; j: number } | null>(null)
-  /* One grade for both grids (2026-08-10, Giray). Both encode the same job —
-     magnitude — so both take the page's sequential hue, the same amber ramp
-     scene 02's heatmap uses. The old sky/red split read as two different
-     measurements when the whole point is one measurement taken twice. */
+  /* One grade for both grids (2026-08-10, Giray). Both encode the same job,
+     similarity, each on its own range, so both take the page's sequential hue,
+     the same amber ramp scene 02's heatmap uses. The old sky/red split read as
+     two different measurements when the whole point is one measurement taken
+     twice. */
   const cv = '--c-amber'
 
   /* Shaded on similarity, not distance: the ramp reads left-to-right as low to
@@ -461,13 +588,21 @@ export function TextEncoderScene() {
           image decoder is simply reflecting this alignment. To test this, for each scene we compare the experimental
           prompts in two spaces: the prompt embeddings from the model's text encoder and the visual embeddings of the
           50 images generated from each prompt obtained by <RepoLink m={DINOV3} /> and <RepoLink m={CLIP} />. In each space, we
-          construct a distance matrix describing which prompt variants are closer to or farther from one another. If
-          the structure observed in the generated images were directly inherited from the text encoder, the two
-          distance matrices should show a similar pattern. The following figure shows that this correspondence is weak,
-          suggesting that the geographic alignment observed in the images emerges during image generation. Since the
-          text and image representations belong to different embedding spaces, we compare only their relative structure
-          rather than the magnitude of their distances.
+          compare the nine prompts with one another using only that space's own numbers, giving one
+          similarity grid per space: darker means closer together in that space. The two spaces
+          share no scale and each grid is shaded across its own range, so a shade, or a value, in
+          one grid means nothing in the other. What is compared is the arrangement: whether the
+          dark cells fall in the same places. If the alignment in the pictures were inherited from
+          the words, the two arrangements would match. The following figure shows that this
+          correspondence is weak, suggesting that the geographic alignment observed in the images
+          emerges during image generation.
         </p>
+        <InfoBox title="glossary · text encoder">
+          <p>
+            The part of an image-making system that turns the words you type into a list of numbers
+            the rest of the system can work with.
+          </p>
+        </InfoBox>
       </Reveal>
 
       <Reveal delay={0.08}>
@@ -489,13 +624,13 @@ export function TextEncoderScene() {
               mat={m.txt}
               labels={m.countries}
               title="as sentences · before any image exists"
-              sub={`how far apart the nine prompts are, read by ${MODEL_NAME[model]}'s own text encoder`}
+              sub={`how similar the nine prompts are to one another, read by ${MODEL_NAME[model]}'s own text encoder`}
             />
             <BigMatrix
               mat={imgMat}
               labels={m.countries}
               title="as pictures · once they are drawn"
-              sub={`how far apart the nine 50-image sets are, read by ${imgRuler === 'dinov3' ? 'DINOv3 ViT-7B/16' : 'CLIP ViT-L/14'}`}
+              sub={`how similar the nine 50-image sets are to one another, read by ${imgRuler === 'dinov3' ? 'DINOv3 ViT-7B/16' : 'CLIP ViT-L/14'}`}
             />
           </div>
           {/* No prose under the grids, 2026-08-10 (Giray). Do not write a sentence

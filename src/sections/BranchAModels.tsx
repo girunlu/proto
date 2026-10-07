@@ -37,6 +37,7 @@ const COUNTRY_NAME = (c: string) => C8[c as Code]?.name ?? c
 const FURTHEST = (() => {
   let cells = 0
   let south = 0
+  const exceptions: { m: string; sit: string; code: string }[] = []
   for (const m of MODEL_KEYS) {
     for (const sit of SITS) {
       let best = ''
@@ -51,9 +52,10 @@ const FURTHEST = (() => {
       if (!best) continue
       cells++
       if (best === 'IN' || best === 'NG' || best === 'EG') south++
+      else exceptions.push({ m, sit, code: best })
     }
   }
-  return { cells, south }
+  return { cells, south, exceptions }
 })()
 const MODEL_SUB: Record<string, string> = {
   sd21: 'the microscope model · 2022',
@@ -473,6 +475,65 @@ export function PersistenceChart() {
   )
 }
 
+/* R3c, 2026-10-07: the aggregation the review asked for. The dismissed ModelStrip
+   showed eight of fifty-six bars at a time, so comparing models cost seven chip
+   presses and a memory. This draws the same measurement for all seven at once,
+   which is why it deliberately does not follow the model switch above. */
+const stripValue = (m: string, code: string) => {
+  const xs = SITS.map((s) => MODEL_DATA[m]?.distances?.[s]?.[code]?.mean).filter((v): v is number => typeof v === 'number')
+  return xs.reduce((a, b) => a + b, 0) / xs.length
+}
+
+function AllSevenStrip() {
+  const axis = RULER_MAX.dinov3.dist
+  const pooled = CODES.map((c) => ({
+    code: c,
+    mean: MODEL_KEYS.reduce((a, m) => a + stripValue(m, c), 0) / MODEL_KEYS.length,
+  }))
+  return (
+    <Panel className="mt-10">
+      <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
+        all seven models on one axis
+      </div>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground/60">
+        Each row is a country's mean distance from that model's own unspecified prompt, averaged
+        over the six scenes, on one shared axis. Flatter cards mean a model whose unspecified
+        prompt sits nearly as far from every country; steeper ones mean a sharper default.
+      </p>
+      <div className="mt-5 grid gap-6 md:grid-cols-2">
+        {MODEL_KEYS.map((m) => (
+          <div key={m} className="rounded-lg border border-border bg-background/40 p-4">
+            <div className="font-mono2 text-[11px] text-foreground/70">{MODEL_LABEL[m]}</div>
+            <div className="mt-3 space-y-1.5">
+              {CODES.map((c) => (
+                <BarRow key={c} label={COUNTRY_NAME(c)} labelWidth="w-24" value={stripValue(m, c)} max={axis} color={COUNTRY_CV(c)} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 border-t border-border pt-5">
+        <div className="font-mono2 text-[10px] tracking-widest text-foreground/40 uppercase">
+          pooled over the seven
+        </div>
+        <div className="mt-3 space-y-1.5">
+          {pooled.map((p) => (
+            <BarRow
+              key={p.code}
+              label={COUNTRY_NAME(p.code)}
+              labelWidth="w-24"
+              value={p.mean}
+              max={axis}
+              color={COUNTRY_CV(p.code)}
+              right={<span className="font-mono2 text-[11px] text-foreground/50">{p.mean.toFixed(2)}</span>}
+            />
+          ))}
+        </div>
+      </div>
+    </Panel>
+  )
+}
+
 export default function BranchAModels() {
   return (
     <>
@@ -496,10 +557,15 @@ export default function BranchAModels() {
             <em>usually</em>. <strong>Always.</strong> The Western alignment is not a property of one
             checkpoint; it is a property of how these systems are made. And the furthest country from the unspecified prompt is
             never the US or Germany: in <strong>{FURTHEST.south} of {FURTHEST.cells}</strong> model × scene cells it
-            is India, Nigeria or Egypt, whichever model, whichever scene.
+            is India, Nigeria or Egypt, whichever model, whichever scene. The {FURTHEST.exceptions.length} cells that
+            break that pattern are all a celebration:{' '}
+            {FURTHEST.exceptions.map((e) => `${MODEL_LABEL[e.m]} to ${COUNTRY_NAME(e.code)}`).join(', ')}.
           </p>
         </Reveal>
         <ReplicationWall />
+        <Reveal delay={0.12}>
+          <AllSevenStrip />
+        </Reveal>
         <Reveal delay={0.12}>
           <StrongerClaims />
         </Reveal>

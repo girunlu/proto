@@ -24,13 +24,15 @@ export type Ruler = 'dinov3' | 'clip'
 interface Compact { m: number; lo: number; hi: number }
 export interface Trip { mean: number; ci_low: number; ci_high: number }
 const expand = (c: Compact): Trip => ({ mean: c.m, ci_low: c.lo, ci_high: c.hi })
+/** one logistic fit of P(swap still wins) over the five intervention steps */
+export interface LockFit { type: string; slope: number; step: number; ci: [number, number] }
 
 interface CrossModel {
   geom: Record<string, Record<Ruler, {
     dist: Record<string, Record<string, Compact>>
     intraset: Record<string, Record<string, Compact>>
   }>>
-  lockfits: Record<string, { type: string; slope: number; step: number; ci: [number, number] }>
+  lockfits: Record<string, LockFit>
   /* `img` is the CLIP image matrix the analysis shipped; `img_dinov3` was rebuilt
      2026-08-10 from the surviving per-image DINOv3 embeddings, so the image side can
      carry the same ruler toggle as every other chart. There is no `txt_dinov3`:
@@ -150,6 +152,30 @@ export const openForModel = (m: ModelId, sit: Sit, code: Code | 'default') =>
  *  answer in both could score high off two stray seeds. */
 export interface ShiftRow { q: string; share: number; plain: string; value: string; sep: boolean }
 export const shiftFor = (m: ModelId, sit: Sit, code: Code) => X.shift[m]?.[sit]?.[code] ?? null
+
+/* ── scene 08 · the aggregate the per-cell lists drill into ─────────────────
+   One row per question: mean share over every model × cell row that is not
+   flagged `sep` (there the two prompts' answer groups are the two prompts, so
+   the share measures the prompt, not the model), plus how many rows were and
+   how many were separated out. Computed once at load from the same table
+   `shiftFor` serves per cell, so the aggregate and the drill-down cannot
+   disagree. */
+export interface ShiftAgg { q: string; mean: number; n: number; sep: number }
+export const SHIFT_AGG: ShiftAgg[] = (() => {
+  const acc: Record<string, { sum: number; n: number; sep: number }> = {}
+  for (const perSit of Object.values(X.shift))
+    for (const perCode of Object.values(perSit))
+      for (const block of Object.values(perCode))
+        for (const r of block.rows) {
+          const a = (acc[r.q] ??= { sum: 0, n: 0, sep: 0 })
+          a.n += 1
+          if (r.sep) a.sep += 1
+          else a.sum += r.share
+        }
+  return Object.entries(acc)
+    .map(([q, a]) => ({ q, mean: a.n > a.sep ? a.sum / (a.n - a.sep) : 0, n: a.n, sep: a.sep }))
+    .sort((a, b) => b.mean - a.mean)
+})()
 
 /* ── scene 15 ─────────────────────────────────────────────────────────────── */
 

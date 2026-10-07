@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
-import { SceneShell, Reveal, Panel, TierNote } from '../components/Scene'
+import { SceneShell, Reveal, Panel, TierNote, InfoBox } from '../components/Scene'
 import { ZoomImage, BoxPicker, MetricToggle, RepoLink, Cite, useMagnet } from '../components/Viz'
 import { DINOV3, CLIP } from '../data/references'
 
@@ -603,12 +603,22 @@ function NationalityScene() {
         <p className="prose-scene max-w-2xl">
           Dimensionality reduction compresses high-dimensional embeddings into two dimensions, resulting in
           information loss. We therefore examine the geographic alignment directly in the original embedding space
-          using cosine distance. In the following figure, each bar and heatmap cell shows the distance between a
-          country-specific image set and the corresponding geographically unspecified set. The geographic alignment
-          visible in the projection persists in this space, with the unspecified generations remaining systematically
-          closer to the United States, Germany, and Russia. Uncertainty intervals are estimated by bootstrap
+          using cosine distance. The board below opens on pictures, four seeds per cell, the
+          least-alike four, and the bar under each cell is one measurement: how far that variant's
+          50 images sit from the unspecified prompt in its own row. Press heatmap to read the same
+          measurement as shading instead: the distance between each country-specific image set and
+          the corresponding geographically unspecified set. The unspecified column is the reference
+          point every row is measured against, so it carries pictures but no shaded number. The
+          geographic alignment visible in the projection persists in this space, with the
+          unspecified generations remaining systematically closer to the United States, Germany,
+          and Russia. Uncertainty intervals are estimated by bootstrap
           resampling over seeds.
         </p>
+        <InfoBox title="glossary · embedding">
+          <p>
+            The list of numbers that stands for one picture or one sentence inside these systems.
+          </p>
+        </InfoBox>
       </Reveal>
       <Reveal delay={0.06}>
         <Panel className="mt-10">
@@ -622,7 +632,7 @@ function NationalityScene() {
             {/* the same measurement, drawn two ways — pictures with a bar, or the
                 number with its shading. Two panels used to show this side by side. */}
             <div className="flex items-center gap-1 rounded-lg border border-border p-0.5">
-              {([['thumbs', 'thumbnails'], ['numbers', 'distances']] as const).map(([m, label]) => (
+              {([['thumbs', 'thumbnails'], ['numbers', 'heatmap']] as const).map(([m, label]) => (
                 <button
                   key={m}
                   onClick={() => setGridMode(m)}
@@ -1004,6 +1014,12 @@ function SectionLead() {
           their corresponding country-specific variants “a &lt;scene&gt; in &lt;country&gt;”. We obtain the visual
           embeddings from two image encoders: <RepoLink m={DINOV3} /> <Cite ids={['simeoni2025']} /> and <RepoLink m={CLIP} /> <Cite ids={['radford2021']} />.
         </p>
+        <InfoBox title="glossary · annotator">
+          <p>
+            A separate AI system that is shown each picture on its own, without being told what was
+            asked for, and says what it can see in it.
+          </p>
+        </InfoBox>
       </Reveal>
     </div>
   )
